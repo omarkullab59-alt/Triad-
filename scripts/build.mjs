@@ -1,0 +1,219 @@
+#!/usr/bin/env node
+// TRIAD static site generator — zero dependencies, Node >= 18.
+// content/ (Markdown + JSON)  →  dist/ (HTML pages, JSON API, sitemap, RSS, PWA)
+//
+//   BASE_PATH=/Triad-/  SITE_URL=https://user.github.io/Triad-  node scripts/build.mjs
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseFrontmatter } from './lib/frontmatter.mjs';
+import { renderMarkdown, renderGallery, wordCount, escapeHtml } from './lib/markdown.mjs';
+import { layout } from './lib/layout.mjs';
+import { brandFiles, emblem } from './lib/brand.mjs';
+import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage } from './lib/pages.mjs';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const OUT = path.join(ROOT, 'dist');
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const readJson = (p) => JSON.parse(read(p));
+
+function write(rel, content) {
+  const file = path.join(OUT, rel);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, content);
+}
+function copyDir(src, dest) {
+  if (!fs.existsSync(src)) return;
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    entry.isDirectory() ? copyDir(s, d) : fs.copyFileSync(s, d);
+  }
+}
+
+export function build() {
+  const t0 = Date.now();
+  const site = readJson('content/site.json');
+  let base = process.env.BASE_PATH || '/';
+  if (!base.endsWith('/')) base += '/';
+  if (process.env.SITE_URL) site.url = process.env.SITE_URL.replace(/\/$/, '');
+
+  const ctx = {
+    site,
+    base,
+    version: Date.now().toString(36),
+    url: (p = '/') => (/^(https?:|mailto:|#)/.test(p) ? p : base + p.replace(/^\//, '')),
+    renderGallery,
+  };
+
+  // ── Content ────────────────────────────────────────────────
+  const loadMd = (dir) =>
+    fs
+      .readdirSync(path.join(ROOT, dir))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => {
+        const { data, body } = parseFrontmatter(read(`${dir}/${f}`));
+        return { ...data, slug: f.replace(/\.md$/, ''), body };
+      })
+      .filter((x) => x.draft !== true)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  ctx.articles = loadMd('content/magazine').map((a, i, all) => ({
+    ...a,
+    issue: String(a.issue || site.currentIssue).padStart(3, '0'),
+    url: `/magazine/${a.slug}/`,
+    code: `TRD-MAG-${String(a.issue || site.currentIssue).padStart(3, '0')}-${String(all.length - i).padStart(2, '0')}`,
+    readTime: Math.max(1, Math.round(wordCount(a.body) / 220)),
+    gallery: Array.isArray(a.gallery) ? a.gallery.map((g) => (typeof g === 'object' ? g.image || g.src : g)).filter(Boolean) : [],
+  }));
+  ctx.news = loadMd('content/news').map((n, i, all) => {
+    const d = new Date(n.date);
+    return {
+      ...n,
+      url: `/news/${n.slug}/`,
+      code: `TRD-WIRE-${String(d.getUTCFullYear()).slice(2)}${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(all.length - i).padStart(2, '0')}`,
+    };
+  });
+  const arc = readJson('content/archive.json');
+  ctx.archive = Array.isArray(arc) ? arc : arc.items || [];
+  ctx.creatives = readJson('content/creatives.json');
+  ctx.issues = readJson('content/issues.json');
+
+  for (const a of ctx.articles) a.html = renderMarkdown(a.body, ctx);
+  for (const n of ctx.news) n.html = renderMarkdown(n.body, ctx);
+
+  // ── Clean + assets ─────────────────────────────────────────
+  fs.rmSync(OUT, { recursive: true, force: true });
+  fs.mkdirSync(OUT, { recursive: true });
+  copyDir(path.join(ROOT, 'static'), OUT);
+  copyDir(path.join(ROOT, 'src'), path.join(OUT, 'assets'));
+  for (const [name, svg] of Object.entries(brandFiles())) write(`assets/brand/${name}`, svg);
+
+  // ── Pages ──────────────────────────────────────────────────
+  const org = { '@type': 'Organization', name: 'TRIAD', url: site.url };
+  const page = (rel, opts) => write(rel, layout(ctx, opts));
+
+  page('index.html', {
+    path: '/',
+    pageId: 'home',
+    body: homePage(ctx),
+    image: site.heroImages[0],
+    jsonld: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'TRIAD', url: site.url, description: site.description, publisher: org },
+  });
+  page('magazine/index.html', { title: 'Magazine', path: '/magazine/', pageId: 'magazine', body: magazinePage(ctx), description: 'The TRIAD magazine: fashion editorials, photography, designers, interviews, art and culture.' });
+  for (const a of ctx.articles) {
+    page(`magazine/${a.slug}/index.html`, {
+      title: a.title,
+      description: a.deck,
+      path: a.url,
+      type: 'article',
+      image: a.cover,
+      pageId: 'article',
+      body: articlePage(ctx, a),
+      jsonld: {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: a.title,
+        description: a.deck,
+        image: [a.cover],
+        datePublished: new Date(a.date).toISOString(),
+        author: { '@type': 'Person', name: a.author },
+        articleSection: a.category,
+        publisher: org,
+        mainEntityOfPage: site.url + a.url,
+      },
+    });
+  }
+  page('news/index.html', { title: 'News', path: '/news/', pageId: 'news', theme: 'paper', body: newsPage(ctx), description: 'Fashion news from TRIAD: fashion week, collections, collaborations, campaigns and culture.' });
+  for (const n of ctx.news) {
+    page(`news/${n.slug}/index.html`, {
+      title: n.title,
+      description: n.excerpt,
+      path: n.url,
+      type: 'article',
+      image: n.image,
+      pageId: 'news-article',
+      theme: 'paper',
+      body: newsArticlePage(ctx, n),
+      noindex: n.sample === true,
+      jsonld: {
+        '@context': 'https://schema.org',
+        '@type': n.sample ? 'Article' : 'NewsArticle',
+        headline: n.title,
+        description: n.excerpt,
+        image: n.image ? [n.image] : undefined,
+        datePublished: new Date(n.date).toISOString(),
+        author: { '@type': 'Organization', name: n.author || 'TRIAD News Desk' },
+        publisher: org,
+      },
+    });
+  }
+  page('archive/index.html', { title: 'Archive', path: '/archive/', pageId: 'archive', body: archivePage(ctx), description: 'The TRIAD archive: editorial photography, campaigns, references, graphics and symbols.' });
+  page('about/index.html', { title: 'About', path: '/about/', pageId: 'about', body: aboutPage(ctx), description: 'TRIAD is a platform for creative expression, independent thinking and cultural exchange.' });
+  page('404.html', { title: 'Not found', path: '/404.html', pageId: 'notfound', body: notFoundPage(ctx), noindex: true });
+
+  // ── JSON content API (for a future native / PWA app) ──────
+  const strip = ({ body, html, ...rest }) => rest;
+  write('api/articles.json', JSON.stringify(ctx.articles.map((a) => ({ ...strip(a), html: a.html })), null, 0));
+  write('api/news.json', JSON.stringify(ctx.news.map((n) => ({ ...strip(n), html: n.html })), null, 0));
+  write('api/archive.json', JSON.stringify(ctx.archive));
+  write('api/site.json', JSON.stringify({ ...site, issues: ctx.issues, creatives: ctx.creatives }));
+
+  // ── SEO: sitemap, robots, RSS ──────────────────────────────
+  const urls = ['/', '/magazine/', '/news/', '/archive/', '/about/', ...ctx.articles.map((a) => a.url), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
+  write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${site.url}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
+  write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${base}admin/\nSitemap: ${site.url}/sitemap.xml\n`);
+  const items = [...ctx.articles, ...ctx.news].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
+  write(
+    'feed.xml',
+    `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+<title>TRIAD</title><link>${site.url}/</link><description>${escapeHtml(site.description)}</description><language>en</language>
+${items
+  .map((x) => `<item><title>${escapeHtml((x.sample ? '[SAMPLE] ' : '') + x.title)}</title><link>${site.url}${x.url}</link><guid>${site.url}${x.url}</guid><pubDate>${new Date(x.date).toUTCString()}</pubDate><description>${escapeHtml(x.deck || x.excerpt || '')}</description></item>`)
+  .join('\n')}
+</channel></rss>`
+  );
+
+  // ── PWA ────────────────────────────────────────────────────
+  write(
+    'manifest.webmanifest',
+    JSON.stringify(
+      {
+        name: 'TRIAD — Fashion & Culture Collective',
+        short_name: 'TRIAD',
+        description: site.description,
+        start_url: base,
+        scope: base,
+        display: 'standalone',
+        background_color: '#fbfaf8',
+        theme_color: '#ff5a00',
+        icons: [
+          { src: `${base}assets/icons/icon-192.png`, sizes: '192x192', type: 'image/png' },
+          { src: `${base}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png' },
+          { src: `${base}assets/icons/icon-maskable-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: `${base}assets/icons/favicon.svg`, sizes: 'any', type: 'image/svg+xml' },
+        ],
+      },
+      null,
+      2
+    )
+  );
+  const sw = read('src/sw.template.js').replace('__VERSION__', ctx.version).replace(/__BASE__/g, base);
+  write('sw.js', sw);
+  fs.rmSync(path.join(OUT, 'assets/sw.template.js'), { force: true });
+
+  // favicon from the emblem (no ring at small sizes)
+  write('assets/icons/favicon.svg', `<?xml version="1.0" encoding="UTF-8"?>\n${emblem({ ring: false }).replace('<svg ', '<svg style="color:#0a0a0a;--red:#fbfaf8;background:#ff5a00" ')}`);
+
+  // GitHub Pages: don't run Jekyll
+  write('.nojekyll', '');
+
+  const count = 7 + ctx.articles.length + ctx.news.length;
+  console.log(`TRIAD ▲ built ${count} pages in ${Date.now() - t0} ms → dist/ (base ${base})`);
+  return ctx;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) build();
