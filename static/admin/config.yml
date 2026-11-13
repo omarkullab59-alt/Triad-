@@ -1,0 +1,73 @@
+# Decap CMS configuration — https://decapcms.org/docs/configuration-options/
+# Login via GitHub needs an OAuth provider (see README → "CMS"). Until then,
+# content can be edited directly on github.com — the site rebuilds automatically.
+backend:
+  name: github
+  repo: omarkullab59-alt/Triad-
+  branch: main
+
+media_folder: static/uploads
+public_folder: /uploads
+publish_mode: editorial_workflow
+
+collections:
+  - name: magazine
+    label: Magazine
+    label_singular: Article
+    folder: content/magazine
+    create: true
+    slug: "{{slug}}"
+    sortable_fields: [date, title, category]
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Deck (subtitle), name: deck, widget: text }
+      - label: Category
+        name: category
+        widget: select
+        options: [Fashion Editorials, Photography, Designers, Fashion Trends, Underground Fashion, Streetwear, Creative Projects, Interviews, Art & Culture]
+      - { label: Publication date, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: Author / credits, name: author, widget: string }
+      - { label: Issue number, name: issue, widget: string, default: "003" }
+      - { label: Cover image, name: cover, widget: image }
+      - { label: Featured on homepage, name: featured, widget: boolean, default: false, required: false }
+      - { label: Gallery, name: gallery, widget: list, field: { label: Image, name: image, widget: image }, required: false }
+      - { label: Draft (hidden), name: draft, widget: boolean, default: false, required: false }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: news
+    label: Fashion News
+    label_singular: News item
+    folder: content/news
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Topic
+        name: topic
+        widget: select
+        options: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture]
+      - { label: Date, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: Excerpt, name: excerpt, widget: text }
+      - { label: Image, name: image, widget: image, required: false }
+      - { label: Author, name: author, widget: string, default: TRIAD News Desk }
+      - { label: "Sample / fictional (shows warning label)", name: sample, widget: boolean, default: false }
+      - { label: Draft (hidden), name: draft, widget: boolean, default: false, required: false }
+      - { label: Body, name: body, widget: markdown }
+
+  - name: data
+    label: Archive & Site
+    files:
+      - name: archive
+        label: Archive (moodboard)
+        file: content/archive.json
+        fields:
+          - name: items
+            label: Items
+            widget: list
+            fields:
+              - { label: Code, name: code, widget: string }
+              - { label: Type, name: type, widget: select, options: [editorial, campaign, reference, graphic, symbol, historical, inspiration] }
+              - { label: Title, name: title, widget: string }
+              - { label: Year, name: year, widget: string }
+              - { label: Image, name: image, widget: image }
+              - { label: Note, name: note, widget: text }
