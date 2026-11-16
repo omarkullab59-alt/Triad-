@@ -1,8 +1,46 @@
-[
-  { "name": "Ines Varga", "role": "Photographer", "city": "Berlin", "image": "https://picsum.photos/seed/triad-creative-ines/800/1100?grayscale", "note": "Shoots on expired film. Refuses retouching." },
-  { "name": "Kofi Adair", "role": "Designer", "city": "London", "image": "https://picsum.photos/seed/triad-creative-kofi/800/1100?grayscale", "note": "Cuts tailoring from military surplus." },
-  { "name": "Mara Solenne", "role": "Stylist", "city": "Paris", "image": "https://picsum.photos/seed/triad-creative-mara/800/1100?grayscale", "note": "Builds looks from flea-market archives." },
-  { "name": "Tomás Reyna", "role": "Sound Artist", "city": "Mexico City", "image": "https://picsum.photos/seed/triad-creative-tomas/800/1100?grayscale", "note": "Scores runways with field recordings." },
-  { "name": "Yuki Hendrix", "role": "Graphic Designer", "city": "Tokyo", "image": "https://picsum.photos/seed/triad-creative-yuki/800/1100?grayscale", "note": "Type as armour. Logos as wounds." },
-  { "name": "Lior Baptiste", "role": "Sculptor", "city": "New York", "image": "https://picsum.photos/seed/triad-creative-lior/800/1100?grayscale", "note": "Casts garments in plaster and wax." }
-]
+{
+  "items": [
+    {
+      "name": "Ines Varga",
+      "role": "Photographer",
+      "city": "Berlin",
+      "image": "https://picsum.photos/seed/triad-creative-ines/800/1100?grayscale",
+      "note": "Shoots on expired film. Refuses retouching."
+    },
+    {
+      "name": "Kofi Adair",
+      "role": "Designer",
+      "city": "London",
+      "image": "https://picsum.photos/seed/triad-creative-kofi/800/1100?grayscale",
+      "note": "Cuts tailoring from military surplus."
+    },
+    {
+      "name": "Mara Solenne",
+      "role": "Stylist",
+      "city": "Paris",
+      "image": "https://picsum.photos/seed/triad-creative-mara/800/1100?grayscale",
+      "note": "Builds looks from flea-market archives."
+    },
+    {
+      "name": "Tomás Reyna",
+      "role": "Sound Artist",
+      "city": "Mexico City",
+      "image": "https://picsum.photos/seed/triad-creative-tomas/800/1100?grayscale",
+      "note": "Scores runways with field recordings."
+    },
+    {
+      "name": "Yuki Hendrix",
+      "role": "Graphic Designer",
+      "city": "Tokyo",
+      "image": "https://picsum.photos/seed/triad-creative-yuki/800/1100?grayscale",
+      "note": "Type as armour. Logos as wounds."
+    },
+    {
+      "name": "Lior Baptiste",
+      "role": "Sculptor",
+      "city": "New York",
+      "image": "https://picsum.photos/seed/triad-creative-lior/800/1100?grayscale",
+      "note": "Casts garments in plaster and wax."
+    }
+  ]
+}

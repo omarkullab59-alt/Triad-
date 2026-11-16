@@ -1,0 +1,154 @@
+# Pages CMS configuration — https://pagescms.org/docs
+# Open https://app.pagescms.org, sign in with GitHub, pick this repository.
+media:
+  input: static/uploads
+  output: /uploads
+  rename: safe
+  categories: [image]
+
+content:
+  - name: magazine
+    label: Magazin
+    type: collection
+    path: content/magazine
+    fields:
+      - { name: title, label: Titel, type: string, required: true }
+      - { name: deck, label: Untertitel (Deck), type: text }
+      - name: category
+        label: Kategorie
+        type: select
+        options:
+          values: [Fashion Editorials, Photography, Designers, Fashion Trends, Underground Fashion, Streetwear, Creative Projects, Interviews, Art & Culture]
+      - { name: date, label: Datum, type: date, options: { format: yyyy-MM-dd } }
+      - { name: author, label: Autor / Credits, type: string }
+      - { name: issue, label: Ausgabe (Issue), type: string }
+      - { name: cover, label: Titelbild, type: image }
+      - { name: featured, label: Auf Startseite hervorheben, type: boolean }
+      - { name: gallery, label: Bildergalerie, type: image, list: true }
+      - { name: draft, label: Entwurf (nicht veröffentlichen), type: boolean }
+      - { name: body, label: Text, type: rich-text, options: { format: markdown } }
+
+  - name: news
+    label: News (eigene)
+    type: collection
+    path: content/news
+    fields:
+      - { name: title, label: Titel, type: string, required: true }
+      - name: topic
+        label: Thema
+        type: select
+        options:
+          values: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture]
+      - { name: date, label: Datum, type: date, options: { format: yyyy-MM-dd } }
+      - { name: excerpt, label: Kurztext, type: text }
+      - { name: image, label: Bild, type: image, description: "Nur eigene Bilder oder freigegebenes Pressematerial." }
+      - { name: author, label: Autor, type: string }
+      - { name: source, label: Quelle (Name), type: string, description: "Wenn die Meldung auf einem anderen Bericht basiert." }
+      - { name: sourceUrl, label: Quelle (Link), type: string }
+      - { name: sample, label: Beispiel/fiktiv (zeigt Warnhinweis), type: boolean }
+      - { name: draft, label: Entwurf (nicht veröffentlichen), type: boolean }
+      - { name: body, label: Text, type: rich-text, options: { format: markdown } }
+
+  - name: archive
+    label: Archiv (Moodboard)
+    type: file
+    path: content/archive.json
+    format: json
+    fields:
+      - name: items
+        label: Objekte
+        type: object
+        list: true
+        fields:
+          - { name: code, label: Code, type: string }
+          - name: type
+            label: Typ
+            type: select
+            options:
+              values: [editorial, campaign, reference, graphic, symbol, historical, inspiration]
+          - { name: title, label: Titel, type: string }
+          - { name: year, label: Jahr, type: string }
+          - { name: image, label: Bild, type: image }
+          - { name: note, label: Notiz, type: text }
+
+  - name: sources
+    label: News-Quellen (RSS)
+    type: file
+    path: content/sources.json
+    format: json
+    fields:
+      - name: items
+        label: Quellen
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: url, label: RSS-Feed-Adresse, type: string }
+          - name: topic
+            label: Thema
+            type: select
+            options:
+              values: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture]
+          - { name: active, label: Aktiv, type: boolean }
+
+  - name: creatives
+    label: Featured Creatives
+    type: file
+    path: content/creatives.json
+    format: json
+    fields:
+      - name: items
+        label: Personen
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: role, label: Rolle, type: string }
+          - { name: city, label: Stadt, type: string }
+          - { name: image, label: Porträt, type: image }
+          - { name: note, label: Ein Satz, type: string }
+
+  - name: issues
+    label: Ausgaben (Covers)
+    type: file
+    path: content/issues.json
+    format: json
+    fields:
+      - name: items
+        label: Ausgaben
+        type: object
+        list: true
+        fields:
+          - { name: number, label: Nummer, type: string }
+          - { name: title, label: Titel, type: string }
+          - { name: season, label: Saison, type: string }
+          - { name: cover, label: Cover, type: image }
+          - { name: lines, label: Coverzeilen, type: string, list: true }
+          - { name: current, label: Aktuelle Ausgabe, type: boolean }
+
+  - name: site
+    label: Startseite & Allgemein
+    type: file
+    path: content/site.json
+    format: json
+    fields:
+      - { name: title, label: Titel, type: string }
+      - { name: tagline, label: Claim, type: string }
+      - { name: description, label: Beschreibung (SEO), type: text }
+      - { name: url, label: Website-Adresse, type: string }
+      - { name: lang, label: Sprache, type: string }
+      - { name: currentIssue, label: Aktuelle Ausgabe, type: string }
+      - { name: season, label: Saison, type: string }
+      - { name: location, label: Orte, type: string }
+      - { name: email, label: E-Mail, type: string }
+      - { name: heroImages, label: Hero-Bilder (Startseite), type: image, list: true }
+      - { name: campaignImage, label: Kampagnenbild, type: image }
+      - name: social
+        label: Social Links
+        type: object
+        list: true
+        fields:
+          - { name: label, label: Name, type: string }
+          - { name: url, label: Link, type: string }
+      - { name: magazineCategories, label: Magazin-Kategorien, type: string, list: true }
+      - { name: newsTopics, label: News-Themen, type: string, list: true }

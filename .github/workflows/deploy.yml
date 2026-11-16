@@ -1,12 +1,13 @@
 name: Build & deploy TRIAD
 
-# Builds the site on every push to main and publishes dist/ to the `gh-pages` branch.
-# GitHub serves that branch automatically at https://<user>.github.io/<repo>/ —
-# no manual Pages setup required.
+# Runs on every push to main (new article, upload, code change) and every 3 hours
+# to refresh the news wire. Publishes dist/ to the gh-pages branch.
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 */3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,7 +15,7 @@ permissions:
 
 concurrency:
   group: deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -25,11 +26,24 @@ jobs:
         with:
           node-version: 22
 
+      - name: Fetch news wire (RSS headlines)
+        run: node scripts/fetch-wire.mjs
+        continue-on-error: true
+
       - name: Build
         run: node scripts/build.mjs
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
+      - name: Optimise uploaded images (max 2000px, ~82% quality)
+        run: |
+          shopt -s nullglob nocaseglob
+          files=(dist/uploads/*.{jpg,jpeg,png,webp})
+          [ ${#files[@]} -eq 0 ] && exit 0
+          command -v mogrify >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick)
+          mogrify -auto-orient -resize '2000x2000>' -strip -quality 82 "${files[@]}"
+          du -sh dist/uploads
 
       - name: Publish to gh-pages
         run: |

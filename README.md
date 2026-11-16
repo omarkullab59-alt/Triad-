@@ -65,9 +65,16 @@ Speichern (Commit) → nach ca. 1 Minute ist der Artikel live.
 
 **News:** gleiches Prinzip. `sample: true` zeigt den Hinweis „fiktiver Beispieleintrag“ – bei echten Meldungen weglassen oder `false` setzen. Alle mitgelieferten News sind fiktive Platzhalter und so gekennzeichnet.
 
-### Visueller Editor (Decap CMS)
+### Visuelle Editoren (ohne Code, auch am Handy)
 
-Unter `/admin/` liegt ein fertig konfigurierter Editor. Für den Login mit GitHub braucht Decap einen OAuth-Dienst (z. B. Hosting über Netlify mit „Identity/Git Gateway“ oder ein kleiner OAuth-Proxy). Bis dahin funktioniert das Bearbeiten direkt auf github.com.
+- **Pages CMS:** https://app.pagescms.org → mit GitHub anmelden → Repo `Triad-` (Konfiguration: `.pages.yml`)
+- **Sveltia CMS** auf der eigenen Seite: `/admin/` → „Sign in with Token“ (Konfiguration: `static/admin/config.yml`)
+
+Schritt-für-Schritt-Anleitung: [`docs/REDAKTION.md`](docs/REDAKTION.md)
+
+### News von anderen Magazinen („Elsewhere“)
+
+`scripts/fetch-wire.mjs` liest alle 3 Stunden die RSS-Feeds aus `content/sources.json` (kein API-Key) und zeigt Schlagzeile + Quelle + Link. Läuft automatisch in GitHub Actions; lokal: `node scripts/fetch-wire.mjs`.
 
 ## Architektur
 

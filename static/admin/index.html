@@ -4,11 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>TRIAD — Editor</title>
+  <title>TRIAD — Redaktion</title>
 </head>
 <body>
-  <!-- Decap CMS: edit magazine articles, news and the archive without touching code.
-       Every save becomes a commit in GitHub → GitHub Actions rebuilds the site. -->
-  <script src="https://unpkg.com/decap-cms@^3.1.0/dist/decap-cms.js"></script>
+  <!-- Sveltia CMS (Decap-compatible): write articles, news, upload images — on desktop and phone.
+       Sign in with "Sign in with Token" (GitHub fine-grained token, see docs/REDAKTION.md).
+       Every save is a commit → GitHub Actions rebuilds the site in ~1 minute. -->
+  <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js" type="module"></script>
 </body>
 </html>

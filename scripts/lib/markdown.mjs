@@ -15,8 +15,9 @@ export function escapeHtml(s = '') {
 function inline(text, ctx) {
   let s = escapeHtml(text);
   s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>').replace(/(^|[\s(])_([^_]+)_(?=[\s).,!?;:]|$)/g, '$1<em>$2</em>');
+  s = s.replace(/&lt;br\s*\/?&gt;|\\$/g, '<br>');
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, href) => {
     const ext = /^https?:/.test(href);
     const url = ext ? href : ctx.url(href);
@@ -25,7 +26,7 @@ function inline(text, ctx) {
   return s;
 }
 
-const IMG_RE = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$/;
+const IMG_RE = /^!\[([^\]]*)\]\(<?([^)\s>]+)>?(?:\s+"([^"]*)")?\)$/;
 
 export function renderMarkdown(md, ctx) {
   const lines = md.replace(/\r\n/g, '\n').split('\n');
@@ -64,15 +65,15 @@ export function renderMarkdown(md, ctx) {
       continue;
     }
     if (!line) { flush(); continue; }
-    if (line === '---') {
+    if (/^(---|\*\*\*|___)$/.test(line)) {
       flush();
       html.push('<div class="art-break" aria-hidden="true"><i class="plus"></i><i class="plus"></i><i class="plus"></i></div>');
       continue;
     }
-    const h = line.match(/^(#{2,3})\s+(.*)$/);
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
     if (h) {
       flush();
-      const tag = h[1].length === 2 ? 'h2' : 'h3';
+      const tag = h[1].length <= 2 ? 'h2' : 'h3';
       html.push(`<${tag} data-reveal>${inline(h[2], ctx)}</${tag}>`);
       continue;
     }
@@ -100,10 +101,10 @@ export function renderMarkdown(md, ctx) {
 </figure>`);
       continue;
     }
-    if (/^[-*]\s+/.test(line)) {
+    if (/^([-*+]|\d+[.)])\s+/.test(line)) {
       flushPara();
       if (!list) list = [];
-      list.push(line.replace(/^[-*]\s+/, ''));
+      list.push(line.replace(/^([-*+]|\d+[.)])\s+/, ''));
       continue;
     }
     flushList();
