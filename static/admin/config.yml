@@ -68,6 +68,18 @@ collections:
       - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
       - { label: Text, name: body, widget: markdown }
 
+  - name: legal
+    label: Rechtliches (Impressum, Datenschutz, Darkroom-Regeln)
+    label_singular: Seite
+    folder: content/legal
+    create: false
+    slug: "{{slug}}"
+    fields:
+      - { label: Titel, name: title, widget: string }
+      - { label: Reihenfolge, name: order, widget: number, required: false }
+      - { label: Stand, name: updated, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { label: Text, name: body, widget: markdown }
+
   - name: people
     label: Voices (Künstler & Local Legends)
     label_singular: Person

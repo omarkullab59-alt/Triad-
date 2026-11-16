@@ -13,3 +13,11 @@ binding = "AI"
 ALLOWED_ORIGINS = "https://omarkullab59-alt.github.io,http://localhost:4321"
 PROVIDER = "workers-ai"          # or "anthropic" (needs ANTHROPIC_API_KEY secret, paid)
 MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct"
+
+# Darkroom (photographers' uploads). Free D1 database; created automatically on first deploy
+# (Wrangler ≥ 4.45 provisions bindings that have no database_id). Tables are created by the Worker itself.
+[[d1_databases]]
+binding = "DB"
+database_name = "triad-darkroom"
+
+# Secrets (set by the deploy workflow from GitHub secrets): ADMIN_TOKEN, HASH_SALT

@@ -51,6 +51,16 @@ content:
       - { name: draft, label: Entwurf (nicht veröffentlichen), type: boolean }
       - { name: body, label: Text, type: rich-text, options: { format: markdown } }
 
+  - name: legal
+    label: Rechtliches (Impressum, Datenschutz, Darkroom-Regeln)
+    type: collection
+    path: content/legal
+    fields:
+      - { name: title, label: Titel, type: string, required: true }
+      - { name: order, label: Reihenfolge, type: number }
+      - { name: updated, label: Stand, type: date, options: { format: yyyy-MM-dd } }
+      - { name: body, label: Text, type: rich-text, options: { format: markdown } }
+
   - name: people
     label: Voices (Künstler & Local Legends)
     type: collection

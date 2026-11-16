@@ -3,6 +3,8 @@ name: Deploy Finder AI (Cloudflare Worker)
 # Publishes worker/finder-ai to Cloudflare (free Workers AI, no credit card).
 # Needs two repository secrets (Settings → Secrets and variables → Actions):
 # CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID. ANTHROPIC_API_KEY is optional.
+# Darkroom: DARKROOM_ADMIN_TOKEN (long random password for the moderation page) and
+# DARKROOM_HASH_SALT (any random text). See docs/DARKROOM.md.
 # See docs/KI-FINDER.md.
 
 on:
@@ -20,8 +22,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Unit tests (mocked AI)
-        run: node tests/worker.test.mjs
+      - name: Unit tests (mocked AI + real SQLite for D1)
+        run: node tests/worker.test.mjs && node tests/darkroom.test.mjs
 
       - name: Check secrets
         id: check
@@ -44,6 +46,13 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker/finder-ai
+          wranglerVersion: "4"
+          secrets: |
+            ADMIN_TOKEN
+            HASH_SALT
+        env:
+          ADMIN_TOKEN: ${{ secrets.DARKROOM_ADMIN_TOKEN }}
+          HASH_SALT: ${{ secrets.DARKROOM_HASH_SALT }}
 
       - name: Show URL
         if: steps.check.outputs.ready == 'true'

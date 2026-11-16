@@ -1,5 +1,5 @@
 // Page bodies. Each returns the inner <main> HTML; build.mjs wraps it in layout().
-import { escapeHtml as e } from './markdown.mjs';
+import { escapeHtml as e, renderMarkdown } from './markdown.mjs';
 import { imgTag, resolveImage } from './images.mjs';
 import {
   emblem, glyph, symbol, label, frame, storyCard, newsRow, wireRow, issueCover, marquee, sectionHead,
@@ -312,7 +312,7 @@ export function archivePage(ctx) {
   const types = [...new Set(archive.map((a) => a.type))];
   return `
 <section class="page-head page-head--archive">
-  <span class="label page-kicker">${symbol('sierpinski', { cls: 'sh-sym' })}04 / ARCHIVE &mdash; <span data-archive-count>${String(archive.length).padStart(3, '0')}</span> OBJECTS</span>
+  <span class="label page-kicker">${symbol('sierpinski', { cls: 'sh-sym' })}05 / ARCHIVE &mdash; <span data-archive-count>${String(archive.length).padStart(3, '0')}</span> OBJECTS</span>
   <h1 class="page-title" data-split>${splitWords('An archive of what’s next.')}</h1>
   <p class="page-deck serif">Editorial photography, campaigns, references, graphics, symbols and historical fragments. A curated moodboard of the TRIAD universe.</p>
 </section>
@@ -347,7 +347,7 @@ export function aboutPage(ctx) {
   ];
   return `
 <section class="about-intro">
-  <span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}06 / ABOUT</span>
+  <span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}07 / ABOUT</span>
   <h1 class="about-title" data-split>${splitWords('TRIAD is not a magazine.')}</h1>
   <div class="about-emblem">${emblem({ title: 'TRIAD emblem', motto: 'THREE FORCES · ONE VISION · ' })}</div>
 </section>
@@ -493,7 +493,7 @@ export function finderPage(ctx) {
   const examples = ['Helmut Lang jacket 90s', 'military field jacket', 'Rick Owens boots', 'Carhartt Detroit jacket', 'vintage leather coat', 'Maison Margiela tabi'];
   return `
 <section class="page-head finder-head">
-  <span class="label page-kicker">${symbol('delta', { cls: 'sh-sym' })}05 / FINDER &mdash; ${ctx.marketplaces.length} MARKETPLACES</span>
+  <span class="label page-kicker">${symbol('delta', { cls: 'sh-sym' })}06 / FINDER &mdash; ${ctx.marketplaces.length} MARKETPLACES</span>
   <h1 class="page-title" data-split>${splitWords('Find it. Anywhere.')}</h1>
   <p class="page-deck serif">Describe the piece once. TRIAD searches Google, Vinted, Grailed, eBay and more for you &mdash; then you look at the results there.</p>
 </section>
@@ -557,4 +557,125 @@ export function notFoundPage(ctx) {
   <p class="serif">This page does not exist. Or it was never meant to be found.</p>
   <a class="btn-line" href="${ctx.url('/')}">Return home &#8594;</a>
 </section>`;
+}
+
+/* ── DARKROOM: photographers upload, the crew approves, everyone reacts ── */
+export const REACTIONS = [
+  { kind: 'fire', sym: 'fire', label: 'Burns', hint: 'pure heat' },
+  { kind: 'chord', sym: 'chord', label: 'Resonates', hint: 'hits a note' },
+  { kind: 'delta', sym: 'delta', label: 'Archive it', hint: 'belongs in the archive' },
+];
+
+export function darkroomPage(ctx) {
+  const api = (ctx.site.aiEndpoint || '').replace(/\/$/, '');
+  const reactions = REACTIONS.map((r) => ({ ...r, icon: symbol(r.sym, { cls: 'react-sym' }) }));
+  return `
+<section class="page-head darkroom-head">
+  <span class="label page-kicker">${symbol('pyramid', { cls: 'sh-sym' })}04 / DARKROOM &mdash; OPEN SUBMISSIONS</span>
+  <h1 class="page-title" data-split>${splitWords('Darkroom.')}</h1>
+  <p class="page-deck serif">Your frames on TRIAD. Street, night, clubs, clothes, people &mdash; upload them, we develop every one by hand, the strongest go on the wall. Then everyone gets a say.</p>
+  <div class="dr-actions">
+    <a class="btn btn--solid" href="#submit">Submit photos &#8594;</a>
+    <span class="label label--dim">Free &middot; no account &middot; you keep your rights</span>
+  </div>
+</section>
+
+<section class="darkroom" data-darkroom data-api="${e(api)}" data-reactions="${e(JSON.stringify(reactions))}">
+  <div class="filter-bar dr-bar">
+    <div class="chips" role="group" aria-label="Sort">
+      <button type="button" class="chip is-active" data-dr-sort="new" aria-pressed="true">Newest</button>
+      <button type="button" class="chip" data-dr-sort="top" aria-pressed="false">Most reactions</button>
+    </div>
+    <ul class="dr-legend" aria-label="Reactions">
+      ${reactions.map((r) => `<li>${r.icon}<span class="label">${r.label}</span></li>`).join('')}
+    </ul>
+  </div>
+
+  <div class="dr-wall" data-dr-wall aria-live="polite" aria-busy="true">
+    ${Array.from({ length: 6 }, (_, i) => `<div class="dr-ghost" style="--h:${[130, 90, 115, 100, 140, 85][i]}%" aria-hidden="true"></div>`).join('')}
+  </div>
+  <div class="dr-empty" data-dr-empty hidden>
+    <span class="label"><span class="tape">FIRST ROLL</span></span>
+    <h2 class="dr-empty-title">The wall is waiting<br>for your frames.</h2>
+    <p class="serif">${api ? 'Nothing developed yet. Be the first &mdash; the crew reviews every upload, usually within 48&nbsp;hours.' : 'The darkroom opens as soon as the TRIAD server is connected. Until then, nothing can be uploaded.'}</p>
+  </div>
+  <button type="button" class="btn dr-more" data-dr-more hidden>Load more</button>
+
+  <section class="dr-submit" id="submit" aria-labelledby="dr-submit-title">
+    <header class="dr-submit-head">
+      <span class="label">${symbol('delta', { cls: 'sh-sym' })}SUBMIT</span>
+      <h2 id="dr-submit-title" class="dr-submit-title">Upload &rarr; develop &rarr; wall.</h2>
+      <ol class="dr-steps">
+        <li><b>01</b><span>Upload up to 6 photos. We shrink them to web size in your browser and strip location data.</span></li>
+        <li><b>02</b><span>The crew reviews every frame by hand. Nothing is public before that.</span></li>
+        <li><b>03</b><span>On the wall: credited with your name &amp; Instagram. People react with the three TRIAD signs.</span></li>
+      </ol>
+    </header>
+
+    <form class="dr-form" data-dr-form novalidate ${api ? '' : 'data-disabled'}>
+      <fieldset ${api ? '' : 'disabled'}>
+        <legend class="visually-hidden">Photo submission</legend>
+        <label class="dr-drop" data-dr-drop>
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple data-dr-files class="visually-hidden">
+          ${symbol('sierpinski', { cls: 'dr-drop-sym' })}
+          <span class="dr-drop-title">Choose photos</span>
+          <span class="label label--dim">or drop them here &middot; JPG, PNG, WebP &middot; max 6</span>
+        </label>
+        <ul class="dr-previews" data-dr-previews></ul>
+
+        <div class="dr-fields">
+          <label><span class="label">Name / Alias <abbr title="required">*</abbr></span><input name="name" required maxlength="60" autocomplete="nickname"></label>
+          <label><span class="label">Instagram</span><input name="instagram" maxlength="40" placeholder="@" autocapitalize="off" spellcheck="false"></label>
+          <label><span class="label">Title</span><input name="title" maxlength="80" placeholder="applies to all photos"></label>
+          <label><span class="label">Place</span><input name="location" maxlength="60" placeholder="e.g. Berlin, Wedding"></label>
+          <label><span class="label">Camera / Film</span><input name="camera" maxlength="60" placeholder="e.g. Contax T2, Portra 400"></label>
+          <label class="dr-wide"><span class="label">Caption</span><textarea name="caption" maxlength="280" rows="2"></textarea></label>
+          <label class="dr-hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <label class="dr-consent">
+          <input type="checkbox" name="consent" required>
+          <span>I took these photos myself. People who can be recognised agreed to be shown. TRIAD may show them on this website with my credit; I can ask for removal at any time. <a href="${ctx.url('/legal/darkroom-rules/')}">Darkroom rules</a></span>
+        </label>
+        <div class="dr-submit-row">
+          <button type="submit" class="btn btn--solid" data-dr-send>Send to the darkroom &#8594;</button>
+          <p class="dr-status label" data-dr-status role="status"></p>
+        </div>
+      </fieldset>
+    </form>
+  </section>
+</section>`;
+}
+
+export function darkroomAdminPage(ctx) {
+  const api = (ctx.site.aiEndpoint || '').replace(/\/$/, '');
+  return `
+<section class="page-head">
+  <span class="label page-kicker">${symbol('pyramid', { cls: 'sh-sym' })}DARKROOM / MODERATION</span>
+  <h1 class="page-title">Develop.</h1>
+  <p class="page-deck serif">Approve, reject or delete submissions. Only the crew has the key.</p>
+</section>
+<section class="dr-admin" data-dr-admin data-api="${e(api)}">
+  <form class="dr-login" data-dr-login>
+    <label><span class="label">Admin key</span><input type="password" name="token" autocomplete="current-password" required minlength="16"></label>
+    <button class="btn btn--solid" type="submit">Open</button>
+    <p class="label label--dim">${api ? 'The key is the DARKROOM_ADMIN_TOKEN secret. It stays in this browser tab only.' : 'Server not connected yet — see docs/DARKROOM.md.'}</p>
+  </form>
+  <div data-dr-panel hidden>
+    <div class="chips dr-tabs" role="group" aria-label="Status">
+      ${['pending', 'flagged', 'approved', 'rejected'].map((s, i) => `<button type="button" class="chip${i ? '' : ' is-active'}" data-dr-tab="${s}" aria-pressed="${!i}">${s} <sup data-dr-count="${s}"></sup></button>`).join('')}
+      <button type="button" class="chip chip--action" data-dr-logout>Lock</button>
+    </div>
+    <p class="label label--dim" data-dr-admin-status role="status"></p>
+    <ul class="dr-queue" data-dr-queue></ul>
+  </div>
+</section>`;
+}
+
+export function legalPage(ctx, l) {
+  return `
+<article class="legal">
+  <header class="page-head"><span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}LEGAL &mdash; ${e(String(l.updated || ''))}</span><h1 class="page-title">${e(l.title)}</h1></header>
+  <div class="na-body legal-body">${renderMarkdown(l.body, ctx)}</div>
+</article>`;
 }

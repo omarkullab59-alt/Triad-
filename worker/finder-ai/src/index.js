@@ -5,8 +5,12 @@
 //   with Mistral Small 3.1 (open model, vision, usable in the EU).
 // Optional provider: Anthropic Claude (set PROVIDER="anthropic" + ANTHROPIC_API_KEY secret).
 //
+// Darkroom (photographers' uploads + reactions): see darkroom.js — routes under /darkroom/
+//
 // POST /analyze   { text?: string, image?: base64-jpeg (no data: prefix) }
 // → { item, brand, brandConfidence, color, material, era, details[], queryDe, queryEn, alternatives[], note, confidence }
+
+import { handleDarkroom } from './darkroom.js';
 
 const WORKERS_AI_MODEL = '@cf/mistralai/mistral-small-3.1-24b-instruct';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
@@ -44,8 +48,8 @@ function cors(origin, env) {
   const allowed = allowedOrigins(env);
   return {
     'access-control-allow-origin': allowed.includes(origin) ? origin : allowed[0],
-    'access-control-allow-methods': 'POST, OPTIONS',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-methods': 'GET, POST, OPTIONS',
+    'access-control-allow-headers': 'content-type, authorization',
     'access-control-max-age': '86400',
     vary: 'origin',
   };
@@ -55,14 +59,15 @@ const json = (data, status, headers) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers } });
 
 const hits = new Map();
-function rateLimited(ip) {
+function rateLimited(key, limit = PER_MINUTE) {
   const now = Date.now();
-  const recent = (hits.get(ip) || []).filter((t) => now - t < 60_000);
+  const recent = (hits.get(key) || []).filter((t) => now - t < 60_000);
   recent.push(now);
-  hits.set(ip, recent);
+  hits.set(key, recent);
   if (hits.size > 5000) hits.clear();
-  return recent.length > PER_MINUTE;
+  return recent.length > limit;
 }
+export const _resetRateLimit = () => hits.clear();
 
 export function extractJson(text) {
   if (text && typeof text === 'object') return text;
@@ -148,7 +153,19 @@ export default {
     const provider = env.PROVIDER === 'anthropic' && env.ANTHROPIC_API_KEY ? 'anthropic' : 'workers-ai';
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
-    if (url.pathname === '/health') return json({ ok: true, provider }, 200, h);
+    if (url.pathname === '/health') return json({ ok: true, provider, darkroom: Boolean(env.DB) }, 200, h);
+
+    if (url.pathname.startsWith('/darkroom/')) {
+      const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+      const write = request.method === 'POST';
+      if (write && !allowedOrigins(env).includes(origin)) return json({ error: 'origin_not_allowed' }, 403, h);
+      if (rateLimited(`dr:${write ? 'w' : 'r'}:${ip}`, write ? 30 : 120)) return json({ error: 'rate_limited' }, 429, h);
+      try {
+        return await handleDarkroom(request, env, url, (data, status, extra) => json(data, status, { ...h, ...extra }));
+      } catch (e) {
+        return json({ error: 'darkroom_error' }, 500, h);
+      }
+    }
     if (url.pathname !== '/analyze' || request.method !== 'POST') return json({ error: 'not_found' }, 404, h);
     if (!allowedOrigins(env).includes(origin)) return json({ error: 'origin_not_allowed' }, 403, h);
     if (provider === 'workers-ai' && !env.AI) return json({ error: 'not_configured' }, 503, h);

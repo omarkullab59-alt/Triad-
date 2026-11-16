@@ -7,9 +7,10 @@ const NAV = [
   { href: '/magazine/', text: 'Magazine', n: '01', sym: 'fire' },
   { href: '/news/', text: 'News', n: '02', sym: 'air' },
   { href: '/people/', text: 'Voices', n: '03', sym: 'chord' },
-  { href: '/archive/', text: 'Archive', n: '04', sym: 'sierpinski' },
-  { href: '/finder/', text: 'Finder', n: '05', sym: 'delta' },
-  { href: '/about/', text: 'About', n: '06', sym: 'borromean', menuOnly: true },
+  { href: '/darkroom/', text: 'Darkroom', n: '04', sym: 'pyramid' },
+  { href: '/archive/', text: 'Archive', n: '05', sym: 'sierpinski', menuOnly: true },
+  { href: '/finder/', text: 'Finder', n: '06', sym: 'delta' },
+  { href: '/about/', text: 'About', n: '07', sym: 'borromean', menuOnly: true },
 ];
 
 export function layout(ctx, { title, description, path, body, image, type = 'website', jsonld, theme = 'dark', pageId = 'page', noindex = false }) {
@@ -41,10 +42,12 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <link rel="apple-touch-icon" href="${ctx.url('/assets/icons/icon-192.png')}">
 <link rel="manifest" href="${ctx.url('/manifest.webmanifest')}">
 <link rel="alternate" type="application/rss+xml" title="TRIAD" href="${ctx.url('/feed.xml')}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://picsum.photos">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+${ctx.localFonts
+    ? `<link rel="stylesheet" href="${ctx.url('/assets/fonts/fonts.css')}?v=${v}">`
+    : `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">`}
 <link rel="stylesheet" href="${ctx.url('/assets/css/main.css')}?v=${v}">
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : ''}
 <script>document.documentElement.classList.add('js');window.TRIAD_BASE=${JSON.stringify(ctx.base)};</script>
@@ -131,6 +134,7 @@ ${body}
   <div class="footer-base">
     <span class="label">&copy; ${new Date().getFullYear()} TRIAD Collective</span>
     <span class="label label--dim">${site.location}</span>
+    <span class="label footer-legal"><a href="${ctx.url('/legal/impressum/')}">Impressum</a> &middot; <a href="${ctx.url('/legal/datenschutz/')}">Datenschutz</a> &middot; <a href="${ctx.url('/legal/darkroom-rules/')}">Darkroom rules</a></span>
     <span class="label label--dim">Sample content is fictional and for demonstration only.</span>
     <span class="label">${glyph({ cls: 'footer-glyph' })}</span>
   </div>
