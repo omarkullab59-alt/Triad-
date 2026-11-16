@@ -1,24 +1,38 @@
-[
-  {
-    "number": "003",
-    "title": "THREE FORCES",
-    "season": "Winter 26",
-    "cover": "https://picsum.photos/seed/triad-issue-003/900/1200?grayscale",
-    "lines": ["Fashion is only the beginning", "Basement runways", "Icons without gods"],
-    "current": true
-  },
-  {
-    "number": "002",
-    "title": "OUTSIDE THE SYSTEM",
-    "season": "Summer 26",
-    "cover": "https://picsum.photos/seed/triad-issue-002/900/1200?grayscale",
-    "lines": ["After the logo", "Grain as evidence", "Sewn in the dark"]
-  },
-  {
-    "number": "001",
-    "title": "THE SERPENT ISSUE",
-    "season": "Winter 25",
-    "cover": "https://picsum.photos/seed/triad-issue-001/900/1200?grayscale",
-    "lines": ["Myth, wool and noise", "The unfinished hem", "Three rooms, one signal"]
-  }
-]
+{
+  "items": [
+    {
+      "number": "003",
+      "title": "THREE FORCES",
+      "season": "Winter 26",
+      "cover": "https://picsum.photos/seed/triad-issue-003/900/1200?grayscale",
+      "lines": [
+        "Fashion is only the beginning",
+        "Basement runways",
+        "Icons without gods"
+      ],
+      "current": true
+    },
+    {
+      "number": "002",
+      "title": "OUTSIDE THE SYSTEM",
+      "season": "Summer 26",
+      "cover": "https://picsum.photos/seed/triad-issue-002/900/1200?grayscale",
+      "lines": [
+        "After the logo",
+        "Grain as evidence",
+        "Sewn in the dark"
+      ]
+    },
+    {
+      "number": "001",
+      "title": "THE SERPENT ISSUE",
+      "season": "Winter 25",
+      "cover": "https://picsum.photos/seed/triad-issue-001/900/1200?grayscale",
+      "lines": [
+        "Myth, wool and noise",
+        "The unfinished hem",
+        "Three rooms, one signal"
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 import { escapeHtml as e } from './markdown.mjs';
 import { imgTag, resolveImage } from './images.mjs';
 import {
-  emblem, glyph, symbol, label, frame, storyCard, newsRow, issueCover, marquee, sectionHead,
+  emblem, glyph, symbol, label, frame, storyCard, newsRow, wireRow, issueCover, marquee, sectionHead,
   splitWords, fmtDate, fmtDateLong, isoDate, slugify,
 } from './components.mjs';
 import { stamp, SYMBOLS } from './brand.mjs';
@@ -64,6 +64,11 @@ ${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n
     ${latestNews.map((n, i) => newsRow(n, ctx, i)).join('')}
   </ol>
   <p class="label label--dim sample-note">Entries marked “Sample” are fictional placeholders, not real reports.</p>
+  ${ctx.wire.items.length ? `<div class="elsewhere">
+    <h3 class="elsewhere-title">${symbol('tonnetz', { cls: 'sh-sym' })}Elsewhere <span class="label label--dim">Headlines from other publishers</span></h3>
+    <ol class="wire-list">${ctx.wire.items.slice(0, 6).map(wireRow).join('')}</ol>
+    <a class="btn-line" href="${ctx.url('/news/')}#elsewhere">The full wire &#8594;</a>
+  </div>` : ''}
 </section>
 
 <section class="block block--creatives">
@@ -251,7 +256,23 @@ export function newsPage(ctx) {
   </div>`
     )
     .join('')}
+</section>
+
+${ctx.wire.items.length ? (() => {
+  const srcs = [...new Set(ctx.wire.items.map((w) => w.source))].sort();
+  return `<section class="wire-section" id="elsewhere">
+  <header class="wire-head">
+    <span class="label page-kicker">${symbol('tonnetz', { cls: 'sh-sym' })}ELSEWHERE &mdash; ${ctx.wire.items.length} HEADLINES</span>
+    <h2 class="news-month-title"><span>From elsewhere.</span></h2>
+    <p class="serif wire-intro">What other publishers are reporting. Headlines link to the original source; TRIAD does not host their content. Updated ${ctx.wire.updated ? new Date(ctx.wire.updated).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }) : ''} (Berlin).</p>
+  </header>
+  <div class="filter-bar filter-bar--paper" role="toolbar" aria-label="Filter by publisher" data-filter="wire">
+    <button type="button" class="chip is-active" data-filter-value="all" aria-pressed="true">All</button>
+    ${srcs.map((s) => `<button type="button" class="chip" data-filter-value="${slugify(s)}" aria-pressed="false">${e(s)}</button>`).join('')}
+  </div>
+  <ol class="wire-list" data-filter-target="wire">${ctx.wire.items.map(wireRow).join('')}</ol>
 </section>`;
+})() : ''}`;
 }
 
 export function newsArticlePage(ctx, n) {
@@ -269,6 +290,7 @@ export function newsArticlePage(ctx, n) {
   <div class="na-body" itemprop="articleBody">
     <p class="label label--dim">${e(n.author || 'TRIAD News Desk')}</p>
     ${n.html}
+    ${n.sourceUrl ? `<p class="na-source label">Source: <a href="${e(n.sourceUrl)}" target="_blank" rel="noopener">${e(n.source || new URL(n.sourceUrl).hostname)} &#8599;</a></p>` : ''}
   </div>
 </article>
 <section class="block block--paper">

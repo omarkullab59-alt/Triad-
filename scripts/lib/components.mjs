@@ -59,6 +59,20 @@ export function newsRow(n, ctx, i = 0) {
 </li>`;
 }
 
+export function wireRow(w) {
+  const d = w.date ? new Date(w.date) : null;
+  const when = d ? `${String(d.getUTCDate()).padStart(2, '0')}.${String(d.getUTCMonth() + 1).padStart(2, '0')}` : '';
+  return `<li class="wire-row" data-cat="${slugify(w.source)}">
+  <a href="${e(w.link)}" target="_blank" rel="noopener nofollow" data-cursor="Open">
+    <time datetime="${e(w.date || '')}" class="news-date">${when}</time>
+    <span class="wire-source">${e(w.source)}</span>
+    <span class="wire-title">${e(w.title)}</span>
+    <span class="news-arrow" aria-hidden="true">&#8599;</span>
+    <span class="visually-hidden">(opens ${e(w.source)} in a new tab)</span>
+  </a>
+</li>`;
+}
+
 export function issueCover(issue, ctx, { tilt = 0 } = {}) {
   return `<a class="issue-cover" href="${ctx.url('/magazine/')}#issue-${issue.number}" style="--tilt:${tilt}deg" data-cursor="Issue ${e(issue.number)}">
   ${imgTag({ src: resolveImage(issue.cover, ctx), alt: `TRIAD Issue ${issue.number} cover`, sizes: '(max-width: 760px) 80vw, 30vw' })}
