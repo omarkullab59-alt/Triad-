@@ -33,11 +33,12 @@ Stand: 16.11.2026 · Test: `python3 tests/usability_audit.py http://localhost:43
 - **Bewegungsempfindlichkeit** (vestibuläre Störungen): Parallax und große Übergänge reduzieren. https://web.dev/prefers-reduced-motion
 - **BFSG** (seit 28.06.2025): Barrierefreiheitspflicht für bestimmte Verbraucher-Websites; Kleinstunternehmen mit Dienstleistungen sind ausgenommen — sobald TRIAD verkauft (Shop), relevant.
 
-## Farbregel
+## Farbregel (TRIAD Acid)
 
-- `#FF5A00` TRIAD-Orange: nur Grafiken, Symbole, Flächen.
-- `#E85200`: große Schrift (≥ 24 px) und Hover — 3,6:1 auf Weiß.
-- `#B83C00`: kleine Schrift (Labels, Themen) — 5,5:1 auf Weiß.
+- `#C4EF2F` Lime: Flächen, Textmarker, Tape, Symbole, Schrift nur auf Schwarz.
+- `#4F6600` Oliv-Lime: kleine farbige Schrift auf Weiß, 6,2:1.
+- Schwarz auf Lime: 14,8:1.
+- Hintergrund und Regeln: [`BRAND-COLOR.md`](BRAND-COLOR.md)
 
 ## Offen / nächste Schritte
 

@@ -24,7 +24,7 @@ export function homePage(ctx) {
   <div class="hero-veil" aria-hidden="true"></div>
   <div class="hero-corners" aria-hidden="true">
     <span class="label">TRD&mdash;000 / CAMPAIGN</span>
-    <span class="label">ISSUE ${site.currentIssue} &mdash; ${site.season}</span>
+    <span class="label"><span class="tape">ISSUE ${site.currentIssue} &mdash; ${site.season}</span></span>
     <span class="label">52.52&deg;N 13.40&deg;E</span>
     <span class="label hero-counter" data-hero-counter>PLATE 01 / 0${site.heroImages.length}</span>
   </div>
@@ -185,6 +185,7 @@ export function articlePage(ctx, a) {
         <span class="label label--dim">Share</span>
         <button type="button" class="label share-btn" data-share data-title="${e(a.title)}">Copy link</button>
       </div>
+      ${a.people.length ? `<div class="art-people"><span class="label label--dim">In this story</span>${a.people.map((p) => `<a class="person-chip" href="${ctx.url(p.url)}">${imgTag({ src: resolveImage(p.portrait, ctx), alt: '', sizes: '40px' })}<span>${e(p.name)}</span></a>`).join('')}</div>` : ''}
       ${glyph({ cls: 'art-glyph' })}
     </aside>
 
@@ -197,6 +198,12 @@ export function articlePage(ctx, a) {
   ${a.gallery?.length ? `<section class="art-gallery">
     <header class="ag-head"><span class="label">PLATES / ${String(a.gallery.length).padStart(2, '0')}</span><span class="label label--dim">Click to enlarge</span></header>
     ${ctx.renderGallery(a.gallery.map((src, i) => ({ src, alt: `${a.title}, plate ${i + 1}`, caption: `${a.code} — PL. ${String(i + 1).padStart(2, '0')}` })), ctx)}
+  </section>` : ''}
+
+  ${Array.isArray(a.find) && a.find.length ? `<section class="find-it" aria-labelledby="find-${a.slug}">
+    <span class="label page-kicker">${symbol('delta', { cls: 'sh-sym' })}FIND IT SECONDHAND</span>
+    <h2 class="find-it-title" id="find-${a.slug}">The look, second time around.</h2>
+    <ul class="find-it-list">${a.find.map((q) => `<li><a class="chip" href="${ctx.url('/finder/')}?q=${encodeURIComponent(q)}">${e(q)} &#8594;</a></li>`).join('')}</ul>
   </section>` : ''}
 
   <footer class="art-end">
@@ -305,7 +312,7 @@ export function archivePage(ctx) {
   const types = [...new Set(archive.map((a) => a.type))];
   return `
 <section class="page-head page-head--archive">
-  <span class="label page-kicker">${symbol('sierpinski', { cls: 'sh-sym' })}03 / ARCHIVE &mdash; <span data-archive-count>${String(archive.length).padStart(3, '0')}</span> OBJECTS</span>
+  <span class="label page-kicker">${symbol('sierpinski', { cls: 'sh-sym' })}04 / ARCHIVE &mdash; <span data-archive-count>${String(archive.length).padStart(3, '0')}</span> OBJECTS</span>
   <h1 class="page-title" data-split>${splitWords('An archive of what’s next.')}</h1>
   <p class="page-deck serif">Editorial photography, campaigns, references, graphics, symbols and historical fragments. A curated moodboard of the TRIAD universe.</p>
 </section>
@@ -340,7 +347,7 @@ export function aboutPage(ctx) {
   ];
   return `
 <section class="about-intro">
-  <span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}04 / ABOUT</span>
+  <span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}06 / ABOUT</span>
   <h1 class="about-title" data-split>${splitWords('TRIAD is not a magazine.')}</h1>
   <div class="about-emblem">${emblem({ title: 'TRIAD emblem', motto: 'THREE FORCES · ONE VISION · ' })}</div>
 </section>
@@ -385,7 +392,7 @@ export function aboutPage(ctx) {
     <figure class="sys sys--palette">
       <ul class="palette">
         <li style="--c:#fbfaf8"><span>White</span><code>#FBFAF8</code></li>
-        <li style="--c:#ff5a00"><span>TRIAD Orange</span><code>#FF5A00</code></li>
+        <li style="--c:#c4ef2f"><span>TRIAD Acid</span><code>#C4EF2F</code></li>
         <li style="--c:#0a0a0a"><span>Black</span><code>#0A0A0A</code></li>
         <li style="--c:#efede8"><span>Wash</span><code>#EFEDE8</code></li>
         <li style="--c:#8d8f93"><span>Silver</span><code>#8D8F93</code></li>
@@ -393,7 +400,7 @@ export function aboutPage(ctx) {
       <figcaption><span class="label">08 — Palette</span></figcaption>
     </figure>
   </div>
-  <p class="system-downloads label">Download: ${['emblem-white', 'emblem-orange', 'emblem-black', 'emblem-mark', 'glyph-pattern', 'stamp-archive', 'wordmark-stacked']
+  <p class="system-downloads label">Download: ${['emblem-white', 'emblem-lime', 'emblem-black', 'emblem-mark', 'glyph-pattern', 'stamp-archive', 'wordmark-stacked']
     .map((f) => `<a href="${ctx.url(`/assets/brand/${f}.svg`)}" download>${f}.svg</a>`)
     .join(' / ')}</p>
 </section>
@@ -418,6 +425,112 @@ export function aboutPage(ctx) {
 <section class="about-close">
   <h2 class="about-close-title" data-split>${splitWords('Three forces. One vision.')}</h2>
   <p class="serif">For collaborations, submissions and correspondence: <a href="mailto:${ctx.site.email}">${ctx.site.email}</a></p>
+</section>`;
+}
+
+export function peoplePage(ctx) {
+  const kinds = [['all', 'All'], ['artist', 'Artists'], ['legend', 'Local legends']];
+  return `
+<section class="page-head">
+  <span class="label page-kicker">${symbol('chord', { cls: 'sh-sym' })}03 / VOICES &mdash; ${ctx.people.length} PEOPLE</span>
+  <h1 class="page-title" data-split>${splitWords('Voices.')}</h1>
+  <p class="page-deck serif">An archive of the people who shape the culture before it has a name — artists, designers and local legends. In their own words.</p>
+  ${ctx.people.some((p) => p.sample) ? '<p class="sample-banner"><strong>Sample profiles.</strong> The people currently shown are fictional placeholders written to demonstrate the layout.</p>' : ''}
+</section>
+
+<div class="filter-bar" role="toolbar" aria-label="Filter voices" data-filter="people">
+  ${kinds.map(([v, l], i) => `<button type="button" class="chip${i ? '' : ' is-active'}" data-filter-value="${v}" aria-pressed="${i ? 'false' : 'true'}">${l} <sup>${v === 'all' ? ctx.people.length : ctx.people.filter((p) => p.kind === v).length}</sup></button>`).join('')}
+</div>
+
+<ol class="people-index" data-filter-target="people">
+  ${ctx.people
+    .map(
+      (p, i) => `<li class="person-row" data-cat="${e(p.kind || 'artist')}" data-preview="${e(resolveImage(p.portrait, ctx))}">
+    <a href="${ctx.url(p.url)}" data-cursor="Meet">
+      <span class="news-idx">${String(i + 1).padStart(3, '0')}</span>
+      <span class="person-name">${e(p.name)}</span>
+      <span class="person-role">${e(p.role)}${p.kind === 'legend' ? ' <span class="tape">Local legend</span>' : ''}</span>
+      <span class="person-city label label--dim">${e(p.city)} &middot; ${e(p.since || '')}</span>
+      <span class="person-count label">${p.features.length ? `${p.features.length} ${p.features.length > 1 ? 'stories' : 'story'}` : 'Profile'}</span>
+      <span class="news-arrow" aria-hidden="true">&#8599;</span>
+    </a>
+  </li>`
+    )
+    .join('')}
+</ol>`;
+}
+
+export function personPage(ctx, p) {
+  return `
+<article class="person">
+  <header class="person-hero">
+    <div class="person-portrait">${frame({ src: p.portrait, alt: `Portrait of ${p.name}`, code: `VOICE ${String(ctx.people.indexOf(p) + 1).padStart(3, '0')}`, sizes: '(max-width: 760px) 100vw, 45vw', eager: true, ctx })}</div>
+    <div class="person-head">
+      <a class="label back-link" href="${ctx.url('/people/')}">&#8592; Voices</a>
+      <span class="label">${p.kind === 'legend' ? '<span class="tape">Local legend</span>' : e(p.role)}</span>
+      <h1 class="person-title" data-split>${splitWords(p.name)}</h1>
+      <dl class="art-meta person-meta">
+        <div><dt class="label label--dim">Role</dt><dd>${e(p.role)}</dd></div>
+        <div><dt class="label label--dim">City</dt><dd>${e(p.city)}</dd></div>
+        <div><dt class="label label--dim">Active</dt><dd>${e(p.since || '—')}</dd></div>
+      </dl>
+      ${p.quote ? `<blockquote class="pullquote person-quote"><p>${e(p.quote)}</p></blockquote>` : ''}
+    </div>
+  </header>
+  ${p.sample ? '<p class="sample-banner person-sample"><strong>Sample profile.</strong> This person is fictional and shown to demonstrate the layout.</p>' : ''}
+  <div class="art-layout person-body">
+    <aside class="art-aside">${symbol('chord', { cls: 'art-glyph' })}</aside>
+    <div class="art-body">${p.html}</div>
+  </div>
+  ${p.features.length ? `<section class="block block--related">
+    ${sectionHead({ index: 'ARCHIVE', sym: 'fire', title: 'Stories & interviews.' }, ctx)}
+    <div class="related-grid">${p.features.map((a) => storyCard(a, ctx, { sizes: '(max-width: 760px) 100vw, 33vw' })).join('')}</div>
+  </section>` : ''}
+</article>`;
+}
+
+export function finderPage(ctx) {
+  const examples = ['Helmut Lang jacket 90s', 'military field jacket', 'Rick Owens boots', 'Carhartt Detroit jacket', 'vintage leather coat', 'Maison Margiela tabi'];
+  return `
+<section class="page-head finder-head">
+  <span class="label page-kicker">${symbol('delta', { cls: 'sh-sym' })}05 / FINDER &mdash; ${ctx.marketplaces.length} MARKETPLACES</span>
+  <h1 class="page-title" data-split>${splitWords('Find it. Anywhere.')}</h1>
+  <p class="page-deck serif">Describe the piece once. TRIAD searches Vinted, Grailed, eBay and more for you &mdash; then you look at the results there.</p>
+</section>
+
+<section class="finder" data-finder data-markets='${e(JSON.stringify(ctx.marketplaces))}'>
+  <form class="finder-form" role="search" data-finder-form>
+    <label for="finder-q" class="label">What are you looking for?</label>
+    <div class="finder-input">
+      <input id="finder-q" name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="e.g. black military jacket 90s, size M" required>
+      <button type="submit" class="finder-go">Search &#8594;</button>
+    </div>
+    <p class="finder-hint label label--dim" data-finder-hint>German or English both work. Brand + piece + detail works best.</p>
+  </form>
+
+  <div class="finder-examples" aria-label="Examples">
+    <span class="label label--dim">Try</span>
+    ${examples.map((x) => `<button type="button" class="chip" data-finder-example="${e(x)}">${e(x)}</button>`).join('')}
+  </div>
+
+  <div class="finder-results" data-finder-results aria-live="polite" hidden>
+    <header class="finder-results-head">
+      <span class="label">Results for</span>
+      <strong class="finder-query" data-finder-query></strong>
+      <span class="label label--dim" data-finder-variant></span>
+    </header>
+    <ol class="market-list" data-market-list></ol>
+    <p class="label label--dim finder-note">Results open on each platform in a new tab. TRIAD is not affiliated with these marketplaces and does not see what you buy.</p>
+  </div>
+
+  <aside class="finder-photo">
+    ${symbol('sierpinski', { cls: 'finder-photo-sym' })}
+    <div>
+      <span class="label">Have a photo instead?</span>
+      <p class="serif">Use Google Lens to identify the piece, then paste the name here. Photo search inside TRIAD is in development.</p>
+      <a class="btn-line" href="https://lens.google.com/" target="_blank" rel="noopener">Open Google Lens &#8599;</a>
+    </div>
+  </aside>
 </section>`;
 }
 

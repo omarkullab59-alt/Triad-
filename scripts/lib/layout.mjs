@@ -6,15 +6,17 @@ import { symbol } from './brand.mjs';
 const NAV = [
   { href: '/magazine/', text: 'Magazine', n: '01', sym: 'fire' },
   { href: '/news/', text: 'News', n: '02', sym: 'air' },
-  { href: '/archive/', text: 'Archive', n: '03', sym: 'sierpinski' },
-  { href: '/about/', text: 'About', n: '04', sym: 'borromean' },
+  { href: '/people/', text: 'Voices', n: '03', sym: 'chord' },
+  { href: '/archive/', text: 'Archive', n: '04', sym: 'sierpinski' },
+  { href: '/finder/', text: 'Finder', n: '05', sym: 'delta' },
+  { href: '/about/', text: 'About', n: '06', sym: 'borromean', menuOnly: true },
 ];
 
 export function layout(ctx, { title, description, path, body, image, type = 'website', jsonld, theme = 'dark', pageId = 'page', noindex = false }) {
   const { site } = ctx;
   const fullTitle = title ? `${title} — ${site.title}` : `${site.title} — ${site.tagline}`;
   const canonical = site.url.replace(/\/$/, '') + path;
-  const ogImage = image ? (/^https?:/.test(image) ? image : site.url.replace(/\/$/, '') + image) : site.url.replace(/\/$/, '') + '/assets/brand/emblem-orange.svg';
+  const ogImage = image ? (/^https?:/.test(image) ? image : site.url.replace(/\/$/, '') + image) : site.url.replace(/\/$/, '') + '/assets/brand/emblem-lime.svg';
   const active = (href) => (path.startsWith(href) ? ' aria-current="page"' : '');
   const v = ctx.version;
 
@@ -76,7 +78,7 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
 </header>
 
 <nav class="tabbar" aria-label="Sections">
-  ${NAV.map((n) => `<a href="${ctx.url(n.href)}"${active(n.href)}>${symbol(n.sym, { cls: 'tab-icon' })}<span>${n.text}</span></a>`).join('')}
+  ${NAV.filter((n) => !n.menuOnly).map((n) => `<a href="${ctx.url(n.href)}"${active(n.href)}>${symbol(n.sym, { cls: 'tab-icon' })}<span>${n.text}</span></a>`).join('')}
 </nav>
 
 <div class="menu" id="menu" hidden>

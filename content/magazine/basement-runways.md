@@ -5,6 +5,8 @@ category: Underground Fashion
 date: 2026-11-02
 author: Words by Sam Okonkwo
 issue: "003"
+people:
+  - dj-mono
 cover: https://picsum.photos/seed/triad-basement-runways/1800/1200?grayscale
 featured: true
 gallery:

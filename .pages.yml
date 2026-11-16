@@ -25,6 +25,8 @@ content:
       - { name: cover, label: Titelbild, type: image }
       - { name: featured, label: Auf Startseite hervorheben, type: boolean }
       - { name: gallery, label: Bildergalerie, type: image, list: true }
+      - { name: people, label: "Personen in diesem Artikel (Dateiname aus Voices, z. B. hanne-wolter)", type: string, list: true }
+      - { name: find, label: Find it secondhand (Suchbegriffe), type: string, list: true }
       - { name: draft, label: Entwurf (nicht veröffentlichen), type: boolean }
       - { name: body, label: Text, type: rich-text, options: { format: markdown } }
 
@@ -48,6 +50,26 @@ content:
       - { name: sample, label: Beispiel/fiktiv (zeigt Warnhinweis), type: boolean }
       - { name: draft, label: Entwurf (nicht veröffentlichen), type: boolean }
       - { name: body, label: Text, type: rich-text, options: { format: markdown } }
+
+  - name: people
+    label: Voices (Künstler & Local Legends)
+    type: collection
+    path: content/people
+    fields:
+      - { name: name, label: Name, type: string, required: true }
+      - { name: role, label: Rolle, type: string }
+      - name: kind
+        label: Art
+        type: select
+        options:
+          values: [artist, legend]
+      - { name: city, label: Stadt / Viertel, type: string }
+      - { name: since, label: Aktiv seit, type: string }
+      - { name: portrait, label: Porträt, type: image }
+      - { name: quote, label: Zitat, type: string }
+      - { name: sample, label: Beispiel/fiktiv (zeigt Warnhinweis), type: boolean }
+      - { name: draft, label: Entwurf (nicht veröffentlichen), type: boolean }
+      - { name: body, label: Biografie / Geschichte, type: rich-text, options: { format: markdown } }
 
   - name: archive
     label: Archiv (Moodboard)
@@ -89,6 +111,23 @@ content:
             type: select
             options:
               values: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture]
+          - { name: active, label: Aktiv, type: boolean }
+
+  - name: marketplaces
+    label: Finder — Marktplätze
+    type: file
+    path: content/marketplaces.json
+    format: json
+    fields:
+      - name: items
+        label: Marktplätze
+        type: object
+        list: true
+        fields:
+          - { name: name, label: Name, type: string }
+          - { name: url, label: "Such-Adresse ({q} = Suchbegriff)", type: string }
+          - { name: note, label: Kurzbeschreibung, type: string }
+          - { name: english, label: Englische Suchbegriffe verwenden, type: boolean }
           - { name: active, label: Aktiv, type: boolean }
 
   - name: creatives

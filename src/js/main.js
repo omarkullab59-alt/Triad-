@@ -199,7 +199,7 @@
     document.body.appendChild(prev);
     const pimg = $('img', prev);
     let px = 0, py = 0, tx = 0, ty = 0, on = false;
-    $$('.news-row[data-preview]').forEach((row) => {
+    $$('.news-row[data-preview], .person-row[data-preview]').forEach((row) => {
       row.addEventListener('mouseenter', () => { pimg.src = row.dataset.preview.replace(/\/(\d+)\/(\d+)\?/, '/520/390?'); prev.classList.add('is-on'); on = true; });
       row.addEventListener('mouseleave', () => { prev.classList.remove('is-on'); on = false; });
     });
@@ -359,6 +359,65 @@
     em.addEventListener('pointerenter', () => to(8));
     em.addEventListener('pointerleave', () => to(1));
   });
+
+  /* ── Finder: one query → search links on many marketplaces ──── */
+  const finder = $('[data-finder]');
+  if (finder) {
+    const markets = JSON.parse(finder.dataset.markets || '[]');
+    const form = $('[data-finder-form]', finder);
+    const input = $('#finder-q', finder);
+    const box = $('[data-finder-results]', finder);
+    const list = $('[data-market-list]', finder);
+    // German → English garment vocabulary for English-language platforms (Grailed, Depop)
+    const DE_EN = {
+      jacke: 'jacket', mantel: 'coat', hose: 'pants', jeans: 'jeans', hemd: 'shirt', pullover: 'sweater', pulli: 'sweater',
+      strickjacke: 'cardigan', kapuzenpullover: 'hoodie', schuhe: 'shoes', stiefel: 'boots', turnschuhe: 'sneakers',
+      tasche: 'bag', rucksack: 'backpack', gürtel: 'belt', mütze: 'beanie', kappe: 'cap', kleid: 'dress', rock: 'skirt',
+      weste: 'vest', anzug: 'suit', sakko: 'blazer', leder: 'leather', wolle: 'wool', schwarz: 'black', schwarze: 'black',
+      schwarzer: 'black', weiß: 'white', weiss: 'white', weiße: 'white', grau: 'grey', graue: 'grey', braun: 'brown',
+      braune: 'brown', blau: 'blue', blaue: 'blue', rot: 'red', rote: 'red', grün: 'green', grüne: 'green', beige: 'beige',
+      vintage: 'vintage', militär: 'military', armee: 'army', jahre: '', er: '', 'lederjacke': 'leather jacket',
+      'jeansjacke': 'denim jacket', 'bomberjacke': 'bomber jacket', 'daunenjacke': 'down jacket', schmuck: 'jewelry', kette: 'necklace', ring: 'ring',
+    };
+    const FILLER = /\b(ich|suche|such|eine?n?|der|die|das|mit|für|und|in|a|an|the|looking|for|want|i|im|i'm)\b/gi;
+    const parse = (raw) => {
+      let q = ` ${raw} `;
+      const size = (q.match(/\b(?:size|größe|groesse|gr\.?)\s*([a-z0-9.\/]+)/i) || [])[1];
+      const price = (q.match(/\b(?:unter|under|max\.?|bis|<)\s*(\d+)\s*(?:€|eur|euro|\$)?/i) || [])[1];
+      q = q.replace(/\b(?:size|größe|groesse|gr\.?)\s*[a-z0-9.\/]+/gi, ' ').replace(/\b(?:unter|under|max\.?|bis|<)\s*\d+\s*(?:€|eur|euro|\$)?/gi, ' ');
+      q = q.replace(/(\d{2})(?:er|s)\b/gi, '$1s'); // 90er → 90s
+      q = q.replace(FILLER, ' ').replace(/[,;]+/g, ' ').replace(/\s+/g, ' ').trim();
+      const en = q.split(' ').map((w) => (DE_EN[w.toLowerCase()] ?? w)).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+      return { q, en, size, price };
+    };
+    const build = (tpl, q) => tpl.replace('{q-}', encodeURIComponent(q.toLowerCase().replace(/\s+/g, '-'))).replace('{q}', encodeURIComponent(q));
+    const run = (raw, push = true) => {
+      const p = parse(raw);
+      if (!p.q) return;
+      $('[data-finder-query]', finder).textContent = `“${p.q}”`;
+      const notes = [p.en !== p.q ? `English platforms: “${p.en}”` : '', p.size ? `size ${p.size}` : '', p.price ? `max ${p.price} €` : ''].filter(Boolean);
+      $('[data-finder-variant]', finder).textContent = notes.length ? `${notes.join(' · ')}${p.size || p.price ? ' — set size/price in the platform filters' : ''}` : '';
+      list.innerHTML = markets
+        .map((m, i) => {
+          const term = m.english ? p.en : p.q;
+          return `<li class="market" style="--i:${i}"><a href="${build(m.url, term)}" target="_blank" rel="noopener nofollow">
+            <span class="market-idx">${String(i + 1).padStart(2, '0')}</span>
+            <span class="market-name">${m.name}</span>
+            <span class="market-note">${m.note || ''}</span>
+            <span class="market-term">${term}</span>
+            <span class="market-open">Open results &#8599;</span>
+            <span class="visually-hidden">(opens ${m.name} in a new tab)</span></a></li>`;
+        })
+        .join('');
+      box.hidden = false;
+      if (push) history.replaceState(null, '', `${location.pathname}?q=${encodeURIComponent(raw)}`);
+      box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    };
+    form.addEventListener('submit', (e) => { e.preventDefault(); run(input.value); });
+    $$('[data-finder-example]', finder).forEach((b) => b.addEventListener('click', () => { input.value = b.dataset.finderExample; run(input.value); }));
+    const initial = new URLSearchParams(location.search).get('q');
+    if (initial) { input.value = initial; run(initial, false); }
+  }
 
   /* ── Today from the archive (changes every visit) ────────────── */
   const today = $('[data-archive-today]');

@@ -11,7 +11,7 @@ import { parseFrontmatter } from './lib/frontmatter.mjs';
 import { renderMarkdown, renderGallery, wordCount, escapeHtml } from './lib/markdown.mjs';
 import { layout } from './lib/layout.mjs';
 import { brandFiles, symbolFiles, emblem } from './lib/brand.mjs';
-import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage } from './lib/pages.mjs';
+import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage, finderPage, peoplePage, personPage } from './lib/pages.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'dist');
@@ -84,6 +84,17 @@ export function build() {
   const wirePath = path.join(ROOT, 'content/wire.json');
   ctx.wire = fs.existsSync(wirePath) ? JSON.parse(fs.readFileSync(wirePath, 'utf8')) : { updated: null, items: [] };
   ctx.issues = listOf(readJson('content/issues.json'));
+  ctx.marketplaces = listOf(readJson('content/marketplaces.json')).filter((m) => m.active !== false);
+
+  ctx.people = loadMd('content/people')
+    .map((p) => ({ ...p, url: `/people/${p.slug}/` }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  const bySlug = Object.fromEntries(ctx.people.map((p) => [p.slug, p]));
+  for (const a of ctx.articles) a.people = (Array.isArray(a.people) ? a.people : []).map((s) => bySlug[s]).filter(Boolean);
+  for (const p of ctx.people) {
+    p.features = ctx.articles.filter((a) => a.people.includes(p));
+    p.html = renderMarkdown(p.body, ctx);
+  }
 
   for (const a of ctx.articles) a.html = renderMarkdown(a.body, ctx);
   for (const n of ctx.news) n.html = renderMarkdown(n.body, ctx);
@@ -155,19 +166,29 @@ export function build() {
     });
   }
   page('archive/index.html', { title: 'Archive', path: '/archive/', pageId: 'archive', body: archivePage(ctx), description: 'The TRIAD archive: editorial photography, campaigns, references, graphics and symbols.' });
+  page('people/index.html', { title: 'Voices', path: '/people/', pageId: 'people', body: peoplePage(ctx), description: 'Voices: an archive of artists, designers and local legends — in their own words.' });
+  for (const p of ctx.people) {
+    page(`people/${p.slug}/index.html`, {
+      title: p.name, path: p.url, pageId: 'person', image: p.portrait, body: personPage(ctx, p), noindex: p.sample === true,
+      description: `${p.name} — ${p.role}, ${p.city}. ${p.quote || ''}`,
+      jsonld: { '@context': 'https://schema.org', '@type': 'Person', name: p.name, jobTitle: p.role, homeLocation: p.city },
+    });
+  }
+  page('finder/index.html', { title: 'Finder', path: '/finder/', pageId: 'finder', body: finderPage(ctx), description: 'TRIAD Finder: search Vinted, Grailed, eBay, Vestiaire Collective, Depop and more at once.' });
   page('about/index.html', { title: 'About', path: '/about/', pageId: 'about', body: aboutPage(ctx), description: 'TRIAD is a platform for creative expression, independent thinking and cultural exchange.' });
   page('404.html', { title: 'Not found', path: '/404.html', pageId: 'notfound', body: notFoundPage(ctx), noindex: true });
 
   // ── JSON content API (for a future native / PWA app) ──────
   const strip = ({ body, html, ...rest }) => rest;
-  write('api/articles.json', JSON.stringify(ctx.articles.map((a) => ({ ...strip(a), html: a.html })), null, 0));
+  write('api/articles.json', JSON.stringify(ctx.articles.map((a) => ({ ...strip(a), people: a.people.map((p) => p.slug), html: a.html })), null, 0));
   write('api/news.json', JSON.stringify(ctx.news.map((n) => ({ ...strip(n), html: n.html })), null, 0));
   write('api/archive.json', JSON.stringify(ctx.archive));
   write('api/wire.json', JSON.stringify(ctx.wire));
+  write('api/people.json', JSON.stringify(ctx.people.map(({ body, html, features, ...p }) => ({ ...p, html, features: features.map((a) => a.url) }))));
   write('api/site.json', JSON.stringify({ ...site, issues: ctx.issues, creatives: ctx.creatives }));
 
   // ── SEO: sitemap, robots, RSS ──────────────────────────────
-  const urls = ['/', '/magazine/', '/news/', '/archive/', '/about/', ...ctx.articles.map((a) => a.url), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
+  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/finder/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
   write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${site.url}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
   write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${base}admin/\nSitemap: ${site.url}/sitemap.xml\n`);
   const items = [...ctx.articles, ...ctx.news].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
@@ -194,7 +215,7 @@ ${items
         scope: base,
         display: 'standalone',
         background_color: '#fbfaf8',
-        theme_color: '#ff5a00',
+        theme_color: '#c4ef2f',
         icons: [
           { src: `${base}assets/icons/icon-192.png`, sizes: '192x192', type: 'image/png' },
           { src: `${base}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png' },
@@ -211,7 +232,7 @@ ${items
   fs.rmSync(path.join(OUT, 'assets/sw.template.js'), { force: true });
 
   // favicon from the emblem (no ring at small sizes)
-  write('assets/icons/favicon.svg', `<?xml version="1.0" encoding="UTF-8"?>\n${emblem({ ring: false }).replace('<svg ', '<svg style="color:#0a0a0a;--red:#fbfaf8;background:#ff5a00" ')}`);
+  write('assets/icons/favicon.svg', `<?xml version="1.0" encoding="UTF-8"?>\n${emblem({ ring: false }).replace('<svg ', '<svg style="color:#0a0a0a;--red:#fbfaf8;background:#c4ef2f" ')}`);
 
   // GitHub Pages: don't run Jekyll
   write('.nojekyll', '');
