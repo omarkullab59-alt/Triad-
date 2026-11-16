@@ -26,6 +26,14 @@
     },
     {
       "code": "TRD-ARC-004",
+      "type": "symbol",
+      "title": "Borromean Rings",
+      "year": "2026",
+      "image": "/assets/brand/symbol-borromean.svg",
+      "note": "Three rings, bound together. Remove one and all fall apart."
+    },
+    {
+      "code": "TRD-ARC-005",
       "type": "reference",
       "title": "Monastery Floor Plan",
       "year": "c. 1100",
@@ -33,7 +41,7 @@
       "note": "Sacred geometry, read as a cutting pattern."
     },
     {
-      "code": "TRD-ARC-005",
+      "code": "TRD-ARC-006",
       "type": "graphic",
       "title": "Glyph Pattern / Lining Print",
       "year": "2026",
@@ -41,7 +49,7 @@
       "note": "Repeat pattern for jacket linings and wrapping tissue."
     },
     {
-      "code": "TRD-ARC-006",
+      "code": "TRD-ARC-007",
       "type": "historical",
       "title": "Carved Dragon, Unknown Origin",
       "year": "n.d.",
@@ -49,7 +57,7 @@
       "note": "Visual reference. Provenance under research."
     },
     {
-      "code": "TRD-ARC-007",
+      "code": "TRD-ARC-008",
       "type": "editorial",
       "title": "Back Row, Third Night",
       "year": "2026",
@@ -57,7 +65,7 @@
       "note": "Basement show documentation."
     },
     {
-      "code": "TRD-ARC-008",
+      "code": "TRD-ARC-009",
       "type": "inspiration",
       "title": "Rust on a Shipping Container",
       "year": "2025",
@@ -65,7 +73,15 @@
       "note": "Colour reference for the TRIAD orange."
     },
     {
-      "code": "TRD-ARC-009",
+      "code": "TRD-ARC-010",
+      "type": "symbol",
+      "title": "Tonnetz — The Triad Lattice",
+      "year": "2026",
+      "image": "/assets/brand/symbol-tonnetz.svg",
+      "note": "Every triangle in the tone lattice is a Dreiklang."
+    },
+    {
+      "code": "TRD-ARC-011",
       "type": "symbol",
       "title": "Stamp — Archive 003",
       "year": "2026",
@@ -73,7 +89,7 @@
       "note": "Ink stamp for printed matter and garment tags."
     },
     {
-      "code": "TRD-ARC-010",
+      "code": "TRD-ARC-012",
       "type": "campaign",
       "title": "Night Shift",
       "year": "2025",
@@ -81,7 +97,7 @@
       "note": "Campaign plate, Issue 001."
     },
     {
-      "code": "TRD-ARC-011",
+      "code": "TRD-ARC-013",
       "type": "reference",
       "title": "Workwear Seam Detail",
       "year": "1960s",
@@ -89,7 +105,7 @@
       "note": "Triple-stitched seam. Three lines again."
     },
     {
-      "code": "TRD-ARC-012",
+      "code": "TRD-ARC-014",
       "type": "graphic",
       "title": "Wordmark — Stacked",
       "year": "2026",
@@ -97,7 +113,7 @@
       "note": "Secondary lock-up for labels and spines."
     },
     {
-      "code": "TRD-ARC-013",
+      "code": "TRD-ARC-015",
       "type": "editorial",
       "title": "Veil Study I",
       "year": "2026",
@@ -105,7 +121,15 @@
       "note": "Ines Varga for TRIAD."
     },
     {
-      "code": "TRD-ARC-014",
+      "code": "TRD-ARC-016",
+      "type": "graphic",
+      "title": "Sierpiński Triangle",
+      "year": "2026",
+      "image": "/assets/brand/symbol-sierpinski.svg",
+      "note": "Triangles within triangles. The archive in one sign."
+    },
+    {
+      "code": "TRD-ARC-017",
       "type": "historical",
       "title": "Procession, Archival Print",
       "year": "n.d.",
@@ -113,7 +137,7 @@
       "note": "Found print. Rights pending."
     },
     {
-      "code": "TRD-ARC-015",
+      "code": "TRD-ARC-018",
       "type": "inspiration",
       "title": "Concrete Stairwell",
       "year": "2026",
@@ -121,7 +145,7 @@
       "note": "Location scout, Berlin."
     },
     {
-      "code": "TRD-ARC-016",
+      "code": "TRD-ARC-019",
       "type": "symbol",
       "title": "Emblem — Orange Mark",
       "year": "2026",
@@ -129,7 +153,7 @@
       "note": "Emblem without ring. For patches and embroidery."
     },
     {
-      "code": "TRD-ARC-017",
+      "code": "TRD-ARC-020",
       "type": "editorial",
       "title": "Hands, Pins, Chalk",
       "year": "2026",
@@ -137,7 +161,7 @@
       "note": "Atelier visit."
     },
     {
-      "code": "TRD-ARC-018",
+      "code": "TRD-ARC-021",
       "type": "campaign",
       "title": "Fashion Is Only the Beginning",
       "year": "2026",
@@ -145,7 +169,15 @@
       "note": "Campaign plate, Issue 003."
     },
     {
-      "code": "TRD-ARC-019",
+      "code": "TRD-ARC-022",
+      "type": "symbol",
+      "title": "Pyramid — Elevation & Plan",
+      "year": "2026",
+      "image": "/assets/brand/symbol-pyramid.svg",
+      "note": "Three tiers, side and top view."
+    },
+    {
+      "code": "TRD-ARC-023",
       "type": "reference",
       "title": "Military Surplus Tag",
       "year": "1980s",
@@ -153,7 +185,7 @@
       "note": "Type and numbering reference."
     },
     {
-      "code": "TRD-ARC-020",
+      "code": "TRD-ARC-024",
       "type": "graphic",
       "title": "Stamp — Approved",
       "year": "2026",
@@ -161,7 +193,7 @@
       "note": "Seal for limited editions."
     },
     {
-      "code": "TRD-ARC-021",
+      "code": "TRD-ARC-025",
       "type": "inspiration",
       "title": "Static on a Broken Monitor",
       "year": "2026",
@@ -169,7 +201,7 @@
       "note": "Texture reference."
     },
     {
-      "code": "TRD-ARC-022",
+      "code": "TRD-ARC-026",
       "type": "editorial",
       "title": "Veil Study II",
       "year": "2026",
@@ -177,7 +209,7 @@
       "note": "Ines Varga for TRIAD."
     },
     {
-      "code": "TRD-ARC-023",
+      "code": "TRD-ARC-027",
       "type": "historical",
       "title": "Stone Relief, Three Figures",
       "year": "n.d.",
@@ -185,7 +217,15 @@
       "note": "Visual reference for the triad motif."
     },
     {
-      "code": "TRD-ARC-024",
+      "code": "TRD-ARC-028",
+      "type": "graphic",
+      "title": "Dreiklang — Root, Third, Fifth",
+      "year": "2026",
+      "image": "/assets/brand/symbol-chord.svg",
+      "note": "C–E–G on the staff. The smallest harmony."
+    },
+    {
+      "code": "TRD-ARC-029",
       "type": "inspiration",
       "title": "Club Flyer Wall",
       "year": "2025",
@@ -193,7 +233,7 @@
       "note": "Street research, London."
     },
     {
-      "code": "TRD-ARC-025",
+      "code": "TRD-ARC-030",
       "type": "symbol",
       "title": "Emblem — Orange Field",
       "year": "2026",
@@ -201,7 +241,7 @@
       "note": "Emblem on TRIAD orange. For covers and merch."
     },
     {
-      "code": "TRD-ARC-026",
+      "code": "TRD-ARC-031",
       "type": "editorial",
       "title": "After Hours",
       "year": "2026",
@@ -209,7 +249,7 @@
       "note": "Outtake from Basement Runways."
     },
     {
-      "code": "TRD-ARC-027",
+      "code": "TRD-ARC-032",
       "type": "campaign",
       "title": "Three Forces",
       "year": "2026",
@@ -217,7 +257,7 @@
       "note": "Cover study, Issue 003."
     },
     {
-      "code": "TRD-ARC-028",
+      "code": "TRD-ARC-033",
       "type": "reference",
       "title": "Bookbinding Thread",
       "year": "n.d.",
@@ -225,7 +265,7 @@
       "note": "Binding reference for the printed edition."
     },
     {
-      "code": "TRD-ARC-029",
+      "code": "TRD-ARC-034",
       "type": "inspiration",
       "title": "Window, Rain, 4 a.m.",
       "year": "2026",
@@ -233,7 +273,7 @@
       "note": "Mood reference."
     },
     {
-      "code": "TRD-ARC-030",
+      "code": "TRD-ARC-035",
       "type": "editorial",
       "title": "Portrait Without a Face",
       "year": "2026",

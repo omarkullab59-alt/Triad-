@@ -89,12 +89,27 @@ dist/             Ergebnis des Builds (nicht im Repo)
 - **App-ready:** installierbare PWA (Manifest + Service Worker, offline lesbar). Zusätzlich JSON-API unter `/api/articles.json`, `/api/news.json`, `/api/archive.json`, `/api/site.json` – eine spätere native App (z. B. React Native / Capacitor) kann direkt darauf zugreifen.
 - **Barrierefreiheit:** Skip-Link, Tastaturbedienung für Menü/Lightbox/Filter, `prefers-reduced-motion` wird respektiert.
 
+## Qualität & Tests
+
+```bash
+pip install playwright && python3 -m playwright install chromium
+npm run dev &                       # Seite lokal starten
+python3 tests/usability_audit.py    # Kontrast, Klickflächen, Tastatur, Ladezeit, Nutzeraufgaben
+```
+
+Ergebnisse, Studien und Quellen: [`docs/USABILITY.md`](docs/USABILITY.md)
+
 ## Brand
 
 Farben: Weiß `#FBFAF8` · TRIAD-Orange `#FF5A00` · Schwarz `#0A0A0A` · Wash `#EFEDE8` · Silber `#8D8F93`
 Schriften: Anton (Headlines) · Instrument Serif (Editorial) · Inter Tight (Text) · JetBrains Mono (Labels)
 
 Symbole: Drachen-Emblem (vorläufig), Plus-Dreieck-Glyph, orange Plus-Marken, Archiv-Stempel, Codes (`TRD-MAG-003-07`, `TRD-ARC-016`).
+
+**Symbolbibliothek** (`SYMBOLS` in `scripts/lib/brand.mjs`, sichtbar auf /about/#symbols, Downloads `/assets/brand/symbol-*.svg`):
+Borromäische Ringe · Feuer · Luft · Erde · Wasser (Alchemie-Dreiecke) · Sierpiński-Dreieck · Tonnetz · Dreiklang · Pyramide · Delta.
+Einsatz: Navigation (Magazine = Feuer, News = Luft, Archive = Sierpiński, About = Ringe), die drei Kräfte (Form = Erde, Signal = Luft, Image = Feuer), Abschnittsmarken, Archiv.
+Neues Symbol: Funktion in `brand.mjs` schreiben und in `SYMBOLS` eintragen – es erscheint automatisch in der Bibliothek und als Download.
 Das Emblem steckt komplett in `scripts/lib/brand.mjs` → `emblem()` und lässt sich dort zentral austauschen. Downloads aller Logo-Dateien: `/assets/brand/*.svg`.
 
 > Die aktuellen Fotos sind Platzhalter (picsum.photos) und werden durch eigene Shootings ersetzt.

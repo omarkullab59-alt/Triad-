@@ -2,10 +2,10 @@
 import { escapeHtml as e } from './markdown.mjs';
 import { imgTag, resolveImage } from './images.mjs';
 import {
-  emblem, glyph, label, frame, storyCard, newsRow, issueCover, marquee, sectionHead,
+  emblem, glyph, symbol, label, frame, storyCard, newsRow, issueCover, marquee, sectionHead,
   splitWords, fmtDate, fmtDateLong, isoDate, slugify,
 } from './components.mjs';
-import { stamp } from './brand.mjs';
+import { stamp, SYMBOLS } from './brand.mjs';
 
 /* ───────────────────────────── HOME ───────────────────────────── */
 export function homePage(ctx) {
@@ -26,7 +26,7 @@ export function homePage(ctx) {
     <span class="label">TRD&mdash;000 / CAMPAIGN</span>
     <span class="label">ISSUE ${site.currentIssue} &mdash; ${site.season}</span>
     <span class="label">52.52&deg;N 13.40&deg;E</span>
-    <span class="label hero-counter" data-hero-counter>01 / 0${site.heroImages.length}</span>
+    <span class="label hero-counter" data-hero-counter>PLATE 01 / 0${site.heroImages.length}</span>
   </div>
   <div class="plus-field" aria-hidden="true"><i class="plus" style="left:22%;top:30%"></i><i class="plus" style="right:18%;top:62%"></i><i class="plus" style="left:58%;top:18%"></i></div>
   <div class="hero-emblem">${emblem({ title: 'TRIAD dragon emblem' })}</div>
@@ -35,13 +35,13 @@ export function homePage(ctx) {
     <p class="hero-rotator" aria-live="off"><span>FASHION.</span><span data-rotate="FASHION.|ART.|NOISE.|IMAGE.|MYTH.">FASHION.</span></p>
   </div>
   <h1 class="hero-word" aria-label="TRIAD"><span>T</span><span>R</span><span>I</span><span>A</span><span>D</span></h1>
-  <a class="hero-scroll label" href="#latest">Scroll &darr;</a>
+  <span class="hero-scroll label" aria-hidden="true">Scroll &darr;</span>
 </section>
 
 ${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n.title)}`), 'marquee--news')}
 
 <section class="block block--stories" id="latest">
-  ${sectionHead({ index: '01 / MAGAZINE', title: 'Beyond the ordinary.', link: '/magazine/', linkText: 'All stories', kicker: 'Latest from the magazine — long-form, slow, unrepeatable.' }, ctx)}
+  ${sectionHead({ index: '01 / MAGAZINE', sym: 'fire', title: 'Beyond the ordinary.', link: '/magazine/', linkText: 'All stories', kicker: 'Latest from the magazine — long-form, slow, unrepeatable.' }, ctx)}
   <div class="story-grid">
     ${storyCard(lead, ctx, { variant: 'story-card--lead', sizes: '(max-width: 760px) 100vw, 60vw', eager: false })}
     ${rest.map((a, i) => storyCard(a, ctx, { variant: `story-card--s${i + 1}` })).join('')}
@@ -59,7 +59,7 @@ ${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n
 </section>
 
 <section class="block block--news">
-  ${sectionHead({ index: '02 / NEWS', title: 'The wire.', link: '/news/', linkText: 'News archive', kicker: 'Fashion week, collections, collaborations, culture.' }, ctx)}
+  ${sectionHead({ index: '02 / NEWS', sym: 'air', title: 'The wire.', link: '/news/', linkText: 'News archive', kicker: 'Fashion week, collections, collaborations, culture.' }, ctx)}
   <ol class="news-list" data-news-list>
     ${latestNews.map((n, i) => newsRow(n, ctx, i)).join('')}
   </ol>
@@ -67,7 +67,7 @@ ${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n
 </section>
 
 <section class="block block--creatives">
-  ${sectionHead({ index: '03 / CREATIVES', title: 'Three forces, many hands.', kicker: 'Featured artists and creatives from the TRIAD circle.' }, ctx)}
+  ${sectionHead({ index: '03 / CREATIVES', sym: 'borromean', title: 'Three forces, many hands.', kicker: 'Featured artists and creatives from the TRIAD circle.' }, ctx)}
   <div class="creatives-track" data-drag-scroll tabindex="0" aria-label="Featured creatives, scroll horizontally">
     ${creatives
       .map(
@@ -85,7 +85,7 @@ ${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n
 </section>
 
 <section class="block block--issues">
-  ${sectionHead({ index: '04 / PRINT', title: 'Issues.', link: '/magazine/', linkText: 'Read the magazine', kicker: `Now: N°${current.number} — ${current.title}` }, ctx)}
+  ${sectionHead({ index: '04 / PRINT', sym: 'pyramid', title: 'Issues.', link: '/magazine/', linkText: 'Read the magazine', kicker: `Now: N°${current.number} — ${current.title}` }, ctx)}
   <div class="issues-row">
     ${issues.map((iss, i) => issueCover(iss, ctx, { tilt: [-3, 2, -1.5][i % 3] })).join('')}
   </div>
@@ -112,7 +112,7 @@ export function magazinePage(ctx) {
   const cats = site.magazineCategories.filter((c) => articles.some((a) => a.category === c));
   return `
 <section class="page-head">
-  <span class="label">01 / MAGAZINE &mdash; ${articles.length} STORIES</span>
+  <span class="label page-kicker">${symbol('fire', { cls: 'sh-sym' })}01 / MAGAZINE &mdash; ${articles.length} STORIES</span>
   <h1 class="page-title" data-split>${splitWords('The magazine.')}</h1>
   <p class="page-deck serif">Curated editorial on fashion, photography, designers and the culture that surrounds them. The heart of TRIAD.</p>
 </section>
@@ -222,7 +222,7 @@ export function newsPage(ctx) {
 
   return `
 <section class="page-head page-head--paper">
-  <span class="label">02 / NEWS &mdash; CONTINUOUSLY UPDATED</span>
+  <span class="label page-kicker">${symbol('air', { cls: 'sh-sym' })}02 / NEWS &mdash; CONTINUOUSLY UPDATED</span>
   <h1 class="page-title" data-split>${splitWords('The wire.')}</h1>
   <p class="page-deck serif">Fashion week, collections, collaborations, campaigns, emerging designers and the movements around them.</p>
   <p class="sample-banner"><strong>Sample content.</strong> All entries currently shown are fictional placeholders written to demonstrate the layout. They do not describe real events, people or brands.</p>
@@ -283,7 +283,7 @@ export function archivePage(ctx) {
   const types = [...new Set(archive.map((a) => a.type))];
   return `
 <section class="page-head page-head--archive">
-  <span class="label">03 / ARCHIVE &mdash; <span data-archive-count>${String(archive.length).padStart(3, '0')}</span> OBJECTS</span>
+  <span class="label page-kicker">${symbol('sierpinski', { cls: 'sh-sym' })}03 / ARCHIVE &mdash; <span data-archive-count>${String(archive.length).padStart(3, '0')}</span> OBJECTS</span>
   <h1 class="page-title" data-split>${splitWords('An archive of what’s next.')}</h1>
   <p class="page-deck serif">Editorial photography, campaigns, references, graphics, symbols and historical fragments. A curated moodboard of the TRIAD universe.</p>
 </section>
@@ -312,13 +312,13 @@ export function archivePage(ctx) {
 /* ───────────────────────────── ABOUT ───────────────────────────── */
 export function aboutPage(ctx) {
   const forces = [
-    { n: 'I', name: 'Form', text: 'Fashion. Cut, cloth, construction. The body as the first site of culture.' },
-    { n: 'II', name: 'Signal', text: 'Music and sound. The noise that moves through a scene before anyone names it.' },
-    { n: 'III', name: 'Image', text: 'Art, photography, design. What remains when the moment is gone.' },
+    { n: 'I', sym: 'earth', name: 'Form', text: 'Fashion. Cut, cloth, construction. The body as the first site of culture.' },
+    { n: 'II', sym: 'air', name: 'Signal', text: 'Music and sound. The noise that moves through a scene before anyone names it.' },
+    { n: 'III', sym: 'fire', name: 'Image', text: 'Art, photography, design. What remains when the moment is gone.' },
   ];
   return `
 <section class="about-intro">
-  <span class="label">04 / ABOUT</span>
+  <span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}04 / ABOUT</span>
   <h1 class="about-title" data-split>${splitWords('TRIAD is not a magazine.')}</h1>
   <div class="about-emblem">${emblem({ title: 'TRIAD emblem', motto: 'THREE FORCES · ONE VISION · ' })}</div>
 </section>
@@ -333,7 +333,7 @@ export function aboutPage(ctx) {
   ${forces
     .map(
       (f) => `<article class="force" data-reveal>
-    <span class="force-n">${f.n}</span>
+    <div class="force-top"><span class="force-n">${f.n}</span>${symbol(f.sym, { cls: 'force-sym' })}</div>
     <h2 class="force-name">${f.name}</h2>
     <p class="serif">${f.text}</p>
   </article>`
@@ -374,6 +374,23 @@ export function aboutPage(ctx) {
   <p class="system-downloads label">Download: ${['emblem-white', 'emblem-orange', 'emblem-black', 'emblem-mark', 'glyph-pattern', 'stamp-archive', 'wordmark-stacked']
     .map((f) => `<a href="${ctx.url(`/assets/brand/${f}.svg`)}" download>${f}.svg</a>`)
     .join(' / ')}</p>
+</section>
+
+<section class="symbols" id="symbols">
+  ${sectionHead({ index: 'LIBRARY', sym: 'delta', title: 'Triangle. Triad. Pyramid.', kicker: 'Ten signs from geometry, alchemy, music and architecture — redrawn for TRIAD. Free to use on garments, covers and screens.' }, ctx)}
+  <ul class="sym-grid">
+    ${Object.entries(SYMBOLS)
+      .map(([k, s], i) => `<li class="sym-card" data-reveal>
+      ${symbol(k, { label: s.name })}
+      <div class="sym-meta">
+        <span class="label label--dim">S/${String(i + 1).padStart(2, '0')} &mdash; ${e(s.de)}</span>
+        <strong class="sym-name">${e(s.name)}</strong>
+        <p class="serif">${e(s.meaning)}</p>
+        <a class="label sym-dl" href="${ctx.url(`/assets/brand/symbol-${k}.svg`)}" download>SVG &darr;</a>
+      </div>
+    </li>`)
+      .join('')}
+  </ul>
 </section>
 
 <section class="about-close">
