@@ -337,6 +337,29 @@
     document.addEventListener('mouseenter', () => (cur.style.opacity = 1));
   }
 
+  /* ── Emblem: smooth speed-up on hover (no jump) ──────────────── */
+  // Changing animation-duration in CSS makes the browser recompute the angle → visible jump.
+  // Instead we ramp the playbackRate of the running animations, which keeps the current angle.
+  $$('.emblem').forEach((em) => {
+    const targets = $$('.em-core, .em-ring', em);
+    if (!targets.length) return;
+    let rate = 1, goal = 1, raf = 0;
+    const anims = () => targets.flatMap((t) => t.getAnimations());
+    const step = () => {
+      rate += (goal - rate) * 0.08;
+      if (Math.abs(goal - rate) < 0.01) rate = goal;
+      anims().forEach((a) => (a.updatePlaybackRate ? a.updatePlaybackRate(rate) : (a.playbackRate = rate)));
+      raf = rate === goal ? 0 : requestAnimationFrame(step);
+    };
+    const to = (g) => {
+      goal = reduced ? 1 : g;
+      em.classList.toggle('is-awake', g > 1 && !reduced);
+      if (!raf) raf = requestAnimationFrame(step);
+    };
+    em.addEventListener('pointerenter', () => to(8));
+    em.addEventListener('pointerleave', () => to(1));
+  });
+
   /* ── Today from the archive (changes every visit) ────────────── */
   const today = $('[data-archive-today]');
   if (today) {
