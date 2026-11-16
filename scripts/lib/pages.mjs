@@ -151,6 +151,7 @@ ${nowSection(ctx, lead)}
 
 <section class="manifesto">
   <p class="manifesto-text" data-scrub-words>Fashion is only the beginning. TRIAD is a platform for creative expression, independent thinking and cultural exchange. Three forces — form, signal, image — working in the same direction.</p>
+  <span class="tag tag--sign" role="img" aria-label="Signed: TRIAD (hand tag)"></span>
   <a class="btn-line" href="${ctx.url('/about/')}">The philosophy &#8594;</a>
 </section>
 
@@ -604,7 +605,7 @@ export function finderPage(ctx) {
 export function notFoundPage(ctx) {
   return `
 <section class="not-found">
-  ${emblem({ title: 'TRIAD emblem' })}
+  <span class="tag tag--404" role="img" aria-label="TRIAD hand tag"></span>
   <span class="label">ERROR 404 &mdash; TRD-NULL</span>
   <h1 class="page-title">Lost in the archive.</h1>
   <p class="serif">This page does not exist. Or it was never meant to be found.</p>
@@ -633,6 +634,7 @@ export function darkroomPage(ctx) {
   const callsData = calls.map(({ slug, title, number, start, end }) => ({ slug, title, number, start, end }));
   return `
 <section class="page-head darkroom-head">
+  <span class="tag tag--darkroom" aria-hidden="true"></span>
   <span class="label page-kicker">${symbol('pyramid', { cls: 'sh-sym' })}04 / DARKROOM &mdash; OPEN SUBMISSIONS</span>
   <h1 class="page-title" data-split>${splitWords('Darkroom.')}</h1>
   <p class="page-deck serif">Your frames on TRIAD. Street, night, clubs, clothes, people &mdash; upload them, we develop every one by hand, the strongest go on the wall. Then everyone gets a say.</p>
