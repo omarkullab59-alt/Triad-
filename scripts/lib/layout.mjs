@@ -30,6 +30,9 @@ export function layout(ctx, { title, description, path, body, image, type = 'web
 <meta name="description" content="${e(description || site.description)}">
 <link rel="canonical" href="${canonical}">
 ${noindex ? '<meta name="robots" content="noindex">' : ''}
+<meta name="robots" content="noai, noimageai">
+<meta name="tdm-reservation" content="1">
+<meta name="tdm-policy" content="${site.url}/legal/darkroom-rules/">
 <meta property="og:site_name" content="${site.title}">
 <meta property="og:title" content="${e(fullTitle)}">
 <meta property="og:description" content="${e(description || site.description)}">

@@ -562,16 +562,45 @@
     const kinds = JSON.parse(dr.dataset.reactions || '[]');
     const wall = $('[data-dr-wall]', dr);
     const more = $('[data-dr-more]', dr);
+    const calls = JSON.parse(dr.dataset.calls || '[]');
+    const params = new URLSearchParams(location.search);
     let sort = 'new', next = null;
+    let by = (params.get('by') || '').toLowerCase().replace(/^@/, '');
+    let call = calls.some((c) => c.slug === params.get('call')) ? params.get('call') : '';
+    const today = new Date().toISOString().slice(0, 10);
+    const syncUrl = () => {
+      const q = new URLSearchParams(); if (by) q.set('by', by); if (call) q.set('call', call);
+      history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+    };
+    const syncChips = () => {
+      $$('[data-dr-sort]', dr).forEach((x) => { const on = x.dataset.drSort === sort; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', String(on)); });
+      $$('[data-dr-call]', dr).forEach((x) => { const on = x.dataset.drCall === call; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', String(on)); });
+      const note = $('[data-dr-filternote]', dr);
+      const c = calls.find((x) => x.slug === call);
+      note.hidden = !c || !!by;
+      if (c) $('[data-dr-filtertext]', dr).textContent = `Showing entries for open call ${c.title}.`;
+    };
+    const profileBox = $('[data-dr-profile]', dr);
+    const renderProfile = (pf) => {
+      profileBox.hidden = !by;
+      if (!by) return;
+      $('[data-dr-pname]', dr).textContent = pf ? pf.name : `@${by}`;
+      $('[data-dr-pstats]', dr).textContent = pf ? `${pf.photos} photo${pf.photos === 1 ? '' : 's'} on the wall · ${pf.reactions} reaction${pf.reactions === 1 ? '' : 's'} · since ${new Date(pf.since).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}` : 'No photos on the wall yet.';
+      const ig = $('[data-dr-pinsta]', dr);
+      ig.hidden = !(pf && pf.instagram);
+      if (pf && pf.instagram) ig.href = `https://instagram.com/${encodeURIComponent(pf.instagram)}`;
+      document.title = `${pf ? pf.name : by} — Darkroom — TRIAD`;
+    };
 
     const card = (p) => {
-      const credit = [`by ${esc(p.name)}`, p.instagram ? `<a href="https://instagram.com/${encodeURIComponent(p.instagram)}" target="_blank" rel="noopener">@${esc(p.instagram)}</a>` : '', esc(p.camera), esc(p.location)].filter(Boolean).join(' &middot; ');
+      const callT = calls.find((c) => c.slug === p.call);
+      const credit = [`by <a href="?by=${encodeURIComponent(p.by)}" data-dr-by="${esc(p.by)}">${esc(p.name)}</a>`, p.instagram ? `<a href="https://instagram.com/${encodeURIComponent(p.instagram)}" target="_blank" rel="noopener">@${esc(p.instagram)}</a>` : '', esc(p.camera), esc(p.location)].filter(Boolean).join(' &middot; ');
       const alt = `${p.title ? p.title + ' — ' : ''}photo by ${p.name}`;
       return `<article class="dr-card" data-id="${esc(p.id)}">
         <button type="button" class="dr-photo" data-color data-lightbox="${api}/darkroom/img/${esc(p.id)}/full" data-caption="${esc(alt)}" aria-label="Open ${esc(alt)}" data-cursor="View">
           <img src="${api}/darkroom/img/${esc(p.id)}/thumb" alt="${esc(alt)}" loading="lazy" decoding="async" ${p.width ? `width="${p.width}" height="${p.height}"` : ''}>
         </button>
-        <div class="dr-meta">${p.title ? `<h3 class="dr-title">${esc(p.title)}</h3>` : ''}<p class="dr-credit">${credit}</p>${p.caption ? `<p class="dr-caption">${esc(p.caption)}</p>` : ''}</div>
+        <div class="dr-meta">${callT ? `<span class="dr-calltag label">Call ${esc(callT.number || '')} / ${esc(callT.title)}</span>` : ''}${p.title ? `<h3 class="dr-title">${esc(p.title)}</h3>` : ''}<p class="dr-credit">${credit}</p>${p.caption ? `<p class="dr-caption">${esc(p.caption)}</p>` : ''}</div>
         <div class="dr-reacts">${kinds.map((k) => `<button type="button" class="dr-react" data-kind="${k.kind}" aria-pressed="${p.mine.includes(k.kind)}" title="${esc(k.label)} — ${esc(k.hint)}" aria-label="${esc(k.label)}: ${p.reactions[k.kind] || 0}">${k.icon}<span data-n>${p.reactions[k.kind] || 0}</span></button>`).join('')}
           <button type="button" class="dr-report" data-report>Report</button></div>
       </article>`;
@@ -580,10 +609,12 @@
     const load = async (append = false) => {
       wall.setAttribute('aria-busy', 'true');
       try {
-        const r = await fetch(`${api}/darkroom/feed?sort=${sort}${append && next ? `&before=${next}` : ''}`);
+        const q = new URLSearchParams({ sort }); if (by) q.set('by', by); if (call) q.set('call', call); if (append && next) q.set('before', next);
+        const r = await fetch(`${api}/darkroom/feed?${q}`);
         if (!r.ok) throw new Error(r.status);
         const d = await r.json();
         next = d.next;
+        if (!append) renderProfile(d.profile);
         wall.insertAdjacentHTML(append ? 'beforeend' : 'afterbegin', d.items.map(card).join(''));
         if (!append) $$('.dr-ghost, .dr-card', wall).slice(d.items.length).forEach((x) => x.remove());
         showEmpty(!append && !d.items.length);
@@ -594,15 +625,36 @@
       }
       wall.setAttribute('aria-busy', 'false');
     };
+    const reload = () => { $$('.dr-card', wall).forEach((x) => x.remove()); syncChips(); syncUrl(); if (api) load(); };
+    syncChips();
+    if (by) renderProfile(null);
     if (api) load(); else { $$('.dr-ghost', wall).forEach((x) => x.remove()); wall.setAttribute('aria-busy', 'false'); showEmpty(true); }
 
-    $$('[data-dr-sort]', dr).forEach((b) => b.addEventListener('click', () => {
-      if (sort === b.dataset.drSort) return;
-      sort = b.dataset.drSort;
-      $$('[data-dr-sort]', dr).forEach((x) => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-pressed', String(x === b)); });
-      $$('.dr-card', wall).forEach((x) => x.remove());
-      if (api) load();
-    }));
+    $$('[data-dr-sort]', dr).forEach((b) => b.addEventListener('click', () => { if (sort === b.dataset.drSort) return; sort = b.dataset.drSort; reload(); }));
+    $$('[data-dr-call]', dr).forEach((b) => b.addEventListener('click', () => { call = call === b.dataset.drCall ? '' : b.dataset.drCall; reload(); }));
+    $$('[data-dr-call-view]').forEach((b) => b.addEventListener('click', () => { call = b.dataset.drCallView; by = ''; reload(); $('.dr-bar', dr).scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); }));
+    $$('[data-dr-clear]', dr).forEach((b) => b.addEventListener('click', () => { by = ''; call = ''; document.title = 'Darkroom — TRIAD'; reload(); }));
+    wall.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-dr-by]'); if (!a) return;
+      e.preventDefault(); by = a.dataset.drBy; call = ''; reload();
+      dr.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+    });
+    $('[data-dr-pshare]', dr)?.addEventListener('click', async (e) => {
+      const url = location.origin + location.pathname + '?by=' + encodeURIComponent(by);
+      try {
+        if (navigator.share && !fine) await navigator.share({ title: document.title, url });
+        else { await navigator.clipboard.writeText(url); e.target.textContent = 'Link copied ✓'; setTimeout(() => (e.target.textContent = 'Copy link to this wall'), 2000); }
+      } catch (_) { /* cancelled */ }
+    });
+    // Open call: countdown, expired calls can't be picked, "Submit to …" preselects the call
+    $$('[data-dr-countdown]').forEach((el) => {
+      const days = Math.ceil((new Date(el.dataset.end + 'T23:59:59') - new Date()) / 864e5);
+      el.textContent = days > 1 ? `${days} days left` : days === 1 ? 'last day' : 'closed';
+      if (days < 1) el.closest('[data-dr-callbox]')?.classList.add('is-closed');
+    });
+    const callSelect = $('[data-dr-callselect]', dr);
+    if (callSelect) [...callSelect.options].forEach((o) => { if (o.value && ((o.dataset.end && o.dataset.end < today) || (o.dataset.start && o.dataset.start > today))) { o.disabled = true; if (o.selected) callSelect.value = ''; } });
+    $$('[data-dr-join]').forEach((b) => b.addEventListener('click', () => { if (callSelect && !callSelect.querySelector(`option[value="${b.dataset.drJoin}"]`)?.disabled) callSelect.value = b.dataset.drJoin; }));
     more.addEventListener('click', () => load(true));
 
     wall.addEventListener('click', async (e) => {
@@ -673,7 +725,7 @@
           const thumb = await toJpeg(item.file, 640, 0.78);
           const r = await fetch(`${api}/darkroom/submit`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
             name: f.name.value, instagram: f.instagram.value, title: f.title.value, location: f.location.value, camera: f.camera.value,
-            caption: f.caption.value, website: f.website.value, consent: true, image: full.data, thumb: thumb.data, width: full.width, height: full.height,
+            caption: f.caption.value, website: f.website.value, call: f.call ? f.call.value : '', consent: true, image: full.data, thumb: thumb.data, width: full.width, height: full.height,
           }) });
           if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || 'failed'); }
           item.state = 'sent'; ok++;
@@ -714,7 +766,7 @@
       $$('[data-dr-count]', adm).forEach((s) => (s.textContent = d.totals[s.dataset.drCount] || ''));
       st.textContent = d.items.length ? '' : `Nothing ${tab}.`;
       queue.innerHTML = d.items.map((p) => `<li class="dr-q" data-id="${esc(p.id)}"><img alt="" data-src="/darkroom/img/${esc(p.id)}/full">
-        <div><strong>${esc(p.title || 'Untitled')}</strong><p class="label label--dim">${esc(p.name)}${p.instagram ? ' · @' + esc(p.instagram) : ''}${p.camera ? ' · ' + esc(p.camera) : ''}${p.location ? ' · ' + esc(p.location) : ''} · ${new Date(p.created).toLocaleString()}${p.reports ? ` · ${p.reports} reports` : ''}</p>${p.caption ? `<p>${esc(p.caption)}</p>` : ''}</div>
+        <div><strong>${esc(p.title || 'Untitled')}</strong><p class="label label--dim">${esc(p.name)}${p.instagram ? ' · @' + esc(p.instagram) : ''}${p.camera ? ' · ' + esc(p.camera) : ''}${p.location ? ' · ' + esc(p.location) : ''}${p.call ? ' · CALL: ' + esc(p.call) : ''} · ${new Date(p.created).toLocaleString()}${p.reports ? ` · ${p.reports} reports` : ''}</p>${p.caption ? `<p>${esc(p.caption)}</p>` : ''}</div>
         <div class="dr-q-actions">${tab !== 'approved' ? '<button type="button" class="chip" data-act="approve">Approve</button>' : ''}${tab !== 'rejected' ? '<button type="button" class="chip" data-act="reject">Reject</button>' : ''}<button type="button" class="chip" data-act="delete">Delete</button></div></li>`).join('');
       for (const img of $$('img[data-src]', queue)) {
         authed(img.dataset.src).then((x) => (x.ok ? x.blob() : null)).then((b) => { if (b) img.src = URL.createObjectURL(b); }).catch(() => {});

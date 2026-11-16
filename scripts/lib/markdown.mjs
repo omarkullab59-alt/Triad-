@@ -74,7 +74,9 @@ export function renderMarkdown(md, ctx) {
     if (h) {
       flush();
       const tag = h[1].length <= 2 ? 'h2' : 'h3';
-      html.push(`<${tag} data-reveal>${inline(h[2], ctx)}</${tag}>`);
+      const anchor = h[2].match(/\s*\{#([\w-]+)\}\s*$/); // "## Title {#id}" → id="id"
+      const text = anchor ? h[2].slice(0, anchor.index) : h[2];
+      html.push(`<${tag}${anchor ? ` id="${anchor[1]}"` : ''} data-reveal>${inline(text, ctx)}</${tag}>`);
       continue;
     }
     if (line.startsWith('>')) {

@@ -3,7 +3,8 @@
 // (client sends a ~1600px JPEG + a ~600px thumb; canvas re-encoding strips EXIF/GPS).
 //
 // Public
-//   GET  /darkroom/feed?sort=new|top&before=<ts>   approved photos + reaction counts
+//   GET  /darkroom/feed?sort=new|top&before=<ts>&by=<handle>&call=<slug>
+//                                                  approved photos + reaction counts (+ photographer profile)
 //   GET  /darkroom/img/<id>/<full|thumb>           image bytes (approved only)
 //   POST /darkroom/submit                          new upload → status "pending"
 //   POST /darkroom/react   {id, kind}              toggle a reaction (one per kind per visitor)
@@ -26,7 +27,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS photos (
     id TEXT PRIMARY KEY, created INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
     name TEXT NOT NULL, instagram TEXT, title TEXT, location TEXT, camera TEXT, caption TEXT,
-    width INTEGER, height INTEGER, voter TEXT, account_id TEXT, reports INTEGER NOT NULL DEFAULT 0, decided INTEGER)`,
+    width INTEGER, height INTEGER, voter TEXT, account_id TEXT, reports INTEGER NOT NULL DEFAULT 0, decided INTEGER, open_call TEXT)`,
   `CREATE INDEX IF NOT EXISTS photos_status ON photos(status, created)`,
   `CREATE TABLE IF NOT EXISTS images (photo_id TEXT NOT NULL, size TEXT NOT NULL, data BLOB NOT NULL, PRIMARY KEY (photo_id, size))`,
   `CREATE TABLE IF NOT EXISTS reactions (photo_id TEXT NOT NULL, kind TEXT NOT NULL, voter TEXT NOT NULL, created INTEGER NOT NULL, PRIMARY KEY (photo_id, kind, voter))`,
@@ -37,12 +38,21 @@ let migrated = false;
 async function migrate(db) {
   if (migrated) return;
   await db.batch(SCHEMA.map((s) => db.prepare(s)));
+  // Columns added after the first release (no-op error if they already exist)
+  for (const sql of ['ALTER TABLE photos ADD COLUMN open_call TEXT']) {
+    try { await db.prepare(sql).run(); } catch { /* exists */ }
+  }
   migrated = true;
 }
 export const _resetMigration = () => { migrated = false; };
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const clean = (s, n) => (typeof s === 'string' ? s.replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n) : '') || null;
+const slug = (s) => (typeof s === 'string' && /^[a-z0-9-]{1,40}$/.test(s) ? s : null);
+// Photographer key for /darkroom/?by=…: Instagram handle if given, otherwise the name in lowercase.
+export const byKey = (p) => (p.instagram || p.name || '').toLowerCase();
+// No AI training: machine-readable reservation (§ 44b UrhG / EU TDM opt-out) on every image and response.
+export const NO_AI = { 'x-robots-tag': 'noai, noimageai', 'tdm-reservation': '1' };
 const handle = (s) => { const h = clean(s, 40)?.replace(/^@/, '').replace(/[^\w.]/g, ''); return h || null; };
 
 async function sha(text) {
@@ -82,7 +92,7 @@ function isAdmin(request, env) {
 
 const publicPhoto = (r, counts = {}, mine = []) => ({
   id: r.id, created: r.created, name: r.name, instagram: r.instagram, title: r.title, location: r.location,
-  camera: r.camera, caption: r.caption, width: r.width, height: r.height,
+  camera: r.camera, caption: r.caption, width: r.width, height: r.height, call: r.open_call || null, by: byKey(r),
   reactions: Object.fromEntries(KINDS.map((k) => [k, counts[k] || 0])), mine,
 });
 
@@ -110,16 +120,27 @@ export async function handleDarkroom(request, env, url, json) {
   if (path === '/darkroom/feed' && method === 'GET') {
     const sort = url.searchParams.get('sort') === 'top' ? 'top' : 'new';
     const before = Number(url.searchParams.get('before')) || 9e15;
-    const sql = sort === 'top'
-      ? `SELECT p.*, (SELECT COUNT(*) FROM reactions r WHERE r.photo_id = p.id) AS score FROM photos p WHERE p.status = 'approved' ORDER BY score DESC, p.created DESC LIMIT ${PAGE}`
-      : `SELECT * FROM photos WHERE status = 'approved' AND created < ? ORDER BY created DESC LIMIT ${PAGE}`;
-    const stmt = db.prepare(sql);
-    const rows = (await (sort === 'top' ? stmt : stmt.bind(before)).all()).results || [];
+    const by = (url.searchParams.get('by') || '').toLowerCase().replace(/^@/, '').slice(0, 60);
+    const call = slug(url.searchParams.get('call'));
+    const where = ["p.status = 'approved'"]; const args = [];
+    if (by) { where.push('(lower(p.instagram) = ? OR (p.instagram IS NULL AND lower(p.name) = ?))'); args.push(by, by); }
+    if (call) { where.push('p.open_call = ?'); args.push(call); }
+    if (sort === 'new') { where.push('p.created < ?'); args.push(before); }
+    const order = sort === 'top' ? 'score DESC, p.created DESC' : 'p.created DESC';
+    const rows = (await db.prepare(`SELECT p.*, (SELECT COUNT(*) FROM reactions r WHERE r.photo_id = p.id) AS score FROM photos p WHERE ${where.join(' AND ')} ORDER BY ${order} LIMIT ${PAGE}`).bind(...args).all()).results || [];
     const { counts, mine } = await countsFor(db, rows.map((r) => r.id), await visitor(request, env));
+    let profile = null;
+    if (by) {
+      const pw = ['p.status = \'approved\'', '(lower(p.instagram) = ? OR (p.instagram IS NULL AND lower(p.name) = ?))'];
+      const agg = await db.prepare(`SELECT COUNT(*) AS photos, MIN(p.created) AS since, (SELECT COUNT(*) FROM reactions r JOIN photos q ON q.id = r.photo_id WHERE q.status = 'approved' AND (lower(q.instagram) = ? OR (q.instagram IS NULL AND lower(q.name) = ?))) AS reactions FROM photos p WHERE ${pw.join(' AND ')}`).bind(by, by, by, by).first();
+      const latest = await db.prepare(`SELECT name, instagram FROM photos p WHERE ${pw.join(' AND ')} ORDER BY created DESC LIMIT 1`).bind(by, by).first();
+      if (latest) profile = { name: latest.name, instagram: latest.instagram, photos: Number(agg.photos), reactions: Number(agg.reactions), since: agg.since };
+    }
     return json({
       items: rows.map((r) => publicPhoto(r, counts[r.id], mine[r.id] || [])),
       next: sort === 'new' && rows.length === PAGE ? rows[rows.length - 1].created : null,
-    }, 200, { 'cache-control': 'no-store' });
+      profile,
+    }, 200, { 'cache-control': 'no-store', ...NO_AI });
   }
 
   // Images
@@ -137,6 +158,7 @@ export async function handleDarkroom(request, env, url, json) {
       'content-type': imageType(bytes) || 'application/octet-stream',
       'cache-control': admin || photo.status !== 'approved' ? 'private, no-store' : 'public, max-age=31536000, immutable',
       'x-content-type-options': 'nosniff',
+      ...NO_AI,
     } });
   }
 
@@ -162,9 +184,9 @@ export async function handleDarkroom(request, env, url, json) {
     const w = Math.min(10000, Math.max(0, Number(b.width) || 0)) || null;
     const h = Math.min(10000, Math.max(0, Number(b.height) || 0)) || null;
     await db.batch([
-      db.prepare(`INSERT INTO photos (id, created, status, name, instagram, title, location, camera, caption, width, height, voter)
-                  VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .bind(id, Date.now(), name, handle(b.instagram), clean(b.title, 80), clean(b.location, 60), clean(b.camera, 60), clean(b.caption, 280), w, h, voter),
+      db.prepare(`INSERT INTO photos (id, created, status, name, instagram, title, location, camera, caption, width, height, voter, open_call)
+                  VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .bind(id, Date.now(), name, handle(b.instagram), clean(b.title, 80), clean(b.location, 60), clean(b.camera, 60), clean(b.caption, 280), w, h, voter, slug(b.call)),
       db.prepare('INSERT INTO images (photo_id, size, data) VALUES (?, ?, ?)').bind(id, 'full', full),
       db.prepare('INSERT INTO images (photo_id, size, data) VALUES (?, ?, ?)').bind(id, 'thumb', thumb),
     ]);

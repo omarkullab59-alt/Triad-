@@ -566,9 +566,18 @@ export const REACTIONS = [
   { kind: 'delta', sym: 'delta', label: 'Archive it', hint: 'belongs in the archive' },
 ];
 
+const fmtShort = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+export const activeCall = (calls, now = new Date()) => {
+  const today = now.toISOString().slice(0, 10);
+  return calls.find((c) => (!c.start || c.start <= today) && (!c.end || today <= c.end)) || null;
+};
+
 export function darkroomPage(ctx) {
   const api = (ctx.site.aiEndpoint || '').replace(/\/$/, '');
   const reactions = REACTIONS.map((r) => ({ ...r, icon: symbol(r.sym, { cls: 'react-sym' }) }));
+  const calls = ctx.calls || [];
+  const call = activeCall(calls);
+  const callsData = calls.map(({ slug, title, number, start, end }) => ({ slug, title, number, start, end }));
   return `
 <section class="page-head darkroom-head">
   <span class="label page-kicker">${symbol('pyramid', { cls: 'sh-sym' })}04 / DARKROOM &mdash; OPEN SUBMISSIONS</span>
@@ -578,18 +587,48 @@ export function darkroomPage(ctx) {
     <a class="btn btn--solid" href="#submit">Submit photos &#8594;</a>
     <span class="label label--dim">Free &middot; no account &middot; you keep your rights</span>
   </div>
+  <a class="noai" href="${ctx.url('/legal/darkroom-rules/')}#no-ai-training">${symbol('delta', { cls: 'noai-sym' })}<span><b>Never used to train AI.</b> We block AI crawlers and legally reserve text &amp; data mining for every frame.</span></a>
 </section>
+${call ? `
+<section class="dr-call" aria-labelledby="dr-call-title" data-dr-callbox="${e(call.slug)}">
+  <div class="dr-call-head">
+    <span class="label"><span class="tape">OPEN CALL ${e(call.number || '')}</span></span>
+    <span class="label dr-deadline">until ${e(fmtShort(call.end))} &middot; <span data-dr-countdown data-end="${e(call.end)}"></span></span>
+  </div>
+  <h2 id="dr-call-title" class="dr-call-title">${e(call.title)}</h2>
+  <div class="dr-call-body">
+    <p class="serif dr-call-brief">${e(call.brief || '')}</p>
+    ${call.outcome ? `<p class="dr-call-outcome">${symbol('fire', { cls: 'chip-sym' })}<span>${e(call.outcome)}</span></p>` : ''}
+    <div class="dr-call-actions">
+      <a class="btn btn--solid" href="#submit" data-dr-join="${e(call.slug)}">Submit to ${e(call.title)} &#8594;</a>
+      <button type="button" class="btn" data-dr-call-view="${e(call.slug)}">See entries</button>
+    </div>
+  </div>
+</section>` : ''}
 
-<section class="darkroom" data-darkroom data-api="${e(api)}" data-reactions="${e(JSON.stringify(reactions))}">
+<section class="darkroom" data-darkroom data-api="${e(api)}" data-calls="${e(JSON.stringify(callsData))}" data-reactions="${e(JSON.stringify(reactions))}">
   <div class="filter-bar dr-bar">
     <div class="chips" role="group" aria-label="Sort">
       <button type="button" class="chip is-active" data-dr-sort="new" aria-pressed="true">Newest</button>
       <button type="button" class="chip" data-dr-sort="top" aria-pressed="false">Most reactions</button>
+      ${calls.map((c) => `<button type="button" class="chip" data-dr-call="${e(c.slug)}" aria-pressed="false">Call: ${e(c.title)}</button>`).join('')}
     </div>
     <ul class="dr-legend" aria-label="Reactions">
       ${reactions.map((r) => `<li>${r.icon}<span class="label">${r.label}</span></li>`).join('')}
     </ul>
   </div>
+
+  <header class="dr-profile" data-dr-profile hidden>
+    <span class="label">${symbol('pyramid', { cls: 'sh-sym' })}PHOTOGRAPHER</span>
+    <h2 class="dr-profile-name" data-dr-pname></h2>
+    <p class="dr-profile-stats label" data-dr-pstats></p>
+    <div class="dr-profile-actions">
+      <a class="btn" data-dr-pinsta target="_blank" rel="noopener" hidden>Instagram &#8599;</a>
+      <button type="button" class="btn" data-dr-pshare>Copy link to this wall</button>
+      <button type="button" class="btn-line" data-dr-clear>&#8592; All photographers</button>
+    </div>
+  </header>
+  <div class="dr-filter-note label" data-dr-filternote hidden><span data-dr-filtertext></span> <button type="button" class="btn-line" data-dr-clear>Show everything</button></div>
 
   <div class="dr-wall" data-dr-wall aria-live="polite" aria-busy="true">
     ${Array.from({ length: 6 }, (_, i) => `<div class="dr-ghost" style="--h:${[130, 90, 115, 100, 140, 85][i]}%" aria-hidden="true"></div>`).join('')}
@@ -608,7 +647,8 @@ export function darkroomPage(ctx) {
       <ol class="dr-steps">
         <li><b>01</b><span>Upload up to 6 photos. We shrink them to web size in your browser and strip location data.</span></li>
         <li><b>02</b><span>The crew reviews every frame by hand. Nothing is public before that.</span></li>
-        <li><b>03</b><span>On the wall: credited with your name &amp; Instagram. People react with the three TRIAD signs.</span></li>
+        <li><b>03</b><span>On the wall: credited with your name &amp; Instagram, plus your own page with all your frames to share.</span></li>
+        <li><b>${symbol('delta', { cls: 'chip-sym' })}</b><span><strong>Never used to train AI.</strong> AI crawlers are blocked and text &amp; data mining is reserved (&sect;&nbsp;44b UrhG) &mdash; for every photo.</span></li>
       </ol>
     </header>
 
@@ -629,6 +669,10 @@ export function darkroomPage(ctx) {
           <label><span class="label">Title</span><input name="title" maxlength="80" placeholder="applies to all photos"></label>
           <label><span class="label">Place</span><input name="location" maxlength="60" placeholder="e.g. Berlin, Wedding"></label>
           <label><span class="label">Camera / Film</span><input name="camera" maxlength="60" placeholder="e.g. Contax T2, Portra 400"></label>
+          ${calls.length ? `<label class="dr-wide"><span class="label">Open call</span><select name="call" data-dr-callselect>
+            <option value="">No open call &mdash; just the wall</option>
+            ${calls.map((c) => `<option value="${e(c.slug)}" data-start="${e(c.start || '')}" data-end="${e(c.end || '')}"${call && c.slug === call.slug ? ' selected' : ''}>${e(c.number ? c.number + ' / ' : '')}${e(c.title)}</option>`).join('')}
+          </select></label>` : ''}
           <label class="dr-wide"><span class="label">Caption</span><textarea name="caption" maxlength="280" rows="2"></textarea></label>
           <label class="dr-hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
         </div>

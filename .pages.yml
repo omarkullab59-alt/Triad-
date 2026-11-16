@@ -140,6 +140,25 @@ content:
           - { name: english, label: Englische Suchbegriffe verwenden, type: boolean }
           - { name: active, label: Aktiv, type: boolean }
 
+  - name: calls
+    label: Darkroom Open Calls (Monatsthemen)
+    type: file
+    path: content/calls.json
+    format: json
+    fields:
+      - name: items
+        label: Open Calls
+        type: object
+        list: true
+        fields:
+          - { name: slug, label: "Kurzname für Links (klein, ohne Leerzeichen, z. B. night)", type: string, required: true }
+          - { name: title, label: Titel, type: string, required: true }
+          - { name: number, label: "Nummer (01, 02 …)", type: string }
+          - { name: brief, label: Aufgabe / Beschreibung, type: text }
+          - { name: start, label: Start, type: date, options: { format: yyyy-MM-dd } }
+          - { name: end, label: Einsendeschluss, type: date, options: { format: yyyy-MM-dd } }
+          - { name: outcome, label: "Was passiert mit den besten Bildern?", type: string }
+
   - name: creatives
     label: Featured Creatives
     type: file
