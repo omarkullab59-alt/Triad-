@@ -12,9 +12,13 @@ async def main():
         pg=await ctx.new_page(); errs=[]; pg.on("pageerror",lambda e: errs.append(str(e)))
         await pg.goto("http://localhost:4321/darkroom/"); await pg.wait_for_timeout(700)
         res['empty state shown']=await pg.locator('[data-dr-empty]').is_visible()
+        res['open call banner']=await pg.locator('.dr-call-title').inner_text() if await pg.locator('.dr-call').count() else None
+        res['countdown']=await pg.locator('[data-dr-countdown]').inner_text() if await pg.locator('[data-dr-countdown]').count() else None
+        res['no-AI promise visible']=await pg.locator('.noai').is_visible()
         await pg.screenshot(path='/tmp/dr_m_top.png')
         # Task 1: submit without consent → clear error
-        await pg.click('a[href="#submit"]'); await pg.wait_for_timeout(500)
+        await pg.locator('[data-dr-join]').click(); await pg.wait_for_timeout(500)
+        res['call preselected']=await pg.input_value('[data-dr-callselect]')
         await pg.set_input_files('[data-dr-files]', IMGS[:4])
         await pg.fill('input[name=name]','Lena K.'); await pg.fill('input[name=instagram]','@lena.shoots')
         await pg.fill('input[name=title]','Hof, 6 Uhr'); await pg.fill('input[name=camera]','Contax T2 · Portra 400'); await pg.fill('input[name=location]','Berlin-Wedding')
@@ -65,6 +69,16 @@ async def main():
         await d.goto("http://localhost:4321/darkroom/"); await d.wait_for_timeout(900); await d.screenshot(path='/tmp/dr_d_top.png')
         await d.evaluate("window.scrollTo(0, document.querySelector('[data-dr-wall]').offsetTop-140)"); await d.wait_for_timeout(500); await d.screenshot(path='/tmp/dr_d_wall.png')
         await d.evaluate("document.querySelector('#submit').scrollIntoView()"); await d.wait_for_timeout(400); await d.screenshot(path='/tmp/dr_d_form.png')
+        # Photographer page via name link + open-call filter
+        await pg.goto("http://localhost:4321/darkroom/"); await pg.wait_for_timeout(800)
+        await pg.locator('[data-dr-by]').first.click(); await pg.wait_for_timeout(700)
+        res['profile url']=pg.url.split('4321')[1]
+        res['profile']=[await pg.locator('[data-dr-pname]').inner_text(), await pg.locator('[data-dr-pstats]').inner_text()]
+        await pg.screenshot(path='/tmp/dr_m_profile.png')
+        await pg.goto("http://localhost:4321/darkroom/?call=night"); await pg.wait_for_timeout(800)
+        res['call filter cards / tag']=[await pg.locator('.dr-card').count(), await pg.locator('.dr-calltag').first.inner_text()]
+        await pg.goto("http://localhost:4321/darkroom/?by=lena.shoots"); await pg.wait_for_timeout(800)
+        res['direct profile link works']=await pg.locator('[data-dr-pname]').inner_text()
         res['js errors']=errs
     for k,v in res.items(): print(f'{k}: {v}')
 asyncio.run(main())

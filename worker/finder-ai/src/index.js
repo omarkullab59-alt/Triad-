@@ -12,6 +12,10 @@
 
 import { handleDarkroom } from './darkroom.js';
 
+export const AI_BOTS = ['GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'CCBot', 'Google-Extended', 'Applebot-Extended',
+  'Bytespider', 'PerplexityBot', 'meta-externalagent', 'FacebookBot', 'Amazonbot', 'cohere-ai', 'Diffbot', 'ImagesiftBot', 'Omgilibot', 'Timpibot', 'img2dataset'];
+const AI_ROBOTS = `${AI_BOTS.map((b) => `User-agent: ${b}`).join('\n')}\nDisallow: /\n\nUser-agent: *\nDisallow: /darkroom/admin/\n`;
+
 const WORKERS_AI_MODEL = '@cf/mistralai/mistral-small-3.1-24b-instruct';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
 const MAX_TEXT = 400;
@@ -153,6 +157,8 @@ export default {
     const provider = env.PROVIDER === 'anthropic' && env.ANTHROPIC_API_KEY ? 'anthropic' : 'workers-ai';
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
+    // No AI training on anything this Worker serves (images included)
+    if (url.pathname === '/robots.txt') return new Response(AI_ROBOTS, { headers: { 'content-type': 'text/plain' } });
     if (url.pathname === '/health') return json({ ok: true, provider, darkroom: Boolean(env.DB) }, 200, h);
 
     if (url.pathname.startsWith('/darkroom/')) {

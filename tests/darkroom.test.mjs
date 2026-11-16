@@ -109,6 +109,31 @@ check((await r.json()).status === 'deleted', 'admin deletes');
 r = await call(`/darkroom/img/${id}/full`, { admin: true });
 check(r.status === 404, 'deleted image is gone');
 
+// Photographer pages + open calls + no-AI
+r = await upload({ instagram: '@Mo.Film', name: 'Mo', call: 'night' }, '7.7.7.7'); const a1 = (await r.json()).id;
+r = await upload({ instagram: '', name: 'Kai Analog', call: 'BAD CALL!' }, '7.7.7.8'); const a2 = (await r.json()).id;
+for (const x of [a1, a2]) await post('/darkroom/admin/decide', { id: x, action: 'approve' }, { admin: true });
+await post('/darkroom/react', { id: a1, kind: 'chord' }, { ip: '8.8.8.8' });
+r = await call('/darkroom/feed?by=mo.film');
+let pf = await r.json();
+check(pf.items.length === 1 && pf.items[0].by === 'mo.film' && pf.profile.photos === 1 && pf.profile.reactions === 1 && pf.profile.instagram === 'Mo.Film', 'photographer page by Instagram handle (case-insensitive) + profile totals');
+r = await call('/darkroom/feed?by=kai%20analog');
+check((await r.json()).items.length === 1, 'photographer page by name when no Instagram');
+r = await call('/darkroom/feed?by=nobody');
+pf = await r.json();
+check(pf.items.length === 0 && pf.profile === null, 'unknown photographer → empty, no profile');
+r = await call('/darkroom/feed?call=night');
+pf = await r.json();
+check(pf.items.length === 1 && pf.items[0].call === 'night', 'open call stored + filter');
+check(r.headers.get('x-robots-tag') === 'noai, noimageai' && r.headers.get('tdm-reservation') === '1', 'feed carries no-AI reservation');
+r = await call(`/darkroom/img/${a2}/thumb`);
+check(r.headers.get('x-robots-tag') === 'noai, noimageai', 'images carry no-AI reservation');
+r = await call('/darkroom/feed?call=bad');
+check((await r.json()).items.every((x) => x.call !== 'BAD CALL!'), 'invalid call slug never stored');
+r = await worker.fetch(new Request('https://w.example/robots.txt'), env);
+const robots = await r.text();
+check(robots.includes('User-agent: GPTBot') && robots.includes('User-agent: Google-Extended') && robots.includes('Disallow: /'), 'worker robots.txt blocks AI crawlers');
+
 r = await worker.fetch(new Request('https://w.example/darkroom/feed'), { ALLOWED_ORIGINS: ORIGIN });
 check(r.status === 503, 'no database → not configured (site shows fallback)');
 

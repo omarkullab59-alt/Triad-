@@ -34,3 +34,14 @@ AI_ENDPOINT=http://localhost:8787 npm run build && npm run serve
 python3 tests/darkroom_e2e.py                  # kompletter Ablauf im Browser
 node tests/darkroom.test.mjs                   # 29 Server-Checks
 ```
+
+## Kein KI-Training
+- Die robots.txt der Website und des Bild-Servers sperrt KI-Crawler aus (GPTBot, ClaudeBot, Google-Extended, CCBot …). Normale Suchmaschinen bleiben erlaubt.
+- Ein maschinenlesbarer Nutzungsvorbehalt nach § 44b UrhG steht auf jeder Seite (`tdm-reservation`, `noai, noimageai`), in jedem Bild-Abruf und in `/.well-known/tdmrep.json`.
+- Die Liste der gesperrten Crawler steht an genau einer Stelle: `AI_BOTS` in `worker/finder-ai/src/index.js`.
+
+## Fotograf:innen-Seiten
+`/darkroom/?by=<instagram>` zeigt alle freigegebenen Fotos einer Person, dazu ihre Reaktionen gesamt und einen Teilen-Knopf. Hat die Person kein Instagram angegeben, läuft die Seite über ihren Namen (`?by=lena%20k.`). Ein Klick auf den Namen unter einem Foto führt dorthin. Solange es kein Login gibt, prüft bei der Freigabe kurz, ob Name und Instagram plausibel sind.
+
+## Open Calls (Monatsthemen)
+CMS → **Darkroom Open Calls**: Titel, Aufgabe, Start, Einsendeschluss und was mit den besten Bildern passiert. Der laufende Call erscheint automatisch oben im Darkroom, mit Countdown und „Submit to …“. Einsendungen werden markiert. In der Moderation steht dann „CALL: night“, und auf der Seite kann man nach dem Call filtern (`/darkroom/?call=night`). Nach Ablauf verschwindet das Banner von selbst, die Einsendungen bleiben filterbar.

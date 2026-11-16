@@ -145,6 +145,22 @@ collections:
               - { label: Kurzbeschreibung, name: note, widget: string }
               - { label: Englische Suchbegriffe verwenden, name: english, widget: boolean, default: false, required: false }
               - { label: Aktiv, name: active, widget: boolean, default: true }
+      - name: calls
+        label: Darkroom Open Calls (Monatsthemen)
+        file: content/calls.json
+        fields:
+          - name: items
+            label: Open Calls
+            widget: list
+            summary: "{{fields.number}} {{fields.title}} ({{fields.start}} – {{fields.end}})"
+            fields:
+              - { label: "Kurzname für Links (klein, ohne Leerzeichen, z. B. night)", name: slug, widget: string }
+              - { label: Titel, name: title, widget: string }
+              - { label: "Nummer (01, 02 …)", name: number, widget: string, required: false }
+              - { label: Aufgabe / Beschreibung, name: brief, widget: text }
+              - { label: Start, name: start, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+              - { label: Einsendeschluss, name: end, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+              - { label: "Was passiert mit den besten Bildern?", name: outcome, widget: string, required: false }
       - name: creatives
         label: Featured Creatives
         file: content/creatives.json
