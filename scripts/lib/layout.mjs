@@ -148,7 +148,7 @@ ${body}
       <ul class="footer-links">${site.social.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.label}</a></li>`).join('')}</ul>
     </div>
   </div>
-  <div class="footer-word" aria-hidden="true">TRIAD</div>
+  <div class="footer-word" aria-hidden="true">TRIAD<span class="tag tag--footer"></span></div>
   <div class="footer-base">
     <span class="label">&copy; ${new Date().getFullYear()} TRIAD Collective</span>
     <span class="label label--dim">${site.location}</span>
