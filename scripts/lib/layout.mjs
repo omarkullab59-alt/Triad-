@@ -16,7 +16,7 @@ export function layout(ctx, { title, description, path, body, image, type = 'web
   const { site } = ctx;
   const fullTitle = title ? `${title} — ${site.title}` : `${site.title} — ${site.tagline}`;
   const canonical = site.url.replace(/\/$/, '') + path;
-  const ogImage = image ? (/^https?:/.test(image) ? image : site.url.replace(/\/$/, '') + image) : site.url.replace(/\/$/, '') + '/assets/brand/emblem-lime.svg';
+  const ogImage = image ? (/^https?:/.test(image) ? image : site.url.replace(/\/$/, '') + image) : site.url.replace(/\/$/, '') + '/assets/brand/emblem-orange.svg';
   const active = (href) => (path.startsWith(href) ? ' aria-current="page"' : '');
   const v = ctx.version;
 

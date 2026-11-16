@@ -70,7 +70,7 @@
       "title": "Rust on a Shipping Container",
       "year": "2025",
       "image": "https://picsum.photos/seed/triad-arc-rust/1100/800?grayscale",
-      "note": "Colour reference: the one warm tone against TRIAD lime."
+      "note": "Colour reference for TRIAD orange."
     },
     {
       "code": "TRD-ARC-010",
@@ -147,7 +147,7 @@
     {
       "code": "TRD-ARC-019",
       "type": "symbol",
-      "title": "Emblem — Lime on Black",
+      "title": "Emblem — Orange on Black",
       "year": "2026",
       "image": "/assets/brand/emblem-mark.svg",
       "note": "Emblem without ring. For patches and embroidery."
@@ -235,10 +235,10 @@
     {
       "code": "TRD-ARC-030",
       "type": "symbol",
-      "title": "Emblem — Lime Field",
+      "title": "Emblem — Orange Field",
       "year": "2026",
-      "image": "/assets/brand/emblem-lime.svg",
-      "note": "Emblem on TRIAD lime. For covers and merch."
+      "image": "/assets/brand/emblem-orange.svg",
+      "note": "Emblem on TRIAD orange. For covers and merch."
     },
     {
       "code": "TRD-ARC-031",

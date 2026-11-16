@@ -215,7 +215,7 @@ ${items
         scope: base,
         display: 'standalone',
         background_color: '#fbfaf8',
-        theme_color: '#c4ef2f',
+        theme_color: '#ff5a00',
         icons: [
           { src: `${base}assets/icons/icon-192.png`, sizes: '192x192', type: 'image/png' },
           { src: `${base}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png' },
@@ -232,7 +232,7 @@ ${items
   fs.rmSync(path.join(OUT, 'assets/sw.template.js'), { force: true });
 
   // favicon from the emblem (no ring at small sizes)
-  write('assets/icons/favicon.svg', `<?xml version="1.0" encoding="UTF-8"?>\n${emblem({ ring: false }).replace('<svg ', '<svg style="color:#0a0a0a;--red:#fbfaf8;background:#c4ef2f" ')}`);
+  write('assets/icons/favicon.svg', `<?xml version="1.0" encoding="UTF-8"?>\n${emblem({ ring: false }).replace('<svg ', '<svg style="color:#0a0a0a;--red:#fbfaf8;background:#ff5a00" ')}`);
 
   // GitHub Pages: don't run Jekyll
   write('.nojekyll', '');
