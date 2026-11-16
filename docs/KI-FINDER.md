@@ -1,5 +1,9 @@
 # KI- & Foto-Suche im Finder einschalten
 
+> **Kostenlos ohne Einrichtung (bereits live):** Kachel „Google — all shops“ (eine Google-Suche über alle Marktplätze) und Google Lens für Fotos (manuell hochladen, Ergebnis in den Finder einfügen). 0 €, kein Konto.
+>
+> **Kostenlose automatische Foto-Erkennung (optional):** über Cloudflare Workers AI im kostenlosen Cloudflare-Konto, ohne Kreditkarte — Umbau auf Anfrage. Die Claude-Variante unten braucht ein bezahltes Anthropic-Konto.
+
 Der Code ist fertig und getestet. Damit er live geht, braucht es drei Zugänge, die nur ihr anlegen könnt (Konten auf euren Namen). Dauer: ca. 15 Minuten, einmalig.
 
 ## Wie es funktioniert
