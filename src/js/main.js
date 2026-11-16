@@ -429,7 +429,7 @@
     if (endpoint) {
       $('[data-ai-controls]', finder).hidden = false;
       $('[data-photo-title]', finder).textContent = 'Photo search';
-      $('[data-photo-text]', finder).textContent = 'Add a photo of the piece — TRIAD AI recognises item, colour, material and visible labels and builds the search for you. Your photo is sent only for recognition (via Anthropic’s Claude) and is not stored.';
+      $('[data-photo-text]', finder).textContent = 'Add a photo of the piece — TRIAD AI recognises item, colour, material and visible labels and builds the search for you. Your photo is sent only for recognition to TRIAD’s AI service (Cloudflare Workers AI) and is not stored by TRIAD.';
       $('[data-lens-link]', finder).hidden = true;
     }
     const shrink = (file) => new Promise((resolve, reject) => {

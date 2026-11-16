@@ -1,8 +1,9 @@
 name: Deploy Finder AI (Cloudflare Worker)
 
-# Publishes worker/finder-ai to Cloudflare. Needs three repository secrets
-# (Settings → Secrets and variables → Actions): CLOUDFLARE_API_TOKEN,
-# CLOUDFLARE_ACCOUNT_ID, ANTHROPIC_API_KEY. See docs/KI-FINDER.md.
+# Publishes worker/finder-ai to Cloudflare (free Workers AI, no credit card).
+# Needs two repository secrets (Settings → Secrets and variables → Actions):
+# CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID. ANTHROPIC_API_KEY is optional.
+# See docs/KI-FINDER.md.
 
 on:
   push:
@@ -26,9 +27,9 @@ jobs:
         id: check
         env:
           CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+          ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -z "$CF" ] || [ -z "$AK" ]; then
+          if [ -z "$CF" ] || [ -z "$ID" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "### Finder AI not deployed: secrets missing (see docs/KI-FINDER.md)" >> "$GITHUB_STEP_SUMMARY"
           else
@@ -43,10 +44,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker/finder-ai
-          secrets: |
-            ANTHROPIC_API_KEY
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Show URL
         if: steps.check.outputs.ready == 'true'
