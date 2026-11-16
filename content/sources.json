@@ -1,16 +1,76 @@
 {
   "items": [
-    { "name": "Hypebeast", "url": "https://hypebeast.com/feed", "topic": "Streetwear Releases", "active": true },
-    { "name": "Highsnobiety", "url": "https://www.highsnobiety.com/feed/", "topic": "Streetwear Releases", "active": true },
-    { "name": "Dazed", "url": "https://www.dazeddigital.com/rss", "topic": "Culture", "active": true },
-    { "name": "AnOther", "url": "https://www.anothermag.com/rss", "topic": "Culture", "active": true },
-    { "name": "WWD", "url": "https://wwd.com/feed/", "topic": "Industry", "active": true },
-    { "name": "Fashionista", "url": "https://fashionista.com/.rss/full/", "topic": "Industry", "active": true },
-    { "name": "Vogue", "url": "https://www.vogue.com/feed/rss", "topic": "Fashion Week", "active": true },
-    { "name": "Hypebae", "url": "https://hypebae.com/feed", "topic": "Collections", "active": true },
-    { "name": "Sneaker News", "url": "https://sneakernews.com/feed/", "topic": "Streetwear Releases", "active": true },
-    { "name": "Dezeen", "url": "https://www.dezeen.com/feed/", "topic": "Culture", "active": true },
-    { "name": "designboom", "url": "https://www.designboom.com/feed/", "topic": "Culture", "active": true },
-    { "name": "Pitchfork", "url": "https://pitchfork.com/feed/feed-news/rss", "topic": "Culture", "active": true }
+    {
+      "name": "Hypebeast",
+      "url": "https://hypebeast.com/feed",
+      "topic": "Streetwear Releases",
+      "active": true
+    },
+    {
+      "name": "Highsnobiety",
+      "url": "https://www.highsnobiety.com/feed/",
+      "topic": "Streetwear Releases",
+      "active": true
+    },
+    {
+      "name": "Dazed",
+      "url": "https://www.dazeddigital.com/rss",
+      "topic": "Culture",
+      "active": true
+    },
+    {
+      "name": "AnOther",
+      "url": "https://www.anothermag.com/rss",
+      "topic": "Culture",
+      "active": false
+    },
+    {
+      "name": "WWD",
+      "url": "https://wwd.com/feed/",
+      "topic": "Industry",
+      "active": true
+    },
+    {
+      "name": "Fashionista",
+      "url": "https://fashionista.com/.rss/full/",
+      "topic": "Industry",
+      "active": true
+    },
+    {
+      "name": "Vogue",
+      "url": "https://www.vogue.com/feed/rss",
+      "topic": "Fashion Week",
+      "active": true
+    },
+    {
+      "name": "Hypebae",
+      "url": "https://hypebae.com/feed",
+      "topic": "Collections",
+      "active": true
+    },
+    {
+      "name": "Sneaker News",
+      "url": "https://sneakernews.com/feed/",
+      "topic": "Streetwear Releases",
+      "active": true
+    },
+    {
+      "name": "Dezeen",
+      "url": "https://www.dezeen.com/feed/",
+      "topic": "Culture",
+      "active": true
+    },
+    {
+      "name": "designboom",
+      "url": "https://www.designboom.com/feed/",
+      "topic": "Culture",
+      "active": true
+    },
+    {
+      "name": "Pitchfork",
+      "url": "https://pitchfork.com/feed/feed-news/rss",
+      "topic": "Culture",
+      "active": true
+    }
   ]
 }
