@@ -277,6 +277,7 @@
     const img = $('.lb-img', lb);
     img.src = el.dataset.lightbox.replace(/\/(\d+)\/(\d+)\?/, (m, w, h) => `/${1600}/${Math.round((h / w) * 1600)}?`);
     img.alt = el.getAttribute('aria-label') || '';
+    lb.classList.toggle('is-color', el.hasAttribute('data-color')); // photographers' work is shown as shot
     $('.lb-caption', lb).textContent = `${String(lbIndex + 1).padStart(2, '0')} / ${String(lbItems.length).padStart(2, '0')} — ${el.dataset.caption || ''}`;
   }
   let lbReturn;
@@ -533,6 +534,204 @@
       msg.textContent = 'The list opens with Issue 004. This form is not connected yet — nothing was stored.';
     })
   );
+
+  /* ── Darkroom: upload, wall, reactions ───────────────────────── */
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const toJpeg = (file, max, q) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      resolve({ data: c.toDataURL('image/jpeg', q).split(',')[1], width: c.width, height: c.height }); // re-encoding drops EXIF/GPS
+    };
+    img.onerror = () => reject(new Error('unreadable'));
+    img.src = URL.createObjectURL(file);
+  });
+  const DR_ERR = {
+    consent_required: 'Please confirm the checkbox above.', name_required: 'Your name or alias is missing.',
+    image_invalid: 'This file could not be used. Try a JPG.', daily_limit: 'Daily limit reached (6 photos). Try again tomorrow.',
+    rate_limited: 'Too many requests at once — wait a minute.', origin_not_allowed: 'Uploads only work on the TRIAD website.',
+  };
+
+  const dr = $('[data-darkroom]');
+  if (dr) {
+    const api = dr.dataset.api;
+    const kinds = JSON.parse(dr.dataset.reactions || '[]');
+    const wall = $('[data-dr-wall]', dr);
+    const more = $('[data-dr-more]', dr);
+    let sort = 'new', next = null;
+
+    const card = (p) => {
+      const credit = [`by ${esc(p.name)}`, p.instagram ? `<a href="https://instagram.com/${encodeURIComponent(p.instagram)}" target="_blank" rel="noopener">@${esc(p.instagram)}</a>` : '', esc(p.camera), esc(p.location)].filter(Boolean).join(' &middot; ');
+      const alt = `${p.title ? p.title + ' — ' : ''}photo by ${p.name}`;
+      return `<article class="dr-card" data-id="${esc(p.id)}">
+        <button type="button" class="dr-photo" data-color data-lightbox="${api}/darkroom/img/${esc(p.id)}/full" data-caption="${esc(alt)}" aria-label="Open ${esc(alt)}" data-cursor="View">
+          <img src="${api}/darkroom/img/${esc(p.id)}/thumb" alt="${esc(alt)}" loading="lazy" decoding="async" ${p.width ? `width="${p.width}" height="${p.height}"` : ''}>
+        </button>
+        <div class="dr-meta">${p.title ? `<h3 class="dr-title">${esc(p.title)}</h3>` : ''}<p class="dr-credit">${credit}</p>${p.caption ? `<p class="dr-caption">${esc(p.caption)}</p>` : ''}</div>
+        <div class="dr-reacts">${kinds.map((k) => `<button type="button" class="dr-react" data-kind="${k.kind}" aria-pressed="${p.mine.includes(k.kind)}" title="${esc(k.label)} — ${esc(k.hint)}" aria-label="${esc(k.label)}: ${p.reactions[k.kind] || 0}">${k.icon}<span data-n>${p.reactions[k.kind] || 0}</span></button>`).join('')}
+          <button type="button" class="dr-report" data-report>Report</button></div>
+      </article>`;
+    };
+    const showEmpty = (on) => { $('[data-dr-empty]', dr).hidden = !on; };
+    const load = async (append = false) => {
+      wall.setAttribute('aria-busy', 'true');
+      try {
+        const r = await fetch(`${api}/darkroom/feed?sort=${sort}${append && next ? `&before=${next}` : ''}`);
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        next = d.next;
+        wall.insertAdjacentHTML(append ? 'beforeend' : 'afterbegin', d.items.map(card).join(''));
+        if (!append) $$('.dr-ghost, .dr-card', wall).slice(d.items.length).forEach((x) => x.remove());
+        showEmpty(!append && !d.items.length);
+        more.hidden = !next;
+      } catch (_) {
+        $$('.dr-ghost', wall).forEach((x) => x.remove());
+        if (!$('.dr-card', wall)) showEmpty(true);
+      }
+      wall.setAttribute('aria-busy', 'false');
+    };
+    if (api) load(); else { $$('.dr-ghost', wall).forEach((x) => x.remove()); wall.setAttribute('aria-busy', 'false'); showEmpty(true); }
+
+    $$('[data-dr-sort]', dr).forEach((b) => b.addEventListener('click', () => {
+      if (sort === b.dataset.drSort) return;
+      sort = b.dataset.drSort;
+      $$('[data-dr-sort]', dr).forEach((x) => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+      $$('.dr-card', wall).forEach((x) => x.remove());
+      if (api) load();
+    }));
+    more.addEventListener('click', () => load(true));
+
+    wall.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.dr-react, [data-report]');
+      if (!btn) return;
+      const c = btn.closest('.dr-card'); const id = c.dataset.id;
+      if (btn.matches('[data-report]')) {
+        if (!btn.classList.contains('is-armed')) { btn.classList.add('is-armed'); btn.textContent = 'Report? Tap again'; return; }
+        btn.disabled = true; btn.textContent = 'Sending…';
+        try { await fetch(`${api}/darkroom/report`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) }); btn.textContent = 'Reported — thanks'; }
+        catch (_) { btn.textContent = 'Failed'; btn.disabled = false; }
+        return;
+      }
+      const kind = btn.dataset.kind; const n = $('[data-n]', btn);
+      const on = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(on)); n.textContent = Math.max(0, +n.textContent + (on ? 1 : -1)); // optimistic
+      if (on && !reduced) { btn.classList.add('is-pop'); setTimeout(() => btn.classList.remove('is-pop'), 200); }
+      try {
+        const r = await fetch(`${api}/darkroom/react`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, kind }) });
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        $$('.dr-react', c).forEach((b) => { const k = b.dataset.kind; $('[data-n]', b).textContent = d.reactions[k]; b.setAttribute('aria-pressed', String(d.mine.includes(k))); b.setAttribute('aria-label', `${kinds.find((x) => x.kind === k).label}: ${d.reactions[k]}`); });
+      } catch (_) { btn.setAttribute('aria-pressed', String(!on)); n.textContent = Math.max(0, +n.textContent + (on ? -1 : 1)); }
+    });
+
+    /* upload */
+    const form = $('[data-dr-form]', dr);
+    const input = $('[data-dr-files]', dr);
+    const previews = $('[data-dr-previews]', dr);
+    const status = $('[data-dr-status]', dr);
+    const drop = $('[data-dr-drop]', dr);
+    let files = [];
+    const say = (t, kind = '') => { status.textContent = t; status.className = `dr-status label ${kind ? 'is-' + kind : ''}`; };
+    const renderPrev = () => {
+      previews.innerHTML = files.map((f, i) => `<li class="dr-prev" ${f.state ? `data-state="${f.state}"` : ''}><img src="${f.url}" alt=""><button type="button" class="photo-remove" data-rm="${i}" aria-label="Remove photo ${i + 1}">&#10005;</button></li>`).join('');
+    };
+    const add = (list) => {
+      const imgs = [...list].filter((f) => /^image\//.test(f.type) || /\.(heic|heif)$/i.test(f.name));
+      const room = 6 - files.length;
+      imgs.slice(0, room).forEach((f) => files.push({ file: f, url: URL.createObjectURL(f) }));
+      if (imgs.length > room) say('Max 6 photos per submission.', 'error'); else say('');
+      renderPrev();
+    };
+    input?.addEventListener('change', () => { add(input.files); input.value = ''; });
+    previews.addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (!b) return; URL.revokeObjectURL(files[b.dataset.rm].url); files.splice(+b.dataset.rm, 1); renderPrev(); });
+    ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+    ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('is-over'); }));
+    drop.addEventListener('drop', (e) => add(e.dataTransfer.files));
+
+    try { const me = JSON.parse(localStorage.getItem('triad-darkroom') || '{}'); ['name', 'instagram'].forEach((k) => { if (me[k] && form.elements[k]) form.elements[k].value = me[k]; }); } catch (_) { /* ignore */ }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!api) return;
+      const f = form.elements;
+      if (!files.length) { say('Choose at least one photo.', 'error'); drop.focus?.(); input.focus(); return; }
+      if (!f.name.value.trim()) { say(DR_ERR.name_required, 'error'); f.name.focus(); return; }
+      if (!f.consent.checked) { say(DR_ERR.consent_required, 'error'); f.consent.focus(); return; }
+      try { localStorage.setItem('triad-darkroom', JSON.stringify({ name: f.name.value.trim(), instagram: f.instagram.value.trim() })); } catch (_) { /* ignore */ }
+      const send = $('[data-dr-send]', form); send.disabled = true;
+      let ok = 0, err = '';
+      for (let i = 0; i < files.length; i++) {
+        const item = files[i];
+        if (item.state === 'sent') { ok++; continue; }
+        item.state = 'sending'; renderPrev(); say(`Developing ${i + 1} / ${files.length}…`);
+        try {
+          const full = await toJpeg(item.file, 1600, 0.82);
+          const thumb = await toJpeg(item.file, 640, 0.78);
+          const r = await fetch(`${api}/darkroom/submit`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+            name: f.name.value, instagram: f.instagram.value, title: f.title.value, location: f.location.value, camera: f.camera.value,
+            caption: f.caption.value, website: f.website.value, consent: true, image: full.data, thumb: thumb.data, width: full.width, height: full.height,
+          }) });
+          if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || 'failed'); }
+          item.state = 'sent'; ok++;
+        } catch (x) {
+          item.state = 'error'; err = DR_ERR[x.message] || (x.message === 'unreadable' ? 'One photo could not be read (HEIC? Export as JPG).' : 'Upload failed — check your connection and try again.');
+          if (x.message === 'daily_limit') break;
+        }
+        renderPrev();
+      }
+      send.disabled = false;
+      if (ok === files.length) {
+        say(`${ok} photo${ok > 1 ? 's' : ''} in the darkroom. The crew reviews them — usually within 48 hours.`, 'ok');
+        setTimeout(() => { files.forEach((x) => URL.revokeObjectURL(x.url)); files = []; renderPrev(); }, 2500);
+      } else say(`${ok} of ${files.length} sent. ${err}`, 'error');
+    });
+  }
+
+  /* ── Darkroom moderation ─────────────────────────────────────── */
+  const adm = $('[data-dr-admin]');
+  if (adm) {
+    const api = adm.dataset.api;
+    const login = $('[data-dr-login]', adm), panel = $('[data-dr-panel]', adm), queue = $('[data-dr-queue]', adm), st = $('[data-dr-admin-status]', adm);
+    let token = ''; let tab = 'pending';
+    try { token = sessionStorage.getItem('triad-dr-admin') || ''; } catch (_) { /* ignore */ }
+    const authed = (path, opts = {}) => fetch(api + path, { ...opts, headers: { ...(opts.headers || {}), authorization: `Bearer ${token}`, 'content-type': 'application/json' } });
+    const open = async () => {
+      st.textContent = 'Loading…'; st.className = 'label label--dim';
+      const r = await authed(`/darkroom/admin/queue?status=${tab}`).catch(() => null);
+      if (!r || !r.ok) {
+        const unauthorized = r && r.status === 401;
+        if (unauthorized) { token = ''; try { sessionStorage.removeItem('triad-dr-admin'); } catch (_) { /* ignore */ } login.hidden = false; panel.hidden = true; }
+        st.textContent = unauthorized ? 'Wrong key.' : 'Server not reachable.'; st.className = 'label is-error';
+        if (unauthorized) login.querySelector('p').textContent = 'Wrong key.';
+        return;
+      }
+      login.hidden = true; panel.hidden = false;
+      const d = await r.json();
+      $$('[data-dr-count]', adm).forEach((s) => (s.textContent = d.totals[s.dataset.drCount] || ''));
+      st.textContent = d.items.length ? '' : `Nothing ${tab}.`;
+      queue.innerHTML = d.items.map((p) => `<li class="dr-q" data-id="${esc(p.id)}"><img alt="" data-src="/darkroom/img/${esc(p.id)}/full">
+        <div><strong>${esc(p.title || 'Untitled')}</strong><p class="label label--dim">${esc(p.name)}${p.instagram ? ' · @' + esc(p.instagram) : ''}${p.camera ? ' · ' + esc(p.camera) : ''}${p.location ? ' · ' + esc(p.location) : ''} · ${new Date(p.created).toLocaleString()}${p.reports ? ` · ${p.reports} reports` : ''}</p>${p.caption ? `<p>${esc(p.caption)}</p>` : ''}</div>
+        <div class="dr-q-actions">${tab !== 'approved' ? '<button type="button" class="chip" data-act="approve">Approve</button>' : ''}${tab !== 'rejected' ? '<button type="button" class="chip" data-act="reject">Reject</button>' : ''}<button type="button" class="chip" data-act="delete">Delete</button></div></li>`).join('');
+      for (const img of $$('img[data-src]', queue)) {
+        authed(img.dataset.src).then((x) => (x.ok ? x.blob() : null)).then((b) => { if (b) img.src = URL.createObjectURL(b); }).catch(() => {});
+      }
+    };
+    login.addEventListener('submit', (e) => { e.preventDefault(); token = login.elements.token.value.trim(); try { sessionStorage.setItem('triad-dr-admin', token); } catch (_) { /* ignore */ } open(); });
+    $$('[data-dr-tab]', adm).forEach((b) => b.addEventListener('click', () => { tab = b.dataset.drTab; $$('[data-dr-tab]', adm).forEach((x) => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-pressed', String(x === b)); }); open(); }));
+    $('[data-dr-logout]', adm).addEventListener('click', () => { token = ''; try { sessionStorage.removeItem('triad-dr-admin'); } catch (_) { /* ignore */ } location.reload(); });
+    queue.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      if (b.dataset.act === 'delete' && !b.classList.contains('is-armed')) { b.classList.add('is-armed'); b.textContent = 'Really delete?'; return; }
+      const li = b.closest('[data-id]'); b.disabled = true;
+      const r = await authed('/darkroom/admin/decide', { method: 'POST', body: JSON.stringify({ id: li.dataset.id, action: b.dataset.act }) }).catch(() => null);
+      if (r && r.ok) { li.remove(); open(); } else { b.disabled = false; st.textContent = 'Action failed.'; st.className = 'label is-error'; }
+    });
+    if (token && api) open();
+  }
 
   /* ── Service worker (offline + installable app) ──────────────── */
   if ('serviceWorker' in navigator && location.protocol === 'https:') {

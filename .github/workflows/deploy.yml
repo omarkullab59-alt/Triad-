@@ -30,6 +30,9 @@ jobs:
         run: node scripts/fetch-wire.mjs
         continue-on-error: true
 
+      - name: Self-host fonts (privacy + speed; falls back to Google if it fails)
+        run: node scripts/fetch-fonts.mjs
+
       - name: Build
         run: node scripts/build.mjs
         env:

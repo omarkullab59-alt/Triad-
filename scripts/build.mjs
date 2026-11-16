@@ -11,7 +11,7 @@ import { parseFrontmatter } from './lib/frontmatter.mjs';
 import { renderMarkdown, renderGallery, wordCount, escapeHtml } from './lib/markdown.mjs';
 import { layout } from './lib/layout.mjs';
 import { brandFiles, symbolFiles, emblem } from './lib/brand.mjs';
-import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage, finderPage, peoplePage, personPage } from './lib/pages.mjs';
+import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage, finderPage, peoplePage, personPage, darkroomPage, darkroomAdminPage, legalPage } from './lib/pages.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'dist');
@@ -39,6 +39,7 @@ export function build() {
   let base = process.env.BASE_PATH || '/';
   if (!base.endsWith('/')) base += '/';
   if (process.env.SITE_URL) site.url = process.env.SITE_URL.replace(/\/$/, '');
+  if (process.env.AI_ENDPOINT) site.aiEndpoint = process.env.AI_ENDPOINT; // local testing
 
   const ctx = {
     site,
@@ -103,6 +104,7 @@ export function build() {
   fs.rmSync(OUT, { recursive: true, force: true });
   fs.mkdirSync(OUT, { recursive: true });
   copyDir(path.join(ROOT, 'static'), OUT);
+  ctx.localFonts = fs.existsSync(path.join(ROOT, 'static/assets/fonts/fonts.css'));
   copyDir(path.join(ROOT, 'src'), path.join(OUT, 'assets'));
   for (const [name, svg] of Object.entries({ ...brandFiles(), ...symbolFiles() })) write(`assets/brand/${name}`, svg);
 
@@ -175,6 +177,12 @@ export function build() {
     });
   }
   page('finder/index.html', { title: 'Finder', path: '/finder/', pageId: 'finder', body: finderPage(ctx), description: 'TRIAD Finder: search Vinted, Grailed, eBay, Vestiaire Collective, Depop and more at once.' });
+  page('darkroom/index.html', { title: 'Darkroom', path: '/darkroom/', pageId: 'darkroom', body: darkroomPage(ctx), description: 'TRIAD Darkroom: photographers upload, the crew develops, everyone reacts. Free, no account, you keep your rights.' });
+  page('darkroom/admin/index.html', { title: 'Darkroom moderation', path: '/darkroom/admin/', pageId: 'darkroom-admin', body: darkroomAdminPage(ctx), noindex: true });
+  ctx.legal = loadMd('content/legal').sort((a, b) => (a.order || 9) - (b.order || 9));
+  for (const l of ctx.legal) {
+    page(`legal/${l.slug}/index.html`, { title: l.title, path: `/legal/${l.slug}/`, pageId: 'legal', theme: 'paper', body: legalPage(ctx, l), description: `${l.title} — TRIAD` });
+  }
   page('about/index.html', { title: 'About', path: '/about/', pageId: 'about', body: aboutPage(ctx), description: 'TRIAD is a platform for creative expression, independent thinking and cultural exchange.' });
   page('404.html', { title: 'Not found', path: '/404.html', pageId: 'notfound', body: notFoundPage(ctx), noindex: true });
 
@@ -188,9 +196,9 @@ export function build() {
   write('api/site.json', JSON.stringify({ ...site, issues: ctx.issues, creatives: ctx.creatives }));
 
   // ── SEO: sitemap, robots, RSS ──────────────────────────────
-  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/finder/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
+  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/darkroom/', '/finder/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
   write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${site.url}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
-  write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${base}admin/\nSitemap: ${site.url}/sitemap.xml\n`);
+  write('robots.txt', `User-agent: *\nAllow: /\nDisallow: ${base}admin/\nDisallow: ${base}darkroom/admin/\nSitemap: ${site.url}/sitemap.xml\n`);
   const items = [...ctx.articles, ...ctx.news].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
   write(
     'feed.xml',
