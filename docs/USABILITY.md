@@ -22,15 +22,15 @@ Stand: 16.11.2026 · Test: `python3 tests/usability_audit.py http://localhost:43
 ## Grundlagen (Studien & Standards)
 
 - **Versteckte Navigation** (Hamburger) halbiert laut NN/g-Studie mit 179 Teilnehmern fast die Auffindbarkeit von Inhalten → sichtbare Tab-Leiste auf dem Handy. https://www.nngroup.com/articles/hamburger-menus/
-- **Auto-Karussells** werden übersehen (Banner-Blindheit); Notre Dame: ca. 1 % Klickrate. → kein Auto-Wechsel. https://www.nngroup.com/articles/auto-forwarding/
+- **Auto-Karussells** werden übersehen (Banner-Blindheit); Notre Dame: ca. 1 % Klickrate. → kein Auto-Wechsel. https://cxl.com/blog/dont-use-automatic-image-sliders-or-carousels/
 - **WCAG 2.2.2 Pause, Stop, Hide**: Bewegung > 5 s braucht eine Pause-Möglichkeit. https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide
-- **WCAG 2.5.8 Target Size**: mind. 24 × 24 px. https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum
+- **WCAG 2.5.8 Target Size**: mind. 24 × 24 px. https://dequeuniversity.com/resources/wcag-2.2
 - **Kontrast** 4,5:1 (normal) / 3:1 (groß); NN/g: kontrastarmer Text ist schwer lesbar. https://www.nngroup.com/articles/low-contrast/
 - **Core Web Vitals**: LCP ≤ 2,5 s, INP ≤ 200 ms, CLS ≤ 0,1. https://web.dev/articles/defining-core-web-vitals-thresholds
-- **Ladezeit**: Absprungwahrscheinlichkeit +32 % von 1 s auf 3 s (Google). https://www.thinkwithgoogle.com/
-- **Animationsdauer** 100–500 ms (NN/g). https://www.nngroup.com/articles/animation-duration/
+- **Ladezeit**: Absprungwahrscheinlichkeit +32 % von 1 s auf 3 s (Google). https://thinkwithgoogle.com/data/page-load-time-statistics
+- **Animationsdauer** 100–500 ms (NN/g). https://nngroup.com/articles/animation-duration
 - **Zeilenlänge** 50–75 Zeichen (Baymard); auf dem Handy darf es kürzer sein. https://baymard.com/blog/line-length-readability
-- **Bewegungsempfindlichkeit** (vestibuläre Störungen): Parallax und große Übergänge reduzieren. https://web.dev/articles/prefers-reduced-motion
+- **Bewegungsempfindlichkeit** (vestibuläre Störungen): Parallax und große Übergänge reduzieren. https://web.dev/prefers-reduced-motion
 - **BFSG** (seit 28.06.2025): Barrierefreiheitspflicht für bestimmte Verbraucher-Websites; Kleinstunternehmen mit Dienstleistungen sind ausgenommen — sobald TRIAD verkauft (Shop), relevant.
 
 ## Farbregel
