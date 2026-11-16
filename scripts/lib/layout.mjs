@@ -3,26 +3,28 @@ import { escapeHtml as e } from './markdown.mjs';
 import { emblem, glyph, label, marquee } from './components.mjs';
 import { symbol } from './brand.mjs';
 
-const NAV = [
-  { href: '/magazine/', text: 'Magazine', n: '01', sym: 'fire' },
-  { href: '/news/', text: 'News', n: '02', sym: 'air' },
-  { href: '/people/', text: 'Voices', n: '03', sym: 'chord' },
-  { href: '/darkroom/', text: 'Darkroom', n: '04', sym: 'pyramid' },
-  { href: '/archive/', text: 'Archive', n: '05', sym: 'sierpinski', menuOnly: true },
-  { href: '/finder/', text: 'Finder', n: '06', sym: 'delta' },
-  { href: '/about/', text: 'About', n: '07', sym: 'borromean', menuOnly: true },
+// Three pillars — "three forces" as navigation: READ (signal), SEE (image), FIND.
+export const PILLARS = [
+  { key: 'read', text: 'Read', n: 'I', sym: 'air', items: [
+    { href: '/magazine/', text: 'Magazine', sym: 'chord' }, { href: '/news/', text: 'News', sym: 'air' }, { href: '/people/', text: 'Voices', sym: 'tonnetz' }] },
+  { key: 'see', text: 'See', n: 'II', sym: 'fire', items: [
+    { href: '/darkroom/', text: 'Darkroom', sym: 'pyramid' }, { href: '/archive/', text: 'Archive', sym: 'sierpinski' }] },
+  { key: 'find', text: 'Find', n: 'III', sym: 'delta', items: [
+    { href: '/finder/', text: 'Finder', sym: 'delta' }] },
 ];
+export const pillarOf = (path) => PILLARS.find((p) => p.items.some((i) => path.startsWith(i.href))) || null;
 
-export function layout(ctx, { title, description, path, body, image, type = 'website', jsonld, theme = 'dark', pageId = 'page', noindex = false }) {
+export function layout(ctx, { title, description, path, body, image, type = 'website', jsonld, theme = 'dark', pageId = 'page', noindex = false, night = false }) {
   const { site } = ctx;
   const fullTitle = title ? `${title} — ${site.title}` : `${site.title} — ${site.tagline}`;
   const canonical = site.url.replace(/\/$/, '') + path;
   const ogImage = image ? (/^https?:/.test(image) ? image : site.url.replace(/\/$/, '') + image) : site.url.replace(/\/$/, '') + '/assets/brand/emblem-orange.svg';
   const active = (href) => (path.startsWith(href) ? ' aria-current="page"' : '');
   const v = ctx.version;
+  const pillar = pillarOf(path);
 
   return `<!doctype html>
-<html lang="${site.lang}" data-theme="${theme}">
+<html lang="${site.lang}" data-theme="${theme}"${night ? ' data-force="night" class="night"' : ''}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -40,7 +42,10 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta property="og:url" content="${canonical}">
 <meta property="og:image" content="${e(ogImage)}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#fbfaf8">
+<meta name="color-scheme" content="${night ? 'dark' : 'light dark'}">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)">
+<script>/* light / dark before first paint: forced page → saved choice → system setting */(function(){var h=document.documentElement,p=null;try{p=localStorage.getItem('triad-theme')}catch(e){}var n=h.dataset.force==='night'||p==='dark'||(p!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);h.classList.toggle('night',n)})();</script>
 <link rel="icon" href="${ctx.url('/assets/icons/favicon.svg')}" type="image/svg+xml">
 <link rel="apple-touch-icon" href="${ctx.url('/assets/icons/icon-192.png')}">
 <link rel="manifest" href="${ctx.url('/manifest.webmanifest')}">
@@ -70,12 +75,14 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
   </a>
   <nav class="nav" aria-label="Primary">
     <ul>
-      ${NAV.map((n) => `<li><a href="${ctx.url(n.href)}"${active(n.href)}><sup>${n.n}</sup>${n.text}</a></li>`).join('')}
+      ${PILLARS.map((p) => `<li class="nav-pillar${pillar === p ? ' is-current' : ''}"><span class="nav-pillar-name">${symbol(p.sym, { cls: 'nav-sym' })}${p.text}</span>${p.items.map((n) => `<a href="${ctx.url(n.href)}"${active(n.href)}>${n.text}</a>`).join('')}</li>`).join('')}
+      <li class="nav-pillar nav-about"><a href="${ctx.url('/about/')}"${active('/about/')}>About</a></li>
     </ul>
   </nav>
   <div class="header-meta">
     <span class="label label--dim">N&deg;${site.currentIssue}</span>
     <span class="label clock" data-clock>BER --:--</span>
+    <button class="theme-toggle label" type="button" data-theme-toggle aria-label="Colour mode"><span class="tt-icon" aria-hidden="true"></span><span data-theme-label>Auto</span></button>
     <button class="motion-toggle label" type="button" data-motion-toggle aria-pressed="false" title="Pause all animation"><span class="mt-dot" aria-hidden="true"></span><span data-motion-label>Motion on</span></button>
   </div>
   <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu">
@@ -84,15 +91,18 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
 </header>
 
 <nav class="tabbar" aria-label="Sections">
-  ${NAV.filter((n) => !n.menuOnly).map((n) => `<a href="${ctx.url(n.href)}"${active(n.href)}>${symbol(n.sym, { cls: 'tab-icon' })}<span>${n.text}</span></a>`).join('')}
+  <a href="${ctx.url('/')}"${path === '/' ? ' aria-current="page"' : ''}>${glyph({ cls: 'tab-icon', color: 'currentColor' })}<span>Now</span></a>
+  ${PILLARS.map((p) => `<a href="${ctx.url(p.items[0].href)}"${pillar === p ? ' aria-current="true"' : ''}>${symbol(p.sym, { cls: 'tab-icon' })}<span>${p.text}</span></a>`).join('')}
 </nav>
+
 
 <div class="menu" id="menu" hidden>
   <div class="menu-inner">
     <nav aria-label="Menu">
       <ol class="menu-list">
-        <li><a href="${ctx.url('/')}"><sup>00</sup>Home</a></li>
-        ${NAV.map((n) => `<li><a href="${ctx.url(n.href)}"><sup>${n.n}</sup>${n.text}</a></li>`).join('')}
+        <li><a href="${ctx.url('/')}"><sup>00</sup>Now</a></li>
+        ${PILLARS.map((p) => p.items.map((n, i) => `<li${i === 0 ? ' class="menu-pillar-start"' : ''}><a href="${ctx.url(n.href)}"><sup>${i === 0 ? `${p.n} ${p.text.toUpperCase()}` : ''}</sup>${n.text}</a></li>`).join('')).join('')}
+        <li class="menu-pillar-start"><a href="${ctx.url('/about/')}"><sup>&mdash;</sup>About</a></li>
       </ol>
     </nav>
     <div class="menu-side">
@@ -104,6 +114,10 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
 </div>
 
 <main id="main" tabindex="-1">
+${pillar && pillar.items.length > 1 && pillar.items.some((i) => i.href === path) ? `<nav class="pillar-bar" aria-label="${pillar.text}">
+  <span class="pillar-bar-name label">${pillar.n} / ${pillar.text}</span>
+  ${pillar.items.map((n) => `<a class="chip${path.startsWith(n.href) ? ' is-active' : ''}" href="${ctx.url(n.href)}"${active(n.href)}>${n.text}</a>`).join('')}
+</nav>` : ''}
 ${body}
 </main>
 
@@ -124,7 +138,8 @@ ${body}
     <div class="footer-col">
       ${label('Index')}
       <ul class="footer-links">
-        ${NAV.map((n) => `<li><a href="${ctx.url(n.href)}">${n.text}</a></li>`).join('')}
+        ${PILLARS.map((p) => p.items.map((n) => `<li><a href="${ctx.url(n.href)}"><span class="label label--dim">${p.text}</span> ${n.text}</a></li>`).join('')).join('')}
+        <li><a href="${ctx.url('/about/')}">About</a></li>
         <li><a href="${ctx.url('/feed.xml')}">RSS</a></li>
       </ul>
     </div>

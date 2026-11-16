@@ -26,6 +26,27 @@
     try { localStorage.setItem('triad-motion', reduced ? 'off' : 'on'); } catch (_) { /* ignore */ }
     applyMotion();
   });
+  /* ── Colour mode: Auto (system) → Dark → Light ─────────────────── */
+  const sysDark = matchMedia('(prefers-color-scheme: dark)');
+  let themePref = 'auto';
+  try { themePref = localStorage.getItem('triad-theme') || 'auto'; } catch (_) { /* private mode */ }
+  const applyTheme = () => {
+    const night = html.dataset.force === 'night' || themePref === 'dark' || (themePref === 'auto' && sysDark.matches);
+    html.classList.toggle('night', night);
+    $$('[data-theme-toggle]').forEach((b) => {
+      const l = $('[data-theme-label]', b); if (l) l.textContent = { auto: 'Auto', dark: 'Dark', light: 'Light' }[themePref];
+      b.setAttribute('aria-label', `Colour mode: ${themePref}. Tap to change.`);
+      b.title = 'Colour mode: auto (system) → dark → light';
+    });
+  };
+  applyTheme();
+  sysDark.addEventListener?.('change', applyTheme);
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-theme-toggle]')) return;
+    themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref];
+    try { localStorage.setItem('triad-theme', themePref); } catch (_) { /* ignore */ }
+    applyTheme();
+  });
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   /* ── Ready / curtain ─────────────────────────────────────────── */
@@ -556,6 +577,24 @@
     rate_limited: 'Too many requests at once — wait a minute.', origin_not_allowed: 'Uploads only work on the TRIAD website.',
   };
 
+  $$('[data-dr-countdown]').forEach((el) => {
+    const days = Math.ceil((new Date(el.dataset.end + 'T23:59:59') - new Date()) / 864e5);
+    el.textContent = days > 1 ? `${days} days left` : days === 1 ? 'last day' : 'closed';
+    if (days < 1) el.closest('[data-dr-callbox]')?.classList.add('is-closed');
+  });
+
+  /* Home: fresh Darkroom frames */
+  const nowDark = $('[data-now-darkroom]');
+  if (nowDark) {
+    const api = nowDark.dataset.api, list = $('[data-now-thumbs]', nowDark);
+    const empty = () => { list.remove(); $('[data-now-empty]', nowDark).hidden = false; };
+    if (!api) empty();
+    else fetch(`${api}/darkroom/feed?sort=new`).then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
+      if (!d.items.length) return empty();
+      list.innerHTML = d.items.slice(0, 4).map((p) => `<li><a href="${(window.TRIAD_BASE || '/')}darkroom/?by=${encodeURIComponent(p.by)}" aria-label="${esc(p.title || 'Photo')} by ${esc(p.name)}"><img src="${api}/darkroom/img/${esc(p.id)}/thumb" alt="" loading="lazy" decoding="async"><span class="label">${esc(p.name)}</span></a></li>`).join('');
+    }).catch(empty);
+  }
+
   const dr = $('[data-darkroom]');
   if (dr) {
     const api = dr.dataset.api;
@@ -647,11 +686,6 @@
       } catch (_) { /* cancelled */ }
     });
     // Open call: countdown, expired calls can't be picked, "Submit to …" preselects the call
-    $$('[data-dr-countdown]').forEach((el) => {
-      const days = Math.ceil((new Date(el.dataset.end + 'T23:59:59') - new Date()) / 864e5);
-      el.textContent = days > 1 ? `${days} days left` : days === 1 ? 'last day' : 'closed';
-      if (days < 1) el.closest('[data-dr-callbox]')?.classList.add('is-closed');
-    });
     const callSelect = $('[data-dr-callselect]', dr);
     if (callSelect) [...callSelect.options].forEach((o) => { if (o.value && ((o.dataset.end && o.dataset.end < today) || (o.dataset.start && o.dataset.start > today))) { o.disabled = true; if (o.selected) callSelect.value = ''; } });
     $$('[data-dr-join]').forEach((b) => b.addEventListener('click', () => { if (callSelect && !callSelect.querySelector(`option[value="${b.dataset.drJoin}"]`)?.disabled) callSelect.value = b.dataset.drJoin; }));
