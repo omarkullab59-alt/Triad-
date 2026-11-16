@@ -1,4 +1,4 @@
-# TRIAD Acid — #C4EF2F
+# TRIAD Orange — #FF5A00
 
 Ziel: Wer diese Farbe sieht, denkt an TRIAD.
 
@@ -21,17 +21,19 @@ Ziel: Wer diese Farbe sieht, denkt an TRIAD.
 | Farbe als Text auf Weiß | 3,0 : 1 | 1,3 : 1 (nicht nutzbar) |
 | Szene-Code | Luxus / Sport | Club, Rave, Underground, Acid |
 
-**Entscheidung:** Lime, aber **nie allein**. Wiedererkennung entsteht durch eine Kombination, die nur TRIAD benutzt.
+Geprüft wurden auch Patina #43B3AE (bestes Konzept-Match, kaum besetzt) und Lime #C4EF2F (am lautesten, aber nah an Brat-Grün).
+
+**Entscheidung (16.11.2026): Orange #FF5A00.** Weil Orange in der Mode bereits besetzt ist (Hermès), entsteht Wiedererkennung nur über eine Kombination, die nur TRIAD benutzt.
 
 ## Die TRIAD-Kombination (Regeln)
 
-1. **Lime + Schwarz + Weiß.** Keine andere Farbe daneben, nie Lime auf Farbe.
-2. **Lime ist eine Fläche, keine Schrift.** Als „Tape“ (leicht schräger Streifen), Textmarker-Unterstreichung, Vollfläche (Menü, Übergänge) oder Symbol-Füllung. Schrift darauf ist immer schwarz.
-3. **Immer mit dem Plus-Dreieck oder einem TRIAD-Symbol.** Das Zeichen macht die Farbe eindeutig, nicht die Farbe allein.
-4. **Name:** „TRIAD Acid“, überall gleich benannt (Pantone-Referenz festlegen, sobald gedruckt wird).
-5. **Für kleine farbige Schrift auf Weiß:** Oliv-Lime #4F6600 (6,2 : 1).
-6. **Überall gleich:** Website, Etiketten, Kleidersäcke, Sticker, Stories, Event-Bändchen. Ein Lime-Tape-Etikett innen in jedem Kleidungsstück.
-7. **Nicht wechseln.** Mindestens 2–3 Jahre durchziehen, bevor bewertet wird.
+1. **Orange + Schwarz + Weiß.** Keine weitere Akzentfarbe.
+2. **Orange als Fläche und Zeichen:** schräger „Tape“-Streifen, Textmarker-Unterstreichung, Vollfläche (Menü, Übergänge), Plus-Marken, Symbol-Füllung. Schrift auf Orange immer schwarz (6,3 : 1).
+3. **Immer mit dem Plus-Dreieck oder einem TRIAD-Symbol.** Erst Farbe + Zeichen zusammen sind eindeutig.
+4. **Name:** „TRIAD Orange“, überall gleich (Pantone-Referenz festlegen, sobald gedruckt wird).
+5. **Kleine farbige Schrift auf Weiß:** #B83C00 (5,5 : 1). Großes Orange nie als Fließtext.
+6. **Überall gleich:** Website, Etiketten, Kleidersäcke, Sticker, Stories, Event-Bändchen. Ein orangefarbener Tape-Streifen innen in jedem Teil.
+7. **Nicht wechseln.** Mindestens 2–3 Jahre durchziehen.
 
 ## Messen statt raten (ab ca. 6 Monaten)
 
@@ -40,7 +42,7 @@ Romaniuk-Test, einfach umzusetzen:
 2. Zeigen: nur die Farbe, bzw. nur Farbe + Plus-Dreieck, **ohne** Namen.
 3. Frage: „An welche Marke denkst du?“
 4. **Fame** = % Antworten „TRIAD“. **Uniqueness** = Anteil TRIAD an allen genannten Marken.
-5. Ziel nach 1–2 Jahren in der eigenen Szene: Fame > 30 %, Uniqueness > 70 %. Sinkt die Uniqueness wegen Brat-Grün → Kombination stärker betonen (Symbol, Tape-Form), nicht die Farbe wechseln.
+5. Ziel nach 1–2 Jahren in der eigenen Szene: Fame > 30 %, Uniqueness > 70 %. Sinkt die Uniqueness (Verwechslung mit anderen Orange-Marken) → Kombination stärker betonen (Symbol, Tape-Form), nicht die Farbe wechseln.
 
 ## Quellen
 
