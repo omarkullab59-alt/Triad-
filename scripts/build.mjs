@@ -181,8 +181,8 @@ export function build() {
     });
   }
   page('finder/index.html', { title: 'Finder', path: '/finder/', pageId: 'finder', body: finderPage(ctx), description: 'TRIAD Finder: search Vinted, Grailed, eBay, Vestiaire Collective, Depop and more at once.' });
-  page('darkroom/index.html', { title: 'Darkroom', path: '/darkroom/', pageId: 'darkroom', body: darkroomPage(ctx), description: 'TRIAD Darkroom: photographers upload, the crew develops, everyone reacts. Free, no account, you keep your rights.' });
-  page('darkroom/admin/index.html', { title: 'Darkroom moderation', path: '/darkroom/admin/', pageId: 'darkroom-admin', body: darkroomAdminPage(ctx), noindex: true });
+  page('darkroom/index.html', { title: 'Darkroom', path: '/darkroom/', pageId: 'darkroom', night: true, body: darkroomPage(ctx), description: 'TRIAD Darkroom: photographers upload, the crew develops, everyone reacts. Free, no account, you keep your rights.' });
+  page('darkroom/admin/index.html', { title: 'Darkroom moderation', path: '/darkroom/admin/', pageId: 'darkroom-admin', night: true, body: darkroomAdminPage(ctx), noindex: true });
   ctx.legal = loadMd('content/legal').sort((a, b) => (a.order || 9) - (b.order || 9));
   for (const l of ctx.legal) {
     page(`legal/${l.slug}/index.html`, { title: l.title, path: `/legal/${l.slug}/`, pageId: 'legal', theme: 'paper', body: legalPage(ctx, l), description: `${l.title} — TRIAD` });

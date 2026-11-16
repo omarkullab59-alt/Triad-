@@ -8,6 +8,57 @@ import {
 import { stamp, SYMBOLS } from './brand.mjs';
 
 /* ───────────────────────────── HOME ───────────────────────────── */
+// "Now on TRIAD": a live front page — open call, fresh Darkroom frames, latest story, headlines, quick find.
+function nowSection(ctx, lead) {
+  const api = (ctx.site.aiEndpoint || '').replace(/\/$/, '');
+  const call = activeCall(ctx.calls || []);
+  const heads = [
+    ...ctx.news.map((n) => ({ title: n.title, href: ctx.url(n.url), src: n.sample ? 'TRIAD · sample' : 'TRIAD', date: n.date, ext: false })),
+    ...ctx.wire.items.map((w) => ({ title: w.title, href: w.link, src: w.source, date: w.date, ext: true })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+  const built = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+  return `
+<section class="now" aria-labelledby="now-title">
+  <header class="now-head">
+    <span class="label"><span class="live-dot" aria-hidden="true"></span>00 / NOW ON TRIAD</span>
+    <h2 id="now-title" class="now-title">What&rsquo;s happening.</h2>
+    <span class="label label--dim">Updated ${e(built)} &middot; Berlin</span>
+  </header>
+  <div class="now-grid">
+    ${call ? `<a class="now-card now-call" href="${ctx.url('/darkroom/')}#submit">
+      <span class="label"><span class="tape">OPEN CALL ${e(call.number || '')}</span></span>
+      <strong class="now-call-title">${e(call.title)}</strong>
+      <span class="now-call-brief serif">${e(call.brief || '')}</span>
+      <span class="label now-call-cta">Submit until ${e(fmtShort(call.end))} &middot; <span data-dr-countdown data-end="${e(call.end)}"></span> &#8594;</span>
+    </a>` : `<a class="now-card now-call" href="${ctx.url('/darkroom/')}">
+      <span class="label"><span class="tape">DARKROOM</span></span>
+      <strong class="now-call-title">Your frames.</strong>
+      <span class="now-call-brief serif">Upload your photos &mdash; the crew develops every one by hand.</span>
+      <span class="label now-call-cta">Submit photos &#8594;</span>
+    </a>`}
+    <section class="now-card now-dark" data-now-darkroom data-api="${e(api)}" aria-labelledby="now-dark-title">
+      <header class="now-card-head"><h3 id="now-dark-title" class="label">${symbol('pyramid', { cls: 'chip-sym' })}Fresh from the Darkroom</h3><a class="label now-more" href="${ctx.url('/darkroom/')}">The wall &#8594;</a></header>
+      <ul class="now-thumbs" data-now-thumbs>${Array.from({ length: 4 }, () => '<li class="dr-ghost" aria-hidden="true" style="--h:100%"></li>').join('')}</ul>
+      <p class="now-empty serif" data-now-empty hidden>${api ? 'The wall is waiting for the first frames.' : 'Opening soon &mdash; be the first on the wall.'}</p>
+    </section>
+    <a class="now-card now-story" href="${ctx.url(lead.url)}">
+      <span class="now-story-img">${imgTag({ src: lead.cover, alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}</span>
+      <span class="label">${symbol('chord', { cls: 'chip-sym' })}Read &middot; ${e(lead.category)} &middot; ${lead.readTime} min</span>
+      <strong class="now-story-title">${e(lead.title)}</strong>
+    </a>
+    <section class="now-card now-wire" aria-labelledby="now-wire-title">
+      <header class="now-card-head"><h3 id="now-wire-title" class="label">${symbol('air', { cls: 'chip-sym' })}The wire</h3><a class="label now-more" href="${ctx.url('/news/')}">All news &#8594;</a></header>
+      <ol class="now-heads">${heads.map((h) => `<li><a href="${e(h.href)}"${h.ext ? ' target="_blank" rel="noopener nofollow"' : ''}><span class="label label--dim">${e(h.src)}</span><span class="now-head-title">${e(h.title)}</span></a></li>`).join('')}</ol>
+    </section>
+    <form class="now-card now-find" action="${ctx.url('/finder/')}" role="search">
+      <label for="now-q" class="label">${symbol('delta', { cls: 'chip-sym' })}Find it secondhand</label>
+      <div class="now-find-row"><input id="now-q" name="q" type="search" placeholder="e.g. Carhartt Detroit jacket" autocomplete="off" enterkeyhint="search"><button type="submit" class="btn btn--solid">Find</button></div>
+      <span class="label label--dim">Vinted, Grailed, eBay, Depop &amp; more at once</span>
+    </form>
+  </div>
+</section>`;
+}
+
 export function homePage(ctx) {
   const { site, articles, news, creatives, issues, archive } = ctx;
   const featured = articles.filter((a) => a.featured);
@@ -39,6 +90,8 @@ export function homePage(ctx) {
 </section>
 
 ${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n.title)}`), 'marquee--news')}
+
+${nowSection(ctx, lead)}
 
 <section class="block block--stories" id="latest">
   ${sectionHead({ index: '01 / MAGAZINE', sym: 'fire', title: 'Beyond the ordinary.', link: '/magazine/', linkText: 'All stories', kicker: 'Latest from the magazine — long-form, slow, unrepeatable.' }, ctx)}
