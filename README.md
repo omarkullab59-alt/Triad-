@@ -76,6 +76,10 @@ Schritt-für-Schritt-Anleitung: [`docs/REDAKTION.md`](docs/REDAKTION.md)
 
 `scripts/fetch-wire.mjs` liest alle 3 Stunden die RSS-Feeds aus `content/sources.json` (kein API-Key) und zeigt Schlagzeile + Quelle + Link. Läuft automatisch in GitHub Actions; lokal: `node scripts/fetch-wire.mjs`.
 
+### Finder mit KI- & Foto-Suche
+
+Finder (`/finder/`) sucht auf Vinted, Grailed, eBay & Co. Optional mit Foto- und KI-Erkennung über einen Cloudflare Worker + Claude Haiku: Einrichtung in [`docs/KI-FINDER.md`](docs/KI-FINDER.md).
+
 ## Architektur
 
 ```

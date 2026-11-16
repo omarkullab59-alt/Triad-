@@ -391,8 +391,9 @@
       return { q, en, size, price };
     };
     const build = (tpl, q) => tpl.replace('{q-}', encodeURIComponent(q.toLowerCase().replace(/\s+/g, '-'))).replace('{q}', encodeURIComponent(q));
-    const run = (raw, push = true) => {
-      const p = parse(raw);
+    const run = (raw, push = true, ai = null) => {
+      const p = parse(raw || '');
+      if (ai) { p.q = ai.queryDe || ai.queryEn; p.en = ai.queryEn || ai.queryDe; }
       if (!p.q) return;
       $('[data-finder-query]', finder).textContent = `“${p.q}”`;
       const notes = [p.en !== p.q ? `English platforms: “${p.en}”` : '', p.size ? `size ${p.size}` : '', p.price ? `max ${p.price} €` : ''].filter(Boolean);
@@ -410,10 +411,88 @@
         })
         .join('');
       box.hidden = false;
-      if (push) history.replaceState(null, '', `${location.pathname}?q=${encodeURIComponent(raw)}`);
+      if (!ai) $('[data-ai-result]', finder).hidden = true;
+      if (push) history.replaceState(null, '', `${location.pathname}?q=${encodeURIComponent(ai ? p.q : raw)}`);
       box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     };
-    form.addEventListener('submit', (e) => { e.preventDefault(); run(input.value); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (photo && endpoint) return askAI();
+      run(input.value);
+    });
+
+    /* AI + photo (only when a Worker endpoint is configured) */
+    const endpoint = finder.dataset.ai;
+    let photo = null; // base64 jpeg
+    const aiBox = $('[data-ai-result]', finder);
+    const hint = $('[data-finder-hint]', finder);
+    if (endpoint) {
+      $('[data-ai-controls]', finder).hidden = false;
+      $('[data-photo-title]', finder).textContent = 'Photo search';
+      $('[data-photo-text]', finder).textContent = 'Add a photo of the piece — TRIAD AI recognises item, colour, material and visible labels and builds the search for you. Your photo is sent only for recognition (via Anthropic’s Claude) and is not stored.';
+      $('[data-lens-link]', finder).hidden = true;
+    }
+    const shrink = (file) => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 1024, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(img.src);
+        resolve(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => reject(new Error('unreadable'));
+      img.src = URL.createObjectURL(file);
+    });
+    $('[data-photo-input]', finder)?.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await shrink(file);
+        photo = dataUrl.split(',')[1];
+        $('[data-photo-img]', finder).src = dataUrl;
+        $('[data-photo-preview]', finder).hidden = false;
+        askAI();
+      } catch (_) {
+        hint.textContent = 'This photo format could not be read. Try a JPG or PNG.';
+      }
+    });
+    $('[data-photo-remove]', finder)?.addEventListener('click', () => {
+      photo = null; $('[data-photo-preview]', finder).hidden = true; $('[data-photo-input]', finder).value = '';
+    });
+    $('[data-ai-go]', finder)?.addEventListener('click', () => askAI());
+
+    async function askAI() {
+      const text = input.value.trim();
+      if (!text && !photo) { hint.textContent = 'Describe the piece or add a photo first.'; input.focus(); return; }
+      finder.classList.add('is-thinking');
+      hint.textContent = photo ? 'Looking at your photo…' : 'Refining your search…';
+      try {
+        const res = await fetch(endpoint.replace(/\/$/, '') + '/analyze', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ text, image: photo || undefined }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'error');
+        if (!data.confidence) { hint.textContent = data.note || 'No fashion item recognised. Try another photo or describe it.'; return; }
+        const itemL = (data.item || '').toLowerCase();
+        const facts = [data.brand && data.brandConfidence >= 0.5 ? data.brand : null, ...[data.color, data.material].filter((x) => x && !itemL.includes(x.toLowerCase())), data.item, data.era].filter(Boolean);
+        $('[data-ai-recognised]', finder).textContent = `Recognised: ${facts.join(' · ')} (${Math.round(data.confidence * 100)}%)`;
+        $('[data-ai-note]', finder).textContent = data.note || '';
+        $('[data-ai-alts]', finder).innerHTML = (data.alternatives || [])
+          .map((a) => `<button type="button" class="chip" data-alt="${a.replace(/"/g, '&quot;')}">${a} &#8594;</button>`).join('');
+        $$('[data-alt]', finder).forEach((b) => b.addEventListener('click', () => run(text, true, { queryDe: b.dataset.alt, queryEn: b.dataset.alt })));
+        run(text, true, data);
+        aiBox.hidden = false;
+        hint.textContent = 'Not quite right? Edit the words or try an alternative below.';
+      } catch (err) {
+        hint.textContent = err.message === 'rate_limited' ? 'Too many AI searches right now — try again in a minute.' : 'AI search is unavailable right now. The normal search still works.';
+        if (text) run(text);
+      } finally {
+        finder.classList.remove('is-thinking');
+      }
+    }
     $$('[data-finder-example]', finder).forEach((b) => b.addEventListener('click', () => { input.value = b.dataset.finderExample; run(input.value); }));
     const initial = new URLSearchParams(location.search).get('q');
     if (initial) { input.value = initial; run(initial, false); }

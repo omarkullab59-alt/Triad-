@@ -9,9 +9,18 @@
   "location": "BERLIN / LONDON / NEW YORK",
   "email": "transmission@triad.example",
   "social": [
-    { "label": "Instagram", "url": "https://instagram.com" },
-    { "label": "TikTok", "url": "https://tiktok.com" },
-    { "label": "SoundCloud", "url": "https://soundcloud.com" }
+    {
+      "label": "Instagram",
+      "url": "https://instagram.com"
+    },
+    {
+      "label": "TikTok",
+      "url": "https://tiktok.com"
+    },
+    {
+      "label": "SoundCloud",
+      "url": "https://soundcloud.com"
+    }
   ],
   "heroImages": [
     "https://picsum.photos/seed/triad-campaign-veil/1800/1200?grayscale",
@@ -39,5 +48,6 @@
     "Streetwear Releases",
     "Industry",
     "Culture"
-  ]
+  ],
+  "aiEndpoint": ""
 }

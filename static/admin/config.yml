@@ -175,6 +175,7 @@ collections:
           - { label: Saison, name: season, widget: string }
           - { label: Orte, name: location, widget: string }
           - { label: E-Mail, name: email, widget: string }
+          - { label: KI-Finder Adresse (Worker-URL), name: aiEndpoint, widget: string, required: false, hint: "z. B. https://triad-finder-ai.<name>.workers.dev — leer = KI aus" }
           - { label: Hero-Bilder (Startseite), name: heroImages, widget: list, field: { label: Bild, name: image, widget: image } }
           - { label: Kampagnenbild, name: campaignImage, widget: image }
           - { label: Social Links, name: social, widget: list, fields: [{ label: Name, name: label, widget: string }, { label: Link, name: url, widget: string }] }
