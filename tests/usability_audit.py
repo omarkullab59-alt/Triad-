@@ -31,6 +31,11 @@ PAGES = [
     ("News", "/news/"),
     ("News article", "/news/vanta-works-drops-unbranded-outerwear/"),
     ("Archive", "/archive/"),
+    ("Voices", "/people/"),
+    ("Person", "/people/hanne-wolter/"),
+    ("Finder", "/finder/"),
+    ("Darkroom", "/darkroom/"),
+    ("Datenschutz", "/legal/datenschutz/"),
     ("About", "/about/"),
 ]
 PROFILES = {
@@ -218,11 +223,40 @@ async def t_about_keyboard(page):
     await page.keyboard.press("Enter"); await page.wait_for_url("**/about/")
     return presses + 1
 
+async def t_finder(page):
+    await page.goto(BASE + "/finder/", wait_until="domcontentloaded")
+    await page.fill("#finder-q", "Carhartt Detroit Jacke")
+    await page.keyboard.press("Enter")
+    await page.wait_for_selector(".market a")
+    assert await page.locator(".market a").count() >= 5
+    return 2
+
+async def t_darkroom_submit(page):
+    import glob
+    await page.goto(BASE + "/darkroom/", wait_until="domcontentloaded")
+    await page.get_by_role("link", name="Submit photos").click()
+    await page.set_input_files("[data-dr-files]", sorted(glob.glob("/tmp/drimg/*.jpg"))[:2])
+    await page.fill("input[name=name]", "Audit Tester")
+    await page.check("input[name=consent]")
+    await page.click("[data-dr-send]")
+    await page.wait_for_selector(".dr-status.is-ok", timeout=15000)
+    return 5
+
+async def t_darkroom_react(page):
+    await page.goto(BASE + "/darkroom/", wait_until="domcontentloaded")
+    btn = page.locator(".dr-react[data-kind=delta]").first
+    await btn.wait_for(timeout=5000)
+    await btn.scroll_into_view_if_needed(); await btn.click()
+    await page.wait_for_function("document.querySelector('.dr-react[data-kind=delta]').getAttribute('aria-pressed')==='true'")
+    return 1
+
 TASKS = {
     "desktop": [("Artikel von Startseite öffnen", t_find_article), ("News nach Thema filtern + öffnen", t_filter_news),
-                ("Archiv-Bild per Tastatur öffnen/blättern/schließen", t_archive_keyboard), ("About nur per Tastatur erreichen", t_about_keyboard)],
+                ("Archiv-Bild per Tastatur öffnen/blättern/schließen", t_archive_keyboard), ("About nur per Tastatur erreichen", t_about_keyboard),
+                ("Finder: Text-Suche → Plattform-Links", t_finder), ("Darkroom: auf ein Foto reagieren", t_darkroom_react)],
     "mobile": [("Artikel von Startseite öffnen", t_find_article), ("News nach Thema filtern + öffnen", t_filter_news),
-               ("Über das Menü zum Archiv", t_menu_nav)],
+               ("Über das Menü zum Archiv", t_menu_nav), ("Finder: Text-Suche → Plattform-Links", t_finder),
+               ("Darkroom: 2 Fotos einreichen", t_darkroom_submit), ("Darkroom: auf ein Foto reagieren", t_darkroom_react)],
 }
 
 async def main():

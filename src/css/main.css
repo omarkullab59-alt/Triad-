@@ -989,3 +989,4 @@ html:has(.site-header.is-hidden) .filter-bar { top: 0; }
 }
 @media (max-width: 420px) { .dr-wall { columns: 1; } }
 .legal-body { padding-bottom: 80px; } .legal-body h2 { margin-top: 1.6em; } .footer-legal a { text-decoration: underline; text-underline-offset: 3px; }
+.footer-legal a, .dr-credit a { display: inline-block; padding-block: 5px; }
