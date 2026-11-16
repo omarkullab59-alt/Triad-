@@ -1,76 +1,56 @@
-# KI- & Foto-Suche im Finder einschalten
+# KI- & Foto-Suche im Finder — kostenlos
 
-> **Kostenlos ohne Einrichtung (bereits live):** Kachel „Google — all shops“ (eine Google-Suche über alle Marktplätze) und Google Lens für Fotos (manuell hochladen, Ergebnis in den Finder einfügen). 0 €, kein Konto.
->
-> **Kostenlose automatische Foto-Erkennung (optional):** über Cloudflare Workers AI im kostenlosen Cloudflare-Konto, ohne Kreditkarte — Umbau auf Anfrage. Die Claude-Variante unten braucht ein bezahltes Anthropic-Konto.
+**Kosten: 0 €.** Keine Kreditkarte, keine Rechnungsadresse, kein KI-Konto. Nur ein kostenloses Cloudflare-Konto.
 
-Der Code ist fertig und getestet. Damit er live geht, braucht es drei Zugänge, die nur ihr anlegen könnt (Konten auf euren Namen). Dauer: ca. 15 Minuten, einmalig.
+## Was schon ohne Einrichtung live ist
+- Kachel **„Google — all shops“**: eine Google-Suche über alle Marktplätze gleichzeitig.
+- **Google Lens** für Fotos: Foto dort hochladen, Ergebnis in den Finder tippen.
 
-## Wie es funktioniert
+## Was mit Cloudflare dazukommt
+Im Finder erscheinen **„Add photo“** und **„Search with AI“**: Foto hochladen → die KI erkennt Teil, Farbe, Material, sichtbare Labels → fertige Suchen auf Deutsch und Englisch + 3 Alternativen.
 
 ```
-Handy/Browser ──Foto+Text──▶ Cloudflare Worker (euer kleiner Server, kostenlos)
-                                 │  hält den geheimen KI-Schlüssel
-                                 ▼
-                           Claude Haiku 4.5 (Anthropic) erkennt Teil, Farbe, Material, Label
-                                 │
-Finder ◀──── Suchbegriffe DE + EN + Alternativen ──┘  → Vinted, Grailed, eBay …
+Browser ──Foto (≈100 KB)──▶ Cloudflare Worker ──▶ Workers AI · Mistral Small 3.1 (Bild + Text)
+Finder ◀── Suchbegriffe DE/EN + Alternativen ──┘   → Vinted, Grailed, eBay …
 ```
 
-- Fotos werden im Browser auf max. 1024 px verkleinert (~100 KB) und nur zur Erkennung gesendet, nicht gespeichert.
-- Die KI beschreibt nur Kleidung, keine Personen, und rät keine Marken ohne sichtbares Label.
-- Schutz: Nur eure Website darf den Worker benutzen; max. 10 KI-Suchen pro Minute pro Besucher.
+- **Kostenlos:** Workers AI gibt jedem Konto 10.000 „Neurons“ pro Tag gratis (setzt sich täglich zurück). Grobe Schätzung: einige Dutzend bis ca. 150 Foto-Suchen pro Tag.
+- **Kein Kostenrisiko:** Ohne hinterlegte Karte kann nichts berechnet werden. Ist das Tageskontingent leer, schaltet der Finder automatisch auf die normale Suche um.
+- **EU-tauglich:** Mistral ist ein französisches, offen lizenziertes Modell. (Metas Llama-Bildmodelle sind in der EU nicht nutzbar, deshalb nicht verwendet.)
+- **Schutz:** Nur eure Website darf den Worker nutzen; max. 10 KI-Suchen pro Minute pro Besucher.
+- **Datenschutz:** Die KI beschreibt nur Kleidung, keine Personen. TRIAD speichert keine Fotos.
 
-## Kosten
+## Einrichtung (ca. 10 Minuten, einmalig)
 
-Modell Claude Haiku 4.5: $1 pro Mio. Input-Tokens, $5 pro Mio. Output-Tokens. Ein Foto (1024 px) ≈ 1.300 Tokens.
+### 1. Cloudflare-Konto
+1. https://dash.cloudflare.com/sign-up → kostenlos registrieren (nur E-Mail, keine Karte).
+2. In der Übersicht rechts die **Account ID** kopieren.
+3. Oben rechts Profil → **API Tokens** → **Create Token** → Vorlage **„Edit Cloudflare Workers“** → *Continue* → *Create* → Token kopieren.
 
-| | ca. Kosten |
-| --- | --- |
-| 1 Foto-Suche | ~0,3 Cent |
-| 1 Text-Suche | ~0,1 Cent |
-| 1.000 Foto-Suchen | ~3 € |
-| Cloudflare Worker | 0 € (Free-Plan) |
-
-→ Im Anthropic-Konto ein **monatliches Ausgabenlimit** setzen (z. B. 10 €). Dann kann nie mehr passieren.
-
-## Einrichtung
-
-### 1. Anthropic (KI)
-1. https://console.anthropic.com → Konto anlegen, Zahlungsmethode + Guthaben hinzufügen.
-2. Unter *Limits* ein monatliches Limit setzen.
-3. *API Keys* → **Create Key** → Name `triad-finder` → Schlüssel kopieren (beginnt mit `sk-ant-`).
-
-### 2. Cloudflare (Server)
-1. https://dash.cloudflare.com → kostenloses Konto.
-2. Rechts in der Übersicht die **Account ID** kopieren.
-3. Profil → *API Tokens* → **Create Token** → Vorlage **„Edit Cloudflare Workers“** → Token kopieren.
-
-### 3. GitHub (Schlüssel sicher hinterlegen)
-Repo `Triad-` → **Settings → Secrets and variables → Actions → New repository secret**, drei Mal:
+### 2. In GitHub hinterlegen
+Repo `Triad-` → **Settings → Secrets and variables → Actions → New repository secret**, zwei Mal:
 
 | Name | Wert |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | Schlüssel aus Schritt 1 |
-| `CLOUDFLARE_API_TOKEN` | Token aus Schritt 2 |
-| `CLOUDFLARE_ACCOUNT_ID` | Account ID aus Schritt 2 |
+| `CLOUDFLARE_API_TOKEN` | Token aus Schritt 1 |
+| `CLOUDFLARE_ACCOUNT_ID` | Account ID aus Schritt 1 |
 
-Schlüssel nie in Chats, Code oder Mails einfügen — nur hier.
+Nie in Chats, Code oder Mails einfügen — nur hier.
 
-### 4. Starten
+### 3. Starten
 1. Repo → **Actions → „Deploy Finder AI“ → Run workflow**.
 2. Nach ~1 Minute steht in der Zusammenfassung die **Worker-URL** (z. B. `https://triad-finder-ai.<name>.workers.dev`).
-3. Im Editor → **Startseite & Allgemein → KI-Finder Adresse** → URL einfügen → Speichern.
-4. Nach ~1 Minute erscheinen im Finder **„Add photo“** und **„Search with AI“**.
+3. Editor → **Startseite & Allgemein → KI-Finder Adresse** → URL einfügen → Speichern.
+4. Nach ~1 Minute sind „Add photo“ und „Search with AI“ im Finder sichtbar.
 
 Ausschalten: Feld „KI-Finder Adresse“ leeren.
 
-## Rechtliches (wichtig vor dem Einschalten)
+## Später: mehr Qualität (optional, kostenpflichtig)
+Der Worker kann auch Claude (Anthropic) nutzen: in `worker/finder-ai/wrangler.toml` `PROVIDER = "anthropic"` setzen und das Secret `ANTHROPIC_API_KEY` hinzufügen (braucht ein Anthropic-Konto mit Zahlungsmittel, ca. 0,3 Cent pro Foto-Suche).
 
-Fotos werden an Anthropic (USA) zur Verarbeitung übermittelt. Das muss in die **Datenschutzerklärung**. Außerdem braucht eine deutsche Website ein **Impressum** und eine Datenschutzerklärung. Beides fehlt noch — vor dem öffentlichen Start ergänzen (am besten mit einem Generator wie e-recht24 oder anwaltlich prüfen lassen).
+## Rechtliches
+Fotos werden zur Erkennung an Cloudflare übermittelt → gehört in die **Datenschutzerklärung**. Impressum und Datenschutzerklärung fehlen der Website noch — vor dem öffentlichen Start ergänzen.
 
 ## Technik
-
-- Code: `worker/finder-ai/src/index.js`, Konfiguration `worker/finder-ai/wrangler.toml`
-- Tests: `node tests/worker.test.mjs` (mit simulierter KI, laufen bei jedem Deploy)
-- Modell wechseln: `MODEL` in `wrangler.toml`
+- Code: `worker/finder-ai/src/index.js` · Konfiguration: `worker/finder-ai/wrangler.toml`
+- Tests: `node tests/worker.test.mjs` (simulierte KI; laufen bei jedem Deploy automatisch)

@@ -1,16 +1,15 @@
 # Cloudflare Worker for the TRIAD Finder (photo + AI search).
+# Free: runs on Workers AI's daily free allocation — no credit card, no other account.
 # Deployed by .github/workflows/deploy-worker.yml — see docs/KI-FINDER.md
 name = "triad-finder-ai"
 main = "src/index.js"
 compatibility_date = "2025-06-01"
 workers_dev = true
 
+[ai]
+binding = "AI"
+
 [vars]
 ALLOWED_ORIGINS = "https://omarkullab59-alt.github.io,http://localhost:4321"
-MODEL = "claude-haiku-4-5"
-
-# Per-visitor limit: 10 AI searches per minute per IP.
-[[ratelimits]]
-name = "LIMITER"
-namespace_id = "1001"
-simple = { limit = 10, period = 60 }
+PROVIDER = "workers-ai"          # or "anthropic" (needs ANTHROPIC_API_KEY secret, paid)
+MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct"
