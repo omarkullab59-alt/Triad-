@@ -180,6 +180,7 @@ content:
       - { name: season, label: Saison, type: string }
       - { name: location, label: Orte, type: string }
       - { name: email, label: E-Mail, type: string }
+      - { name: aiEndpoint, label: "KI-Finder Adresse (Worker-URL, leer = aus)", type: string }
       - { name: heroImages, label: Hero-Bilder (Startseite), type: image, list: true }
       - { name: campaignImage, label: Kampagnenbild, type: image }
       - name: social

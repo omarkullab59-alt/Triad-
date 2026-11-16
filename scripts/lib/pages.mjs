@@ -498,12 +498,20 @@ export function finderPage(ctx) {
   <p class="page-deck serif">Describe the piece once. TRIAD searches Vinted, Grailed, eBay and more for you &mdash; then you look at the results there.</p>
 </section>
 
-<section class="finder" data-finder data-markets='${e(JSON.stringify(ctx.marketplaces))}'>
+<section class="finder" data-finder data-markets='${e(JSON.stringify(ctx.marketplaces))}' data-ai="${e(ctx.site.aiEndpoint || '')}">
   <form class="finder-form" role="search" data-finder-form>
     <label for="finder-q" class="label">What are you looking for?</label>
     <div class="finder-input">
-      <input id="finder-q" name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="e.g. black military jacket 90s, size M" required>
+      <input id="finder-q" name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="e.g. black military jacket 90s, size M">
       <button type="submit" class="finder-go">Search &#8594;</button>
+    </div>
+    <div class="finder-ai" data-ai-controls hidden>
+      <label class="chip finder-photo-btn">
+        <input type="file" accept="image/*" data-photo-input class="visually-hidden">
+        ${symbol('sierpinski', { cls: 'chip-sym' })}<span>Add photo</span>
+      </label>
+      <figure class="photo-preview" data-photo-preview hidden><img alt="Selected photo" data-photo-img><button type="button" class="photo-remove" data-photo-remove aria-label="Remove photo">&#10005;</button></figure>
+      <button type="button" class="chip chip--ai" data-ai-go>${symbol('delta', { cls: 'chip-sym' })}<span>Search with AI</span></button>
     </div>
     <p class="finder-hint label label--dim" data-finder-hint>German or English both work. Brand + piece + detail works best.</p>
   </form>
@@ -514,6 +522,12 @@ export function finderPage(ctx) {
   </div>
 
   <div class="finder-results" data-finder-results aria-live="polite" hidden>
+    <div class="ai-result" data-ai-result hidden>
+      <span class="label"><span class="tape">TRIAD AI</span></span>
+      <p class="ai-recognised" data-ai-recognised></p>
+      <p class="serif ai-note" data-ai-note></p>
+      <div class="ai-alts" data-ai-alts></div>
+    </div>
     <header class="finder-results-head">
       <span class="label">Results for</span>
       <strong class="finder-query" data-finder-query></strong>
@@ -526,9 +540,9 @@ export function finderPage(ctx) {
   <aside class="finder-photo">
     ${symbol('sierpinski', { cls: 'finder-photo-sym' })}
     <div>
-      <span class="label">Have a photo instead?</span>
-      <p class="serif">Use Google Lens to identify the piece, then paste the name here. Photo search inside TRIAD is in development.</p>
-      <a class="btn-line" href="https://lens.google.com/" target="_blank" rel="noopener">Open Google Lens &#8599;</a>
+      <span class="label" data-photo-title>Have a photo instead?</span>
+      <p class="serif" data-photo-text>Use Google Lens to identify the piece, then paste the name here. Photo search inside TRIAD is in development.</p>
+      <a class="btn-line" href="https://lens.google.com/" target="_blank" rel="noopener" data-lens-link>Open Google Lens &#8599;</a>
     </div>
   </aside>
 </section>`;

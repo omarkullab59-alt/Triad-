@@ -1,0 +1,56 @@
+name: Deploy Finder AI (Cloudflare Worker)
+
+# Publishes worker/finder-ai to Cloudflare. Needs three repository secrets
+# (Settings → Secrets and variables → Actions): CLOUDFLARE_API_TOKEN,
+# CLOUDFLARE_ACCOUNT_ID, ANTHROPIC_API_KEY. See docs/KI-FINDER.md.
+
+on:
+  push:
+    branches: [main]
+    paths: ["worker/**", ".github/workflows/deploy-worker.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Unit tests (mocked AI)
+        run: node tests/worker.test.mjs
+
+      - name: Check secrets
+        id: check
+        env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          AK: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$CF" ] || [ -z "$AK" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "### Finder AI not deployed: secrets missing (see docs/KI-FINDER.md)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy worker
+        id: deploy
+        if: steps.check.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker/finder-ai
+          secrets: |
+            ANTHROPIC_API_KEY
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Show URL
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          echo "### Finder AI is live" >> "$GITHUB_STEP_SUMMARY"
+          echo "Worker URL: ${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Copy this URL into the CMS → Startseite & Allgemein → KI-Finder Adresse." >> "$GITHUB_STEP_SUMMARY"
