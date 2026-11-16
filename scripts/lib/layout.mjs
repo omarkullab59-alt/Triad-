@@ -1,12 +1,13 @@
 // Page shell: <head> with SEO + social + JSON-LD, header, menu overlay, footer.
 import { escapeHtml as e } from './markdown.mjs';
 import { emblem, glyph, label, marquee } from './components.mjs';
+import { symbol } from './brand.mjs';
 
 const NAV = [
-  { href: '/magazine/', text: 'Magazine', n: '01' },
-  { href: '/news/', text: 'News', n: '02' },
-  { href: '/archive/', text: 'Archive', n: '03' },
-  { href: '/about/', text: 'About', n: '04' },
+  { href: '/magazine/', text: 'Magazine', n: '01', sym: 'fire' },
+  { href: '/news/', text: 'News', n: '02', sym: 'air' },
+  { href: '/archive/', text: 'Archive', n: '03', sym: 'sierpinski' },
+  { href: '/about/', text: 'About', n: '04', sym: 'borromean' },
 ];
 
 export function layout(ctx, { title, description, path, body, image, type = 'website', jsonld, theme = 'dark', pageId = 'page', noindex = false }) {
@@ -67,11 +68,16 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
   <div class="header-meta">
     <span class="label label--dim">N&deg;${site.currentIssue}</span>
     <span class="label clock" data-clock>BER --:--</span>
+    <button class="motion-toggle label" type="button" data-motion-toggle aria-pressed="false" title="Pause all animation"><span class="mt-dot" aria-hidden="true"></span><span data-motion-label>Motion on</span></button>
   </div>
   <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu">
     <span class="mt-text">Index</span><span class="mt-lines" aria-hidden="true"><i></i><i></i><i></i></span>
   </button>
 </header>
+
+<nav class="tabbar" aria-label="Sections">
+  ${NAV.map((n) => `<a href="${ctx.url(n.href)}"${active(n.href)}>${symbol(n.sym, { cls: 'tab-icon' })}<span>${n.text}</span></a>`).join('')}
+</nav>
 
 <div class="menu" id="menu" hidden>
   <div class="menu-inner">

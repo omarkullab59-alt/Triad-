@@ -155,3 +155,128 @@ ${inner}
     'wordmark-stacked.svg': wrap(wordStack, '#fbfaf8', '#0a0a0a'),
   };
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+   SYMBOL LIBRARY — triangle, triad (Dreiklang), pyramid.
+   All drawn from scratch as geometry; public-domain shapes, TRIAD styling.
+   Every symbol: 100×100 viewBox, currentColor + var(--red) accent.
+   ────────────────────────────────────────────────────────────────────── */
+const svg = (inner, cls = '', label = '') =>
+  `<svg class="sym ${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'} fill="none" stroke="currentColor" stroke-linejoin="miter">${inner}</svg>`;
+const ACC = 'var(--red, #ff5a00)';
+
+/** Borromean rings: three rings bound together, no two linked on their own. */
+function borromean({ sw = 5 } = {}) {
+  const r = 22, R = 14, cx = 50, cy = 53;
+  const c = [0, 1, 2].map((i) => {
+    const a = ((-90 + i * 120) * Math.PI) / 180;
+    return [cx + R * Math.cos(a), cy + R * Math.sin(a)];
+  });
+  const inter = (p, q) => {
+    const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    const a = d / 2, h = Math.sqrt(r * r - a * a);
+    const m = [p[0] + ((q[0] - p[0]) * a) / d, p[1] + ((q[1] - p[1]) * a) / d];
+    const ox = (-(q[1] - p[1]) * h) / d, oy = ((q[0] - p[0]) * h) / d;
+    return [[m[0] + ox, m[1] + oy], [m[0] - ox, m[1] - oy]];
+  };
+  const ring = (i, color) =>
+    `<circle cx="${f(c[i][0])}" cy="${f(c[i][1])}" r="${r}" stroke="var(--bg, #fbfaf8)" stroke-width="${sw + 4}"/><circle cx="${f(c[i][0])}" cy="${f(c[i][1])}" r="${r}" stroke="${color}" stroke-width="${sw}"/>`;
+  const id = `bor${++uid}`;
+  const clip = (pts) => pts.map(([x, y]) => `<circle cx="${f(x)}" cy="${f(y)}" r="${sw + 3}"/>`).join('');
+  // draw order A,B,C then fix the cyclic crossings: B over C, A over B
+  return `<defs><clipPath id="${id}bc">${clip(inter(c[1], c[2]))}</clipPath><clipPath id="${id}ab">${clip(inter(c[0], c[1]))}</clipPath></defs>
+${ring(0, 'currentColor')}${ring(1, 'currentColor')}${ring(2, ACC)}
+<g clip-path="url(#${id}bc)">${ring(1, 'currentColor')}</g>
+<g clip-path="url(#${id}ab)">${ring(0, 'currentColor')}</g>`;
+}
+
+/** Alchemical element triangles. */
+function element(kind) {
+  const up = 'M50 14 L88 80 L12 80 Z', down = 'M50 86 L12 20 L88 20 Z';
+  const map = {
+    fire: `<path d="${up}" stroke-width="5"/>`,
+    air: `<path d="${up}" stroke-width="5"/><path d="M22 58 H78" stroke="${ACC}" stroke-width="5"/>`,
+    water: `<path d="${down}" stroke-width="5"/>`,
+    earth: `<path d="${down}" stroke-width="5"/><path d="M22 42 H78" stroke="${ACC}" stroke-width="5"/>`,
+  };
+  return map[kind];
+}
+
+/** Sierpinski triangle: triangles inside triangles — the archive pattern. */
+function sierpinski(depth = 3) {
+  const out = [];
+  const go = (a, b, c, d) => {
+    if (d === 0) { out.push(`${pt(a)} ${pt(b)} ${pt(c)}`); return; }
+    const ab = mul(add(a, b), 0.5), bc = mul(add(b, c), 0.5), ca = mul(add(c, a), 0.5);
+    go(a, ab, ca, d - 1); go(ab, b, bc, d - 1); go(ca, bc, c, d - 1);
+  };
+  go([50, 10], [94, 86], [6, 86], depth);
+  return out.map((p, i) => `<polygon points="${p}" fill="${i === 0 ? ACC : 'currentColor'}" stroke="none"/>`).join('');
+}
+
+/** Tonnetz: in the tone lattice every triangle is a triad (Dreiklang). C–E–G highlighted. */
+function tonnetz() {
+  const s = 31, h = s * 0.866, ox = 42, oy = 52;
+  const P = (x, y) => [ox + x * s, oy - y * h];
+  const nodes = { C: [0, 0], G: [1, 0], F: [-1, 0], E: [0.5, 1], A: [-0.5, 1], B: [1.5, 1], Ab: [-0.5, -1], Eb: [0.5, -1] };
+  const tri = (a, b, c, fill) => `<polygon points="${[a, b, c].map((k) => pt(P(...nodes[k]))).join(' ')}" fill="${fill}" stroke="currentColor" stroke-width="1.4"/>`;
+  return `${tri('F', 'C', 'A', 'none')}${tri('C', 'G', 'E', ACC)}${tri('G', 'B', 'E', 'none')}${tri('A', 'C', 'E', 'none')}${tri('C', 'Eb', 'G', 'none')}${tri('C', 'Ab', 'Eb', 'none')}
+${Object.entries(nodes)
+  .map(([k, v]) => { const [x, y] = P(...v); return `<circle cx="${f(x)}" cy="${f(y)}" r="6" fill="var(--bg, #fbfaf8)" stroke="currentColor" stroke-width="1.3"/><text x="${f(x)}" y="${f(y + 2.4)}" font-family="'JetBrains Mono', monospace" font-size="${k.length > 1 ? 5.6 : 7}" text-anchor="middle" fill="currentColor" stroke="none">${k.replace('b', '♭')}</text>`; })
+  .join('')}`;
+}
+
+/** Dreiklang on a staff: C–E–G stacked in thirds (root, third, fifth). */
+function chord() {
+  const lines = [30, 40, 50, 60, 70].map((y) => `<path d="M8 ${y} H92" stroke-width="1.6"/>`).join('');
+  const note = (y, fill) => `<ellipse cx="50" cy="${y}" rx="6.6" ry="4.3" transform="rotate(-22 50 ${y})" fill="${fill}" stroke="currentColor" stroke-width="2.4"/>`;
+  return `${lines}<path d="M36 80 H64" stroke-width="1.6"/>${note(80, ACC)}${note(70, 'none')}${note(60, 'none')}
+<text x="72" y="83" font-family="'JetBrains Mono', monospace" font-size="8" fill="currentColor" stroke="none">R</text>
+<text x="72" y="73" font-family="'JetBrains Mono', monospace" font-size="8" fill="currentColor" stroke="none">3</text>
+<text x="72" y="63" font-family="'JetBrains Mono', monospace" font-size="8" fill="currentColor" stroke="none">5</text>`;
+}
+
+/** Pyramid: elevation (stepped, three tiers) above, plan view below. */
+function pyramid() {
+  // elevation: one triangle cut into three tiers, apex in orange; plan view below
+  const A = [50, 6], L = [12, 66], R = [88, 66];
+  const at = (t) => [mul(add(mul(A, 1 - t), mul(L, t)), 1), mul(add(mul(A, 1 - t), mul(R, t)), 1)];
+  const [l1, r1] = at(1 / 3), [l2, r2] = at(2 / 3);
+  return `<polygon points="${pt(A)} ${pt(r1)} ${pt(l1)}" fill="${ACC}" stroke="none"/>
+<polygon points="${pt(A)} ${pt(R)} ${pt(L)}" stroke-width="3.4"/>
+<path d="M${pt(l1)} H${f(r1[0])} M${pt(l2)} H${f(r2[0])}" stroke-width="2.4"/>
+<rect x="36" y="74" width="28" height="20" stroke-width="2"/><path d="M36 74 L64 94 M64 74 L36 94" stroke-width="1.2"/>`;
+}
+
+/** Delta Δ — change; three plus marks at the corners. */
+function delta() {
+  const plus = (x, y) => `<path d="M${x - 7} ${y} H${x + 7} M${x} ${y - 7} V${y + 7}" stroke="${ACC}" stroke-width="4"/>`;
+  return `<path d="M50 18 L84 78 L16 78 Z" stroke-width="9"/>${plus(50, 18)}${plus(84, 78)}${plus(16, 78)}`;
+}
+
+export const SYMBOLS = {
+  borromean: { name: 'Borromean Rings', de: 'Borromäische Ringe', meaning: 'Three rings held together — remove one and the other two fall apart. No force stands alone.', draw: borromean },
+  fire: { name: 'Fire △', de: 'Feuer', meaning: 'Alchemical fire. Upward energy. Used for IMAGE.', draw: () => element('fire') },
+  air: { name: 'Air', de: 'Luft', meaning: 'Alchemical air. Breath, sound, signal. Used for SIGNAL.', draw: () => element('air') },
+  earth: { name: 'Earth', de: 'Erde', meaning: 'Alchemical earth. Matter, cloth, the body. Used for FORM.', draw: () => element('earth') },
+  water: { name: 'Water ▽', de: 'Wasser', meaning: 'Alchemical water. The inverted triangle — reserved for night editions.', draw: () => element('water') },
+  sierpinski: { name: 'Sierpiński Triangle', de: 'Sierpiński-Dreieck', meaning: 'Triangles inside triangles, endlessly. The archive: every piece contains the whole.', draw: () => sierpinski(3) },
+  tonnetz: { name: 'Tonnetz', de: 'Tonnetz', meaning: 'In the tone lattice every triangle is a triad. C–E–G, lit orange: the Dreiklang.', draw: tonnetz },
+  chord: { name: 'Dreiklang', de: 'Dreiklang', meaning: 'Root, third, fifth. Three notes stacked in thirds — the smallest harmony.', draw: chord },
+  pyramid: { name: 'Pyramid', de: 'Pyramide', meaning: 'Three tiers, seen from the side and from above. Structure built to outlast its makers.', draw: pyramid },
+  delta: { name: 'Delta + + +', de: 'Delta', meaning: 'Δ means change. Three plus marks: three forces added together.', draw: delta },
+};
+
+export function symbol(key, { cls = '', label = '' } = {}) {
+  const s = SYMBOLS[key];
+  return s ? svg(s.draw(), `sym--${key} ${cls}`, label) : '';
+}
+
+export function symbolFiles() {
+  const out = {};
+  for (const key of Object.keys(SYMBOLS)) {
+    const inner = symbol(key).replace('<svg ', '<svg x="200" y="200" width="800" height="800" ');
+    out[`symbol-${key}.svg`] = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" style="color:#0a0a0a;--red:#ff5a00;--bg:#fbfaf8"><rect width="100%" height="100%" fill="#fbfaf8"/>${inner}</svg>`;
+  }
+  return out;
+}

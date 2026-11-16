@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
 import { renderMarkdown, renderGallery, wordCount, escapeHtml } from './lib/markdown.mjs';
 import { layout } from './lib/layout.mjs';
-import { brandFiles, emblem } from './lib/brand.mjs';
+import { brandFiles, symbolFiles, emblem } from './lib/brand.mjs';
 import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage } from './lib/pages.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,7 +89,7 @@ export function build() {
   fs.mkdirSync(OUT, { recursive: true });
   copyDir(path.join(ROOT, 'static'), OUT);
   copyDir(path.join(ROOT, 'src'), path.join(OUT, 'assets'));
-  for (const [name, svg] of Object.entries(brandFiles())) write(`assets/brand/${name}`, svg);
+  for (const [name, svg] of Object.entries({ ...brandFiles(), ...symbolFiles() })) write(`assets/brand/${name}`, svg);
 
   // ── Pages ──────────────────────────────────────────────────
   const org = { '@type': 'Organization', name: 'TRIAD', url: site.url };

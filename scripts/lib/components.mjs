@@ -1,7 +1,7 @@
 // Reusable editorial components. Every function returns an HTML string.
 import { escapeHtml as e } from './markdown.mjs';
 import { imgTag, resolveImage } from './images.mjs';
-import { emblem, glyph } from './brand.mjs';
+import { emblem, glyph, symbol } from './brand.mjs';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 export const fmtDate = (d) => {
@@ -76,13 +76,13 @@ export function marquee(items, cls = '') {
   return `<div class="marquee ${cls}" aria-hidden="true"><div class="mq-track">${row}${row}</div></div>`;
 }
 
-export function sectionHead({ index, title, link, linkText, kicker = '' }, ctx) {
+export function sectionHead({ index, title, link, linkText, kicker = '', sym = '' }, ctx) {
   return `<header class="section-head">
-  <span class="sh-index">${e(index)}</span>
+  <span class="sh-index">${sym ? symbol(sym, { cls: 'sh-sym' }) : ''}${e(index)}</span>
   <h2 class="sh-title" data-split>${splitWords(title)}</h2>
   ${kicker ? `<p class="sh-kicker">${e(kicker)}</p>` : ''}
   ${link ? `<a class="sh-link" href="${ctx.url(link)}">${e(linkText)} <span aria-hidden="true">&#8594;</span></a>` : ''}
 </header>`;
 }
 
-export { emblem, glyph };
+export { emblem, glyph, symbol };

@@ -4,14 +4,34 @@
   const html = document.documentElement;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Motion preference (WCAG 2.2.2 pause control) ────────────── */
+  let stored = null;
+  try { stored = localStorage.getItem('triad-motion'); } catch (_) { /* private mode */ }
+  let reduced = stored ? stored === 'off' : prefersReduced;
+  const applyMotion = () => {
+    html.classList.toggle('motion-off', reduced);
+    $$('[data-motion-toggle]').forEach((b) => {
+      b.setAttribute('aria-pressed', String(reduced));
+      b.title = reduced ? 'Resume animation' : 'Pause all animation';
+      const l = $('[data-motion-label]', b);
+      if (l) l.textContent = reduced ? 'Motion off' : 'Motion on';
+    });
+  };
+  applyMotion();
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-motion-toggle]')) return;
+    reduced = !reduced;
+    try { localStorage.setItem('triad-motion', reduced ? 'off' : 'on'); } catch (_) { /* ignore */ }
+    applyMotion();
+  });
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   /* ── Ready / curtain ─────────────────────────────────────────── */
+  // Content is never hidden behind a loader: mark ready on the next frame.
   const ready = () => requestAnimationFrame(() => html.classList.add('is-ready'));
-  if (document.fonts && document.fonts.ready) {
-    Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 900))]).then(ready);
-  } else ready();
+  ready();
   addEventListener('pageshow', (e) => { if (e.persisted) { html.classList.remove('is-leaving'); ready(); } });
 
   /* ── Page transitions ────────────────────────────────────────── */
@@ -27,7 +47,7 @@
     e.preventDefault();
     html.classList.add('is-leaving');
     closeMenu();
-    setTimeout(() => (location.href = url.href), 480);
+    setTimeout(() => (location.href = url.href), 200);
   });
 
   /* ── Menu ────────────────────────────────────────────────────── */
@@ -100,31 +120,27 @@
     setInterval(tick, 15000);
   }
 
-  /* ── Hero: three campaign images, word rotator ───────────────── */
+  /* ── Hero: one campaign plate per visit (no auto-rotating carousel) ── */
   const hero = $('[data-hero]');
-  if (hero && !reduced) {
+  if (hero) {
     const slides = $$('.hero-slide', hero);
     const counter = $('[data-hero-counter]', hero);
-    let cur = 0;
-    if (slides.length > 1)
-      setInterval(() => {
-        if (document.hidden) return;
-        const prev = slides[cur];
-        cur = (cur + 1) % slides.length;
-        prev.classList.remove('is-active');
-        prev.classList.add('is-leaving');
-        slides[cur].classList.add('is-active');
-        setTimeout(() => prev.classList.remove('is-leaving'), 1700);
-        if (counter) counter.textContent = `0${cur + 1} / 0${slides.length}`;
-      }, 6000);
+    if (slides.length > 1) {
+      const pick = (Math.random() * slides.length) | 0;
+      slides.forEach((s, i) => s.classList.toggle('is-active', i === pick));
+      const img = $('img', slides[pick]);
+      img.loading = 'eager';
+      if (counter) counter.textContent = `PLATE 0${pick + 1} / 0${slides.length}`;
+    }
     const rot = $('[data-rotate]', hero);
-    if (rot) {
+    if (rot && !reduced) {
       const words = rot.dataset.rotate.split('|');
       let w = 0;
-      setInterval(() => {
-        w = (w + 1) % words.length;
+      const timer = setInterval(() => {
+        if (reduced || w >= words.length - 1) { clearInterval(timer); if (reduced) rot.textContent = words[0]; return; }
+        w++;
         scramble(rot, words[w]);
-      }, 2400);
+      }, 1100);
     }
   }
   function scramble(el, target) {
@@ -142,8 +158,9 @@
   }
 
   /* ── Parallax (campaign) ─────────────────────────────────────── */
-  const pWraps = reduced ? [] : $$('[data-parallax-wrap]');
+  const pWraps = $$('[data-parallax-wrap]');
   function parallax() {
+    if (reduced) { pWraps.forEach((w) => ($('[data-parallax]', w).style.transform = '')); return; }
     pWraps.forEach((wrap) => {
       const r = wrap.getBoundingClientRect();
       if (r.bottom < 0 || r.top > innerHeight) return;
@@ -161,10 +178,10 @@
       .map((w) => `<span class="mw${/beginning|three|vision|TRIAD/i.test(w) ? ' mw-red' : ''}">${w}</span>`)
       .join(' ');
     scrubWordsEls = $$('.mw', scrub);
-    if (reduced) scrubWordsEls.forEach((w) => w.classList.add('is-lit'));
   }
   function scrubWords() {
-    if (!scrubWordsEls.length || reduced) return;
+    if (!scrubWordsEls.length) return;
+    if (reduced) { scrubWordsEls.forEach((w) => { w.classList.add('is-lit'); w.classList.toggle('is-red', w.classList.contains('mw-red')); }); return; }
     const r = scrub.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.35)));
     const n = Math.round(p * scrubWordsEls.length);
