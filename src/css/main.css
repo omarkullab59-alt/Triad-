@@ -136,7 +136,8 @@ html:not(.js) [data-reveal], [data-reveal].is-in { opacity: 1; transform: none; 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 @keyframes tongue { 0%, 70%, 100% { opacity: 0; } 76%, 90% { opacity: 1; } }
-.emblem:hover .em-core { animation-duration: 12s; }
+.emblem .em-eye { transition: filter 0.4s; }
+.emblem.is-awake .em-eye { filter: drop-shadow(0 0 2px var(--red, #ff5a00)); }
 @media (prefers-reduced-motion: reduce) { .emblem * { animation: none !important; } .emblem .em-tongue { opacity: 1; } }
 
 .glyph { color: currentColor; }
