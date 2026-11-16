@@ -446,7 +446,7 @@ export function aboutPage(ctx) {
     <figure class="sys sys--palette">
       <ul class="palette">
         <li style="--c:#fbfaf8"><span>White</span><code>#FBFAF8</code></li>
-        <li style="--c:#ff5a00"><span>TRIAD Orange</span><code>#FF5A00</code></li>
+        <li style="--c:#c4ef2f"><span>TRIAD Lime</span><code>#C4EF2F</code></li>
         <li style="--c:#0a0a0a"><span>Black</span><code>#0A0A0A</code></li>
         <li style="--c:#efede8"><span>Wash</span><code>#EFEDE8</code></li>
         <li style="--c:#8d8f93"><span>Silver</span><code>#8D8F93</code></li>
@@ -454,7 +454,7 @@ export function aboutPage(ctx) {
       <figcaption><span class="label">08 — Palette</span></figcaption>
     </figure>
   </div>
-  <p class="system-downloads label">Download: ${['emblem-white', 'emblem-orange', 'emblem-black', 'emblem-mark', 'glyph-pattern', 'stamp-archive', 'wordmark-stacked']
+  <p class="system-downloads label">Download: ${['emblem-white', 'emblem-lime', 'emblem-black', 'emblem-mark', 'glyph-pattern', 'stamp-archive', 'wordmark-stacked']
     .map((f) => `<a href="${ctx.url(`/assets/brand/${f}.svg`)}" download>${f}.svg</a>`)
     .join(' / ')}</p>
 </section>

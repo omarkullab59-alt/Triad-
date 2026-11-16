@@ -1,3 +1,17 @@
+# TRIAD Farbe: Lime #C4EF2F (ab 16.11.2026, Orange ist komplett entfernt)
+
+| Rolle | Wert | Kontrast |
+|---|---|---|
+| Akzentfläche (Buttons, Tape, Highlighter, aktiver Tab) | `#C4EF2F` | Schwarz auf Lime 14,8:1 |
+| Akzent-Text auf Hell (Labels, Links, Fokus) | `#4F6800` („Lime-Ink“) | 6,0:1 auf Weiß |
+| Akzent auf Dunkel (Hero, Darkroom, Nachtmodus) | `#C4EF2F` | 14,7:1 auf Schwarz |
+| Plus-Zeichen | auf Hell schwarz, auf Dunkel Lime | – |
+
+**Regel:** Lime nie als Schrift auf Weiß (1,3:1, unlesbar). Auf hellen Flächen wird Lime immer als Fläche mit schwarzer Schrift eingesetzt. Der Hand-Tag bekommt dort eine schwarze Kontur (Graffiti-Stil).
+
+---
+Frühere Analyse (Orange-Phase), zur Dokumentation:
+
 # TRIAD Orange — #FF5A00
 
 Ziel: Wer diese Farbe sieht, denkt an TRIAD.

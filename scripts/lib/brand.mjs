@@ -52,8 +52,8 @@ function serpent(r = 57) {
   <polygon points="${horn2}" fill="currentColor" opacity=".7"/>
   <polygon points="${horn1}" fill="currentColor"/>
   <polygon points="${skull}" fill="currentColor"/>
-  <path d="M${pt(eye)} m-2.6 0 l2.6 -1.4 l2.6 1.4 l-2.6 1.4z" class="em-eye" fill="var(--red, #ff5a00)"/>
-  <path d="M${pt(t0)} L${pt(t1)} L${pt(f1)} M${pt(t1)} L${pt(f2)}" class="em-tongue" stroke="var(--red, #ff5a00)" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M${pt(eye)} m-2.6 0 l2.6 -1.4 l2.6 1.4 l-2.6 1.4z" class="em-eye" fill="var(--red, #c4ef2f)"/>
+  <path d="M${pt(t0)} L${pt(t1)} L${pt(f1)} M${pt(t1)} L${pt(f2)}" class="em-tongue" stroke="var(--red, #c4ef2f)" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </g>`;
 }
 
@@ -126,7 +126,7 @@ export function stamp({ top = 'TRIAD ARCHIVE', bottom = 'NOT FOR SALE', center =
 export function brandFiles() {
   const wrap = (inner, bg, fg, size = 1200) =>
     `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="color:${fg};--red:#ff5a00">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="color:${fg};--red:#c4ef2f">
 <rect width="100%" height="100%" fill="${bg}"/>
 ${inner}
 </svg>`;
@@ -140,17 +140,17 @@ ${inner}
 
   const wordStack = `<g font-family="'Anton', Impact, sans-serif" fill="#0a0a0a" text-anchor="middle">
   <text x="600" y="520" font-size="430" letter-spacing="-6">TRI</text>
-  <rect x="200" y="566" width="800" height="10" fill="#ff5a00"/>
+  <rect x="200" y="566" width="800" height="10" fill="#c4ef2f"/>
   <text x="600" y="1000" font-size="430" letter-spacing="-6">AD</text>
   <text x="600" y="1110" font-family="'JetBrains Mono', monospace" font-size="28" letter-spacing="10">EST. MMXXVI — INDEPENDENT</text></g>`;
 
   return {
     'emblem-black.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900), '#0a0a0a', '#fbfaf8'),
-    'emblem-orange.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900).replace('var(--red, #ff5a00)', '#fbfaf8'), '#ff5a00', '#0a0a0a'),
+    'emblem-lime.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900).replace('var(--red, #c4ef2f)', '#fbfaf8'), '#c4ef2f', '#0a0a0a'),
     'emblem-white.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900), '#fbfaf8', '#0a0a0a'),
-    'emblem-mark.svg': wrap(place(emblem({ ring: false }), 150, 150, 900), '#0a0a0a', '#ff5a00'),
-    'glyph-pattern.svg': wrap(pattern.join('\n'), '#ff5a00', '#0a0a0a'),
-    'stamp-archive.svg': wrap(place(stamp({ top: 'TRIAD ARCHIVE', bottom: 'PROPERTY OF THE COLLECTIVE', center: '003' }), 200, 200, 800), '#ff5a00', '#0a0a0a'),
+    'emblem-mark.svg': wrap(place(emblem({ ring: false }), 150, 150, 900), '#0a0a0a', '#c4ef2f'),
+    'glyph-pattern.svg': wrap(pattern.join('\n'), '#c4ef2f', '#0a0a0a'),
+    'stamp-archive.svg': wrap(place(stamp({ top: 'TRIAD ARCHIVE', bottom: 'PROPERTY OF THE COLLECTIVE', center: '003' }), 200, 200, 800), '#c4ef2f', '#0a0a0a'),
     'stamp-approved.svg': wrap(place(stamp({ top: 'OUTSIDE THE SYSTEM', bottom: 'APPROVED · NOT FOR SALE', center: 'III' }), 200, 200, 800), '#0a0a0a', '#c9c9c9'),
     'wordmark-stacked.svg': wrap(wordStack, '#fbfaf8', '#0a0a0a'),
   };
@@ -163,7 +163,7 @@ ${inner}
    ────────────────────────────────────────────────────────────────────── */
 const svg = (inner, cls = '', label = '') =>
   `<svg class="sym ${cls}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'} fill="none" stroke="currentColor" stroke-linejoin="miter">${inner}</svg>`;
-const ACC = 'var(--red, #ff5a00)';
+const ACC = 'var(--red, #c4ef2f)';
 
 /** Borromean rings: three rings bound together, no two linked on their own. */
 function borromean({ sw = 5 } = {}) {
@@ -263,7 +263,7 @@ export const SYMBOLS = {
   earth: { name: 'Earth', de: 'Erde', meaning: 'Alchemical earth. Matter, cloth, the body. Used for FORM.', draw: () => element('earth') },
   water: { name: 'Water ▽', de: 'Wasser', meaning: 'Alchemical water. The inverted triangle — reserved for night editions.', draw: () => element('water') },
   sierpinski: { name: 'Sierpiński Triangle', de: 'Sierpiński-Dreieck', meaning: 'Triangles inside triangles, endlessly. The archive: every piece contains the whole.', draw: () => sierpinski(3) },
-  tonnetz: { name: 'Tonnetz', de: 'Tonnetz', meaning: 'In the tone lattice every triangle is a triad. C–E–G, lit orange: the Dreiklang.', draw: tonnetz },
+  tonnetz: { name: 'Tonnetz', de: 'Tonnetz', meaning: 'In the tone lattice every triangle is a triad. C–E–G, lit lime: the Dreiklang.', draw: tonnetz },
   chord: { name: 'Dreiklang', de: 'Dreiklang', meaning: 'Root, third, fifth. Three notes stacked in thirds — the smallest harmony.', draw: chord },
   pyramid: { name: 'Pyramid', de: 'Pyramide', meaning: 'Three tiers, seen from the side and from above. Structure built to outlast its makers.', draw: pyramid },
   delta: { name: 'Delta + + +', de: 'Delta', meaning: 'Δ means change. Three plus marks: three forces added together.', draw: delta },
@@ -278,7 +278,7 @@ export function symbolFiles() {
   const out = {};
   for (const key of Object.keys(SYMBOLS)) {
     const inner = symbol(key).replace('<svg ', '<svg x="200" y="200" width="800" height="800" ');
-    out[`symbol-${key}.svg`] = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" style="color:#0a0a0a;--red:#ff5a00;--bg:#fbfaf8"><rect width="100%" height="100%" fill="#fbfaf8"/>${inner}</svg>`;
+    out[`symbol-${key}.svg`] = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" style="color:#0a0a0a;--red:#c4ef2f;--bg:#fbfaf8"><rect width="100%" height="100%" fill="#fbfaf8"/>${inner}</svg>`;
   }
   return out;
 }
