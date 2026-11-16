@@ -495,7 +495,7 @@ export function finderPage(ctx) {
 <section class="page-head finder-head">
   <span class="label page-kicker">${symbol('delta', { cls: 'sh-sym' })}05 / FINDER &mdash; ${ctx.marketplaces.length} MARKETPLACES</span>
   <h1 class="page-title" data-split>${splitWords('Find it. Anywhere.')}</h1>
-  <p class="page-deck serif">Describe the piece once. TRIAD searches Vinted, Grailed, eBay and more for you &mdash; then you look at the results there.</p>
+  <p class="page-deck serif">Describe the piece once. TRIAD searches Google, Vinted, Grailed, eBay and more for you &mdash; then you look at the results there.</p>
 </section>
 
 <section class="finder" data-finder data-markets='${e(JSON.stringify(ctx.marketplaces))}' data-ai="${e(ctx.site.aiEndpoint || '')}">
@@ -541,7 +541,7 @@ export function finderPage(ctx) {
     ${symbol('sierpinski', { cls: 'finder-photo-sym' })}
     <div>
       <span class="label" data-photo-title>Have a photo instead?</span>
-      <p class="serif" data-photo-text>Use Google Lens to identify the piece, then paste the name here. Photo search inside TRIAD is in development.</p>
+      <p class="serif" data-photo-text>Open Google Lens, upload your photo and it tells you what the piece is. Paste the name here — TRIAD searches every marketplace for it. On your phone you can also long-press any photo and choose “Search with Google Lens” (Android) or “Look Up” (iPhone).</p>
       <a class="btn-line" href="https://lens.google.com/" target="_blank" rel="noopener" data-lens-link>Open Google Lens &#8599;</a>
     </div>
   </aside>

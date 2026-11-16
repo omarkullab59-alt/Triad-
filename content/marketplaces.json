@@ -1,11 +1,54 @@
 {
   "items": [
-    { "name": "Vinted", "url": "https://www.vinted.de/catalog?search_text={q}", "note": "Second-hand, everything", "active": true },
-    { "name": "Grailed", "url": "https://www.grailed.com/shop?query={q}", "note": "Archive & designer menswear", "english": true, "active": true },
-    { "name": "eBay", "url": "https://www.ebay.de/sch/i.html?_nkw={q}", "note": "Auctions & rare finds", "active": true },
-    { "name": "Vestiaire Collective", "url": "https://de.vestiairecollective.com/search/?q={q}", "note": "Authenticated luxury", "active": true },
-    { "name": "Depop", "url": "https://www.depop.com/search/?q={q}", "note": "Streetwear & Y2K", "english": true, "active": true },
-    { "name": "Kleinanzeigen", "url": "https://www.kleinanzeigen.de/s-{q-}/k0", "note": "Local, pick-up", "active": true },
-    { "name": "Etsy", "url": "https://www.etsy.com/de/search?q={q}", "note": "Vintage & handmade", "active": true }
+    {
+      "name": "Google — all shops",
+      "url": "https://www.google.com/search?q={q}+(site:vinted.de+OR+site:grailed.com+OR+site:ebay.de+OR+site:depop.com+OR+site:vestiairecollective.com+OR+site:kleinanzeigen.de)",
+      "note": "One search across every marketplace",
+      "active": true
+    },
+    {
+      "name": "Vinted",
+      "url": "https://www.vinted.de/catalog?search_text={q}",
+      "note": "Second-hand, everything",
+      "active": true
+    },
+    {
+      "name": "Grailed",
+      "url": "https://www.grailed.com/shop?query={q}",
+      "note": "Archive & designer menswear",
+      "english": true,
+      "active": true
+    },
+    {
+      "name": "eBay",
+      "url": "https://www.ebay.de/sch/i.html?_nkw={q}",
+      "note": "Auctions & rare finds",
+      "active": true
+    },
+    {
+      "name": "Vestiaire Collective",
+      "url": "https://de.vestiairecollective.com/search/?q={q}",
+      "note": "Authenticated luxury",
+      "active": true
+    },
+    {
+      "name": "Depop",
+      "url": "https://www.depop.com/search/?q={q}",
+      "note": "Streetwear & Y2K",
+      "english": true,
+      "active": true
+    },
+    {
+      "name": "Kleinanzeigen",
+      "url": "https://www.kleinanzeigen.de/s-{q-}/k0",
+      "note": "Local, pick-up",
+      "active": true
+    },
+    {
+      "name": "Etsy",
+      "url": "https://www.etsy.com/de/search?q={q}",
+      "note": "Vintage & handmade",
+      "active": true
+    }
   ]
 }
