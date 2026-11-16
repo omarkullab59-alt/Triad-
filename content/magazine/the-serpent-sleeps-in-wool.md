@@ -5,6 +5,9 @@ category: Fashion Editorials
 date: 2026-11-08
 author: Words by Elena Marsh / Photography by Ines Varga
 issue: "003"
+people:
+  - ines-varga
+  - mara-solenne
 cover: https://picsum.photos/seed/triad-serpent-wool/1800/1200?grayscale
 featured: true
 gallery:

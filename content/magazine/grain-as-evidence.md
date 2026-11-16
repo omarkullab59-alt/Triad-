@@ -5,6 +5,8 @@ category: Photography
 date: 2026-10-29
 author: Words by Jonah Reyes
 issue: "003"
+people:
+  - ines-varga
 cover: https://picsum.photos/seed/triad-grain-evidence/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-grain-g1/900/1200?grayscale

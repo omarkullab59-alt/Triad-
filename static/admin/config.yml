@@ -39,6 +39,8 @@ collections:
       - { label: Titelbild, name: cover, widget: image }
       - { label: Auf Startseite hervorheben, name: featured, widget: boolean, default: false, required: false }
       - { label: Bildergalerie, name: gallery, widget: list, field: { label: Bild, name: image, widget: image }, required: false }
+      - { label: Personen in diesem Artikel, name: people, widget: relation, collection: people, value_field: "{{slug}}", search_fields: [name], display_fields: [name], multiple: true, required: false }
+      - { label: "Find it secondhand (Suchbegriffe)", name: find, widget: list, required: false, hint: "z. B. military field jacket 70s — erscheint als Links zum Finder." }
       - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
       - { label: Text, name: body, widget: markdown }
 
@@ -65,6 +67,26 @@ collections:
       - { label: "Beispiel/fiktiv (zeigt Warnhinweis)", name: sample, widget: boolean, default: false, required: false }
       - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
       - { label: Text, name: body, widget: markdown }
+
+  - name: people
+    label: Voices (Künstler & Local Legends)
+    label_singular: Person
+    folder: content/people
+    create: true
+    slug: "{{slug}}"
+    identifier_field: name
+    summary: "{{name}} — {{role}}, {{city}}"
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Rolle, name: role, widget: string, hint: "z. B. Designer, Fotografin, DJ, Vintage-Händlerin" }
+      - { label: Art, name: kind, widget: select, options: [{ label: Künstler/in, value: artist }, { label: Local Legend, value: legend }], default: artist }
+      - { label: Stadt / Viertel, name: city, widget: string }
+      - { label: Aktiv seit, name: since, widget: string, hint: "z. B. since 1989" }
+      - { label: Porträt, name: portrait, widget: image }
+      - { label: Zitat, name: quote, widget: string, required: false }
+      - { label: "Beispiel/fiktiv (zeigt Warnhinweis)", name: sample, widget: boolean, default: false, required: false }
+      - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
+      - { label: Biografie / Geschichte, name: body, widget: markdown }
 
   - name: data
     label: Archiv & Einstellungen
@@ -96,6 +118,20 @@ collections:
               - { label: Name, name: name, widget: string }
               - { label: RSS-Feed-Adresse, name: url, widget: string }
               - { label: Thema, name: topic, widget: select, options: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture] }
+              - { label: Aktiv, name: active, widget: boolean, default: true }
+      - name: marketplaces
+        label: Finder — Marktplätze
+        file: content/marketplaces.json
+        fields:
+          - name: items
+            label: Marktplätze
+            widget: list
+            summary: "{{fields.name}}"
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: Such-Adresse, name: url, widget: string, hint: "{q} = Suchbegriff, {q-} = Suchbegriff mit Bindestrichen" }
+              - { label: Kurzbeschreibung, name: note, widget: string }
+              - { label: Englische Suchbegriffe verwenden, name: english, widget: boolean, default: false, required: false }
               - { label: Aktiv, name: active, widget: boolean, default: true }
       - name: creatives
         label: Featured Creatives

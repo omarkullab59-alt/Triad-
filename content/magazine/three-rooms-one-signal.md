@@ -5,6 +5,8 @@ category: Creative Projects
 date: 2026-09-18
 author: Words by the TRIAD Editors
 issue: "001"
+people:
+  - ines-varga
 cover: https://picsum.photos/seed/triad-three-rooms/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-rooms-g1/900/1200?grayscale

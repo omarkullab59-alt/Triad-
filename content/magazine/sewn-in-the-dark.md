@@ -5,8 +5,14 @@ category: Designers
 date: 2026-10-21
 author: Words by Priya Lund
 issue: "002"
+people:
+  - kofi-adair
 cover: https://picsum.photos/seed/triad-sewn-dark/1800/1200?grayscale
 featured: true
+find:
+  - military field jacket 70s
+  - deadstock parka
+  - surplus liner jacket
 gallery:
   - https://picsum.photos/seed/triad-sewn-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-sewn-g2/900/1200?grayscale

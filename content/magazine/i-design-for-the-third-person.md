@@ -5,6 +5,8 @@ category: Interviews
 date: 2026-11-11
 author: Interview by Priya Lund
 issue: "003"
+people:
+  - mara-solenne
 cover: https://picsum.photos/seed/triad-third-person/1800/1200?grayscale
 featured: true
 gallery:
