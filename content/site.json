@@ -23,11 +23,11 @@
     }
   ],
   "heroImages": [
-    "https://picsum.photos/seed/triad-campaign-veil/1800/1200?grayscale",
-    "https://picsum.photos/seed/triad-campaign-concrete/1800/1200?grayscale",
-    "https://picsum.photos/seed/triad-campaign-night/1800/1200?grayscale"
+    "/uploads/triad/three-forces-triptych.jpg",
+    "/uploads/triad/red-wall-smoke.jpg",
+    "/uploads/triad/forest-walk.jpg"
   ],
-  "campaignImage": "https://picsum.photos/seed/triad-outside-system/1800/1100?grayscale",
+  "campaignImage": "/uploads/triad/iceland-hand.jpg",
   "magazineCategories": [
     "Fashion Editorials",
     "Photography",

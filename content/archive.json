@@ -1,12 +1,164 @@
 {
   "items": [
     {
-      "code": "TRD-ARC-001",
-      "type": "editorial",
-      "title": "Wool, Smoke, Silence",
+      "code": "TRD-ARC-101",
+      "type": "campaign",
+      "title": "Three Forces",
       "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-wool/900/1200?grayscale",
-      "note": "Outtake from The Serpent Sleeps in Wool."
+      "image": "/uploads/triad/three-forces-triptych.jpg",
+      "note": "Issue 003 opener. One wall, three positions."
+    },
+    {
+      "code": "TRD-ARC-102",
+      "type": "campaign",
+      "title": "Cover — Issue 003",
+      "year": "2026",
+      "image": "/uploads/triad/cover-red-figure.jpg",
+      "note": "Red figure, TRIAD vertical. Cover of Issue 003."
+    },
+    {
+      "code": "TRD-ARC-103",
+      "type": "graphic",
+      "title": "Poster — Red Ring",
+      "year": "2026",
+      "image": "/uploads/triad/poster-red-ring.jpg",
+      "note": "TRIAD poster, Iceland. Ring of colour, figure in red."
+    },
+    {
+      "code": "TRD-ARC-104",
+      "type": "editorial",
+      "title": "Three Exposures",
+      "year": "2026",
+      "image": "/uploads/triad/cover-maier-door.jpg",
+      "note": "One body at a door, two ghosts at the sides."
+    },
+    {
+      "code": "TRD-ARC-105",
+      "type": "symbol",
+      "title": "Logo Idea 03 — Three Fingers",
+      "year": "2026",
+      "image": "/uploads/triad/logo-idea-03-hand.jpg",
+      "note": "Pixel hand, three fingers raised. A candidate mark."
+    },
+    {
+      "code": "TRD-ARC-106",
+      "type": "campaign",
+      "title": "Three, Raised",
+      "year": "2026",
+      "image": "/uploads/triad/iceland-hand.jpg",
+      "note": "The pixel hand on black gravel, glacier behind."
+    },
+    {
+      "code": "TRD-ARC-107",
+      "type": "campaign",
+      "title": "TRIAD, Vertical",
+      "year": "2026",
+      "image": "/uploads/triad/triad-banner.jpg",
+      "note": "Stone wall, red banner. Street campaign study."
+    },
+    {
+      "code": "TRD-ARC-108",
+      "type": "graphic",
+      "title": "Back Page",
+      "year": "2026",
+      "image": "/uploads/triad/backpage.jpg",
+      "note": "Lime back page with Instagram code."
+    },
+    {
+      "code": "TRD-ARC-109",
+      "type": "editorial",
+      "title": "Double Page 01 — Prayer",
+      "year": "2026",
+      "image": "/uploads/triad/double-page-01.jpg",
+      "note": "Violet sky, closed eyes."
+    },
+    {
+      "code": "TRD-ARC-110",
+      "type": "editorial",
+      "title": "Waterfall",
+      "year": "2026",
+      "image": "/uploads/triad/post-15-7-26-02.jpg",
+      "note": "Post 15.7.26 — 02. Yellow frame."
+    },
+    {
+      "code": "TRD-ARC-111",
+      "type": "editorial",
+      "title": "Scale",
+      "year": "2026",
+      "image": "/uploads/triad/post-15-7-26-03.jpg",
+      "note": "Post 15.7.26 — 03. Figure and mountain."
+    },
+    {
+      "code": "TRD-ARC-112",
+      "type": "editorial",
+      "title": "Fjord",
+      "year": "2026",
+      "image": "/uploads/triad/post-15-7-26-04.jpg",
+      "note": "Post 15.7.26 — 04. Lime frame."
+    },
+    {
+      "code": "TRD-ARC-113",
+      "type": "editorial",
+      "title": "Coast",
+      "year": "2026",
+      "image": "/uploads/triad/post-15-7-26-05.jpg",
+      "note": "Post 15.7.26 — 05. Red hood, grey sea."
+    },
+    {
+      "code": "TRD-ARC-114",
+      "type": "editorial",
+      "title": "Forest, Late Light",
+      "year": "2026",
+      "image": "/uploads/triad/forest-walk.jpg",
+      "note": "Moss wall, combat boots."
+    },
+    {
+      "code": "TRD-ARC-115",
+      "type": "editorial",
+      "title": "Cargo, Leather, Moss",
+      "year": "2026",
+      "image": "/uploads/triad/boots-cargo.jpg",
+      "note": "Detail from the forest series."
+    },
+    {
+      "code": "TRD-ARC-116",
+      "type": "editorial",
+      "title": "Red Wall",
+      "year": "2026",
+      "image": "/uploads/triad/red-wall-smoke.jpg",
+      "note": "Leather bomber, wide trousers, a red wall nobody repainted."
+    },
+    {
+      "code": "TRD-ARC-117",
+      "type": "editorial",
+      "title": "Field Jacket, Side",
+      "year": "2026",
+      "image": "/uploads/triad/field-jacket-profile.jpg",
+      "note": "Corrugated metal, olive cotton."
+    },
+    {
+      "code": "TRD-ARC-118",
+      "type": "editorial",
+      "title": "Barn Door",
+      "year": "2026",
+      "image": "/uploads/triad/barn-door-denim.jpg",
+      "note": "Cap, wide grey denim, wallet chain."
+    },
+    {
+      "code": "TRD-ARC-119",
+      "type": "editorial",
+      "title": "Betreten Verboten",
+      "year": "2026",
+      "image": "/uploads/triad/betreten-verboten.jpg",
+      "note": "Slogan long sleeve in front of ivy."
+    },
+    {
+      "code": "TRD-ARC-120",
+      "type": "reference",
+      "title": "Sleeve",
+      "year": "2026",
+      "image": "/uploads/triad/sleeve-print.jpg",
+      "note": "Printed slogans, detail."
     },
     {
       "code": "TRD-ARC-002",
@@ -17,14 +169,6 @@
       "note": "Three dragons chasing one another. Bodies drawn as three lines."
     },
     {
-      "code": "TRD-ARC-003",
-      "type": "campaign",
-      "title": "Built Outside the System",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-outside/1200/800?grayscale",
-      "note": "Campaign plate, Issue 002."
-    },
-    {
       "code": "TRD-ARC-004",
       "type": "symbol",
       "title": "Borromean Rings",
@@ -33,44 +177,12 @@
       "note": "Three rings, bound together. Remove one and all fall apart."
     },
     {
-      "code": "TRD-ARC-005",
-      "type": "reference",
-      "title": "Monastery Floor Plan",
-      "year": "c. 1100",
-      "image": "https://picsum.photos/seed/triad-arc-plan/900/900?grayscale",
-      "note": "Sacred geometry, read as a cutting pattern."
-    },
-    {
       "code": "TRD-ARC-006",
       "type": "graphic",
       "title": "Glyph Pattern / Lining Print",
       "year": "2026",
       "image": "/assets/brand/glyph-pattern.svg",
       "note": "Repeat pattern for jacket linings and wrapping tissue."
-    },
-    {
-      "code": "TRD-ARC-007",
-      "type": "historical",
-      "title": "Carved Dragon, Unknown Origin",
-      "year": "n.d.",
-      "image": "https://picsum.photos/seed/triad-arc-carved/900/1300?grayscale",
-      "note": "Visual reference. Provenance under research."
-    },
-    {
-      "code": "TRD-ARC-008",
-      "type": "editorial",
-      "title": "Back Row, Third Night",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-backrow/900/1100?grayscale",
-      "note": "Basement show documentation."
-    },
-    {
-      "code": "TRD-ARC-009",
-      "type": "inspiration",
-      "title": "Rust on a Shipping Container",
-      "year": "2025",
-      "image": "https://picsum.photos/seed/triad-arc-rust/1100/800?grayscale",
-      "note": "Colour reference for TRIAD lime."
     },
     {
       "code": "TRD-ARC-010",
@@ -89,36 +201,12 @@
       "note": "Ink stamp for printed matter and garment tags."
     },
     {
-      "code": "TRD-ARC-012",
-      "type": "campaign",
-      "title": "Night Shift",
-      "year": "2025",
-      "image": "https://picsum.photos/seed/triad-arc-nightshift/900/1200?grayscale",
-      "note": "Campaign plate, Issue 001."
-    },
-    {
-      "code": "TRD-ARC-013",
-      "type": "reference",
-      "title": "Workwear Seam Detail",
-      "year": "1960s",
-      "image": "https://picsum.photos/seed/triad-arc-seam/900/900?grayscale",
-      "note": "Triple-stitched seam. Three lines again."
-    },
-    {
       "code": "TRD-ARC-014",
       "type": "graphic",
       "title": "Wordmark — Stacked",
       "year": "2026",
       "image": "/assets/brand/wordmark-stacked.svg",
       "note": "Secondary lock-up for labels and spines."
-    },
-    {
-      "code": "TRD-ARC-015",
-      "type": "editorial",
-      "title": "Veil Study I",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-veil1/900/1300?grayscale",
-      "note": "Ines Varga for TRIAD."
     },
     {
       "code": "TRD-ARC-016",
@@ -129,44 +217,12 @@
       "note": "Triangles within triangles. The archive in one sign."
     },
     {
-      "code": "TRD-ARC-017",
-      "type": "historical",
-      "title": "Procession, Archival Print",
-      "year": "n.d.",
-      "image": "https://picsum.photos/seed/triad-arc-procession/1200/850?grayscale",
-      "note": "Found print. Rights pending."
-    },
-    {
-      "code": "TRD-ARC-018",
-      "type": "inspiration",
-      "title": "Concrete Stairwell",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-stair/800/1200?grayscale",
-      "note": "Location scout, Berlin."
-    },
-    {
       "code": "TRD-ARC-019",
       "type": "symbol",
       "title": "Emblem — Lime on Black",
       "year": "2026",
       "image": "/assets/brand/emblem-mark.svg",
       "note": "Emblem without ring. For patches and embroidery."
-    },
-    {
-      "code": "TRD-ARC-020",
-      "type": "editorial",
-      "title": "Hands, Pins, Chalk",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-hands/1100/900?grayscale",
-      "note": "Atelier visit."
-    },
-    {
-      "code": "TRD-ARC-021",
-      "type": "campaign",
-      "title": "Fashion Is Only the Beginning",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-beginning/1200/800?grayscale",
-      "note": "Campaign plate, Issue 003."
     },
     {
       "code": "TRD-ARC-022",
@@ -177,44 +233,12 @@
       "note": "Three tiers, side and top view."
     },
     {
-      "code": "TRD-ARC-023",
-      "type": "reference",
-      "title": "Military Surplus Tag",
-      "year": "1980s",
-      "image": "https://picsum.photos/seed/triad-arc-tag/900/900?grayscale",
-      "note": "Type and numbering reference."
-    },
-    {
       "code": "TRD-ARC-024",
       "type": "graphic",
       "title": "Stamp — Approved",
       "year": "2026",
       "image": "/assets/brand/stamp-approved.svg",
       "note": "Seal for limited editions."
-    },
-    {
-      "code": "TRD-ARC-025",
-      "type": "inspiration",
-      "title": "Static on a Broken Monitor",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-static/1000/1000?grayscale",
-      "note": "Texture reference."
-    },
-    {
-      "code": "TRD-ARC-026",
-      "type": "editorial",
-      "title": "Veil Study II",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-veil2/900/1300?grayscale",
-      "note": "Ines Varga for TRIAD."
-    },
-    {
-      "code": "TRD-ARC-027",
-      "type": "historical",
-      "title": "Stone Relief, Three Figures",
-      "year": "n.d.",
-      "image": "https://picsum.photos/seed/triad-arc-relief/1200/900?grayscale",
-      "note": "Visual reference for the triad motif."
     },
     {
       "code": "TRD-ARC-028",
@@ -225,60 +249,12 @@
       "note": "C–E–G on the staff. The smallest harmony."
     },
     {
-      "code": "TRD-ARC-029",
-      "type": "inspiration",
-      "title": "Club Flyer Wall",
-      "year": "2025",
-      "image": "https://picsum.photos/seed/triad-arc-flyers/900/1200?grayscale",
-      "note": "Street research, London."
-    },
-    {
       "code": "TRD-ARC-030",
       "type": "symbol",
       "title": "Emblem — Lime Field",
       "year": "2026",
       "image": "/assets/brand/emblem-lime.svg",
       "note": "Emblem on TRIAD lime. For covers and merch."
-    },
-    {
-      "code": "TRD-ARC-031",
-      "type": "editorial",
-      "title": "After Hours",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-afterhours/1100/800?grayscale",
-      "note": "Outtake from Basement Runways."
-    },
-    {
-      "code": "TRD-ARC-032",
-      "type": "campaign",
-      "title": "Three Forces",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-threeforces/900/1200?grayscale",
-      "note": "Cover study, Issue 003."
-    },
-    {
-      "code": "TRD-ARC-033",
-      "type": "reference",
-      "title": "Bookbinding Thread",
-      "year": "n.d.",
-      "image": "https://picsum.photos/seed/triad-arc-thread/900/900?grayscale",
-      "note": "Binding reference for the printed edition."
-    },
-    {
-      "code": "TRD-ARC-034",
-      "type": "inspiration",
-      "title": "Window, Rain, 4 a.m.",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-rain/800/1100?grayscale",
-      "note": "Mood reference."
-    },
-    {
-      "code": "TRD-ARC-035",
-      "type": "editorial",
-      "title": "Portrait Without a Face",
-      "year": "2026",
-      "image": "https://picsum.photos/seed/triad-arc-noface/900/1200?grayscale",
-      "note": "Unpublished plate."
     }
   ]
 }
