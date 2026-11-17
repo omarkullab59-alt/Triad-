@@ -63,8 +63,7 @@ export function homePage(ctx) {
   const { site, articles, news, creatives, issues, archive } = ctx;
   const featured = articles.filter((a) => a.featured);
   const lead = featured[0] || articles[0];
-  const rest = articles.filter((a) => a !== lead).slice(0, 5);
-  const latestNews = news.slice(0, 6);
+  const rest = articles.filter((a) => a !== lead).slice(0, 2);
   const current = issues.find((i) => i.current) || issues[0];
 
   return `
@@ -101,6 +100,12 @@ ${nowSection(ctx, lead)}
   </div>
 </section>
 
+<section class="manifesto">
+  <p class="manifesto-text" data-scrub-words>Fashion is only the beginning. TRIAD is a platform for creative expression, independent thinking and cultural exchange. Three forces — form, signal, image — working in the same direction.</p>
+  <span class="tag tag--sign" role="img" aria-label="Signed: TRIAD (hand tag)"></span>
+  <a class="btn-line" href="${ctx.url('/about/')}">The philosophy &#8594;</a>
+</section>
+
 <section class="campaign" data-parallax-wrap>
   <div class="campaign-media" data-parallax>${imgTag({ src: site.campaignImage, alt: 'TRIAD campaign: Built outside the system', sizes: '100vw' })}</div>
   <div class="campaign-text">
@@ -111,56 +116,27 @@ ${nowSection(ctx, lead)}
   ${stamp({ top: 'OUTSIDE THE SYSTEM', bottom: 'APPROVED · NOT FOR SALE', center: 'III', cls: 'campaign-stamp' })}
 </section>
 
-<section class="block block--news">
-  ${sectionHead({ index: '02 / NEWS', sym: 'air', title: 'The wire.', link: '/news/', linkText: 'News archive', kicker: 'Fashion week, collections, collaborations, culture.' }, ctx)}
-  <ol class="news-list" data-news-list>
-    ${latestNews.map((n, i) => newsRow(n, ctx, i)).join('')}
-  </ol>
-  <p class="label label--dim sample-note">Entries marked “Sample” are fictional placeholders, not real reports.</p>
-  ${ctx.wire.items.length ? `<div class="elsewhere">
-    <h3 class="elsewhere-title">${symbol('tonnetz', { cls: 'sh-sym' })}Elsewhere <span class="label label--dim">Headlines from other publishers</span></h3>
-    <ol class="wire-list">${ctx.wire.items.slice(0, 6).map(wireRow).join('')}</ol>
-    <a class="btn-line" href="${ctx.url('/news/')}#elsewhere">The full wire &#8594;</a>
-  </div>` : ''}
-</section>
-
-<section class="block block--creatives">
-  ${sectionHead({ index: '03 / CREATIVES', sym: 'borromean', title: 'Three forces, many hands.', kicker: 'Featured artists and creatives from the TRIAD circle.' }, ctx)}
-  <div class="creatives-track" data-drag-scroll tabindex="0" aria-label="Featured creatives, scroll horizontally">
-    ${creatives
-      .map(
-        (c, i) => `<figure class="creative" data-reveal>
-      ${frame({ src: c.image, alt: `Portrait placeholder for ${c.name}`, code: `C/${String(i + 1).padStart(2, '0')}`, sizes: '(max-width: 760px) 70vw, 24vw', ctx })}
-      <figcaption>
-        <span class="label">${e(c.role)} &mdash; ${e(c.city)}</span>
-        <strong class="creative-name">${e(c.name)}</strong>
-        <span class="serif creative-note">${e(c.note)}</span>
-      </figcaption>
-    </figure>`
-      )
-      .join('')}
-  </div>
-</section>
-
-<section class="block block--issues">
-  ${sectionHead({ index: '04 / PRINT', sym: 'pyramid', title: 'Issues.', link: '/magazine/', linkText: 'Read the magazine', kicker: `Now: N°${current.number} — ${current.title}` }, ctx)}
-  <div class="issues-row">
-    ${issues.map((iss, i) => issueCover(iss, ctx, { tilt: [-3, 2, -1.5][i % 3] })).join('')}
-  </div>
-</section>
-
-<section class="manifesto">
-  <p class="manifesto-text" data-scrub-words>Fashion is only the beginning. TRIAD is a platform for creative expression, independent thinking and cultural exchange. Three forces — form, signal, image — working in the same direction.</p>
-  <span class="tag tag--sign" role="img" aria-label="Signed: TRIAD (hand tag)"></span>
-  <a class="btn-line" href="${ctx.url('/about/')}">The philosophy &#8594;</a>
-</section>
-
-<section class="block block--today" data-archive-today data-items='${e(JSON.stringify(archive.map((a) => ({ code: a.code, title: a.title, type: a.type, image: resolveImage(a.image, ctx) }))))}'>
-  <div class="today-inner">
-    <span class="label">TODAY FROM THE ARCHIVE</span>
-    <div class="today-frame frame"><img alt="" width="900" height="1200" loading="lazy" decoding="async"><span class="frame-code" data-today-code></span></div>
-    <p class="today-title serif" data-today-title></p>
-    <a class="btn-line" href="${ctx.url('/archive/')}">An archive of what&rsquo;s next &#8594;</a>
+<section class="block ways" aria-labelledby="ways-title">
+  <h2 id="ways-title" class="label ways-title">${symbol('borromean', { cls: 'sh-sym' })}Three ways in</h2>
+  <div class="ways-grid">
+    <a class="way" href="${ctx.url('/people/')}">
+      <span class="way-img">${imgTag({ src: resolveImage(creatives[0]?.image, ctx), alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}</span>
+      <span class="label">I / Voices</span>
+      <strong class="way-title">Three forces, many hands.</strong>
+      <span class="serif way-note">Artists, designers and local legends from the TRIAD circle.</span>
+    </a>
+    <a class="way" href="${ctx.url('/magazine/')}">
+      <span class="way-img way-img--issue">${imgTag({ src: resolveImage(current.cover, ctx), alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}<span class="ic-mast">TRIAD</span><span class="ic-no">N&deg;${e(String(current.number))}</span></span>
+      <span class="label">II / Print</span>
+      <strong class="way-title">N&deg;${e(String(current.number))} &mdash; ${e(current.title)}</strong>
+      <span class="serif way-note">The current issue. Slow pages for fast times.</span>
+    </a>
+    <a class="way" href="${ctx.url('/archive/')}" data-archive-today data-items='${e(JSON.stringify(archive.map((a) => ({ code: a.code, title: a.title, type: a.type, image: resolveImage(a.image, ctx) }))))}'>
+      <span class="way-img"><img alt="" width="900" height="1200" loading="lazy" decoding="async"><span class="frame-code" data-today-code></span></span>
+      <span class="label">III / Today from the archive</span>
+      <strong class="way-title" data-today-title>An archive of what&rsquo;s next.</strong>
+      <span class="serif way-note">One piece a day, picked from the collective&rsquo;s archive.</span>
+    </a>
   </div>
 </section>`;
 }
@@ -637,12 +613,12 @@ export function darkroomPage(ctx) {
   <span class="tag tag--darkroom" aria-hidden="true"></span>
   <span class="label page-kicker">${symbol('pyramid', { cls: 'sh-sym' })}04 / DARKROOM &mdash; OPEN SUBMISSIONS</span>
   <h1 class="page-title" data-split>${splitWords('Darkroom.')}</h1>
-  <p class="page-deck serif">Your frames on TRIAD. Street, night, clubs, clothes, people &mdash; upload them, we develop every one by hand, the strongest go on the wall. Then everyone gets a say.</p>
+  <p class="page-deck serif">Your frames on TRIAD. We develop every upload by hand &mdash; the strongest go on the wall.</p>
   <div class="dr-actions">
     <a class="btn btn--solid" href="#submit">Submit photos &#8594;</a>
     <span class="label label--dim">Free &middot; no account &middot; you keep your rights</span>
   </div>
-  <a class="noai" href="${ctx.url('/legal/darkroom-rules/')}#no-ai-training">${symbol('delta', { cls: 'noai-sym' })}<span><b>Never used to train AI.</b> We block AI crawlers and legally reserve text &amp; data mining for every frame.</span></a>
+  <a class="noai" href="${ctx.url('/legal/darkroom-rules/')}#no-ai-training">${symbol('delta', { cls: 'noai-sym' })}<span><b>Never used to train AI.</b> <span class="noai-more">How we protect your work &#8594;</span></span></a>
 </section>
 ${call ? `
 <section class="dr-call" aria-labelledby="dr-call-title" data-dr-callbox="${e(call.slug)}">
