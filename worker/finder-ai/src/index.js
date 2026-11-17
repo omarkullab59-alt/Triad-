@@ -11,6 +11,7 @@
 // → { item, brand, brandConfidence, color, material, era, details[], queryDe, queryEn, alternatives[], note, confidence }
 
 import { handleDarkroom } from './darkroom.js';
+import { handleAlerts, runAlerts } from './alerts.js';
 
 export const AI_BOTS = ['GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'CCBot', 'Google-Extended', 'Applebot-Extended',
   'Bytespider', 'PerplexityBot', 'meta-externalagent', 'FacebookBot', 'Amazonbot', 'cohere-ai', 'Diffbot', 'ImagesiftBot', 'Omgilibot', 'Timpibot', 'img2dataset'];
@@ -150,6 +151,11 @@ async function viaAnthropic(env, text, image) {
 
 /* ── handler ─────────────────────────────────────────────────── */
 export default {
+  // Price alerts: Cloudflare cron (wrangler.toml [triggers]) checks saved searches in small batches.
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(runAlerts(env));
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get('origin') || '';
@@ -160,6 +166,17 @@ export default {
     // No AI training on anything this Worker serves (images included)
     if (url.pathname === '/robots.txt') return new Response(AI_ROBOTS, { headers: { 'content-type': 'text/plain' } });
     if (url.pathname === '/health') return json({ ok: true, provider, darkroom: Boolean(env.DB) }, 200, h);
+
+    if (url.pathname.startsWith('/alerts/')) {
+      const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+      if (request.method === 'POST' && !allowedOrigins(env).includes(origin)) return json({ error: 'origin_not_allowed' }, 403, h);
+      if (rateLimited(`al:${ip}`, 30)) return json({ error: 'rate_limited' }, 429, h);
+      try {
+        return await handleAlerts(request, env, url, (data, status, extra) => json(data, status, { ...h, ...extra }));
+      } catch (e) {
+        return json({ error: 'alerts_error' }, 500, h);
+      }
+    }
 
     if (url.pathname.startsWith('/darkroom/')) {
       const ip = request.headers.get('cf-connecting-ip') || 'unknown';
