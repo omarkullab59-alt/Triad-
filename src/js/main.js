@@ -44,10 +44,10 @@
     const track = $('[data-reader-track]', reader), pages = $$('[data-reader-page]', reader), count = $('[data-reader-count]', reader);
     const current = () => { const mid = track.scrollLeft + track.clientWidth / 2; let best = 0, d = Infinity; pages.forEach((p, i) => { const c = p.offsetLeft + p.offsetWidth / 2; if (Math.abs(c - mid) < d) { d = Math.abs(c - mid); best = i; } }); return best; };
     const go = (i) => { const p = pages[Math.max(0, Math.min(pages.length - 1, i))]; track.scrollTo({ left: p.offsetLeft - (track.clientWidth - p.offsetWidth) / 2, behavior: reduced ? 'auto' : 'smooth' }); };
-    $('[data-reader-prev]', reader).addEventListener('click', () => go(current() - 1));
-    $('[data-reader-next]', reader).addEventListener('click', () => go(current() + 1));
+    $('[data-reader-prev]', reader)?.addEventListener('click', () => go(current() - 1));
+    $('[data-reader-next]', reader)?.addEventListener('click', () => go(current() + 1));
     track.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { e.preventDefault(); go(current() + 1); } if (e.key === 'ArrowLeft') { e.preventDefault(); go(current() - 1); } });
-    track.addEventListener('scroll', () => { count.textContent = `${current() + 1} / ${pages.length}`; }, { passive: true });
+    track.addEventListener('scroll', () => { if (count) count.textContent = `${current() + 1} / ${pages.length}`; }, { passive: true });
   }
 
   /* ── Colour mode: Auto (system) → Dark → Light ─────────────────── */

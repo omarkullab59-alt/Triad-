@@ -106,7 +106,7 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
     <div class="menu-side">
       ${emblem({ cls: 'menu-emblem', motto: 'FASHION IS ONLY THE BEGINNING · ' })}
       <p class="menu-note serif">Three forces.<br>One vision.</p>
-      <ul class="menu-social">${site.social.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.label} &#8599;</a></li>`).join('')}</ul>
+      <ul class="menu-social">${site.social.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener me">${s.handle ? `${s.label} ${s.handle}` : s.label} &#8599;</a></li>`).join('')}</ul>
     </div>
   </div>
 </div>
@@ -146,7 +146,7 @@ ${body}
     </div>
     <div class="footer-col">
       ${label('Elsewhere')}
-      <ul class="footer-links">${site.social.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener">${s.label}</a></li>`).join('')}</ul>
+      <ul class="footer-links">${site.social.map((s) => `<li><a href="${s.url}" target="_blank" rel="noopener me">${s.label}${s.handle ? ` <span class="label label--dim">${s.handle}</span>` : ''}</a></li>`).join('')}</ul>
     </div>
   </div>
   <div class="footer-word" aria-hidden="true">TRIAD<span class="tag tag--footer"></span></div>

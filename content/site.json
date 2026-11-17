@@ -11,15 +11,8 @@
   "social": [
     {
       "label": "Instagram",
-      "url": "https://instagram.com"
-    },
-    {
-      "label": "TikTok",
-      "url": "https://tiktok.com"
-    },
-    {
-      "label": "SoundCloud",
-      "url": "https://soundcloud.com"
+      "handle": "@triad.closet",
+      "url": "https://www.instagram.com/triad.closet/"
     }
   ],
   "heroImages": [
@@ -49,5 +42,6 @@
     "Industry",
     "Culture"
   ],
-  "aiEndpoint": ""
+  "aiEndpoint": "",
+  "instagram": "triad.closet"
 }
