@@ -80,8 +80,6 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
     </ul>
   </nav>
   <div class="header-meta">
-    <span class="label label--dim">N&deg;${site.currentIssue}</span>
-    <span class="label clock" data-clock>BER --:--</span>
     <button class="theme-toggle label" type="button" data-theme-toggle aria-label="Colour mode"><span class="tt-icon" aria-hidden="true"></span><span data-theme-label>Auto</span></button>
     <button class="motion-toggle label" type="button" data-motion-toggle aria-pressed="false" title="Pause all animation"><span class="mt-dot" aria-hidden="true"></span><span data-motion-label>Motion on</span></button>
   </div>
@@ -151,7 +149,7 @@ ${body}
   <div class="footer-word" aria-hidden="true">TRIAD<span class="tag tag--footer"></span></div>
   <div class="footer-base">
     <span class="label">&copy; ${new Date().getFullYear()} TRIAD Collective</span>
-    <span class="label label--dim">${site.location}</span>
+    <span class="label label--dim">${site.location} &middot; <span class="clock" data-clock>BER --:--</span></span>
     <span class="label footer-legal"><a href="${ctx.url('/legal/impressum/')}">Impressum</a> &middot; <a href="${ctx.url('/legal/datenschutz/')}">Datenschutz</a> &middot; <a href="${ctx.url('/legal/darkroom-rules/')}">Darkroom rules</a></span>
     <span class="label label--dim">Sample content is fictional and for demonstration only.</span>
     <span class="label">${glyph({ cls: 'footer-glyph' })}</span>
