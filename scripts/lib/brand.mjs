@@ -1,3 +1,4 @@
+import { handFile } from './hand.mjs';
 // TRIAD brand graphics — generated as pure SVG so they stay crisp on every
 // screen, can be animated with CSS and exported 1:1 for print, merch and covers.
 //
@@ -146,6 +147,9 @@ ${inner}
 
   return {
     'emblem-black.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900), '#0a0a0a', '#fbfaf8'),
+    'hand.svg': handFile('#0a0a0a'),
+    'hand-lime.svg': handFile('#c4ef2f', '#0a0a0a'),
+    'hand-black-on-lime.svg': handFile('#0a0a0a', '#c4ef2f'),
     'emblem-lime.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900).replace('var(--red, #c4ef2f)', '#fbfaf8'), '#c4ef2f', '#0a0a0a'),
     'emblem-white.svg': wrap(place(emblem({ title: 'TRIAD emblem' }), 150, 150, 900), '#fbfaf8', '#0a0a0a'),
     'emblem-mark.svg': wrap(place(emblem({ ring: false }), 150, 150, 900), '#0a0a0a', '#c4ef2f'),
