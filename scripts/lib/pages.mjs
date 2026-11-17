@@ -2,7 +2,7 @@
 import { escapeHtml as e, renderMarkdown } from './markdown.mjs';
 import { imgTag, resolveImage } from './images.mjs';
 import {
-  emblem, glyph, symbol, label, frame, storyCard, newsRow, wireRow, issueCover, marquee, sectionHead,
+  emblem, glyph, symbol, label, frame, storyCard, newsRow, wireRow, issueCover, issueGrid, marquee, sectionHead,
   splitWords, fmtDate, fmtDateLong, isoDate, slugify,
 } from './components.mjs';
 import { stamp, SYMBOLS } from './brand.mjs';
@@ -144,6 +144,11 @@ ${showCampaign ? `<section class="campaign" data-parallax-wrap>
 </section>`;
 }
 
+const igHead = (ctx, n) => {
+  const ig = (ctx.site.social || []).find((x) => /instagram/i.test(x.label));
+  return ig ? `<div class="ig-head"><span class="ig-handle">${e(ig.handle || 'Instagram')}</span><span class="label label--dim">${n} posts</span><a class="chip" href="${ig.url}" target="_blank" rel="noopener me">Follow on Instagram &#8599;</a></div>` : '';
+};
+
 /* ─────────────────────────── MAGAZINE ─────────────────────────── */
 export function magazinePage(ctx) {
   const { site, articles, issues } = ctx;
@@ -177,10 +182,9 @@ export function magazinePage(ctx) {
 </section>
 
 <section class="block block--issues" id="issues">
-  ${sectionHead({ index: 'PRINT', title: 'All issues.', kicker: 'The printed editions. Each one a different force.' }, ctx)}
-  <div class="issues-row">
-    ${issues.map((iss, i) => `<div id="issue-${iss.number}">${issueCover(iss, ctx, { tilt: [-2, 1.5, -1][i % 3] })}</div>`).join('')}
-  </div>
+  ${sectionHead({ index: 'PRINT', title: 'All issues.', kicker: `${issues.length} issues, newest first — in the same order as our Instagram.` }, ctx)}
+  ${igHead(ctx, issues.length)}
+  ${issueGrid(issues, ctx)}
 </section>`;
 }
 
@@ -789,13 +793,13 @@ export function legalPage(ctx, l) {
 export function issuePage(ctx, issue) {
   const pages = (issue.pages?.length ? issue.pages : [issue.cover]).map((src) => resolveImage(src, ctx));
   const stories = ctx.articles.filter((a) => String(a.issue) === String(issue.number));
-  const others = ctx.issues.filter((i) => i !== issue);
-  const flip = pages.length > 1;
+    const flip = pages.length > 1;
   return `
 <section class="page-head reader-head">
   <a class="label" href="${ctx.url('/magazine/')}">&#8592; Magazine</a>
   <span class="label page-kicker">${symbol('chord', { cls: 'sh-sym' })}PRINT &mdash; N&deg;${e(issue.number)} &middot; ${e(issue.season || '')}${issue.current ? ' &middot; CURRENT ISSUE' : ''}</span>
-  <h1 class="page-title">${e(issue.title)}</h1>
+  <h1 class="page-title">${e(issue.title || `N°${issue.number}`)}</h1>
+  ${issue.date || issue.instagram ? `<p class="label issue-post">${issue.date ? `Posted ${e(fmtDate(issue.date))}` : ''}${issue.instagram ? ` &middot; <a href="${e(issue.instagram)}" target="_blank" rel="noopener">See the post on Instagram &#8599;</a>` : ''}</p>` : ''}
   <p class="label label--dim">${flip ? `${pages.length} pages &middot; swipe, scroll or use &larr; &rarr; &middot; tap a page to open it full screen` : `Cover${stories.length ? ` &middot; ${stories.length} ${stories.length === 1 ? 'story' : 'stories'} in this issue` : ''} &middot; tap to open full screen`}</p>
 </section>
 <section class="reader${flip ? '' : ' reader--single'}" data-reader aria-label="Issue ${e(issue.number)}, ${pages.length} ${pages.length === 1 ? 'page' : 'pages'}">
@@ -816,7 +820,7 @@ ${stories.length ? `<section class="block issue-stories">
   <div class="mag-grid">${stories.map((a) => storyCard(a, ctx, {})).join('')}</div>
 </section>` : ''}
 <section class="block issue-more">
-  <span class="label">${symbol('pyramid', { cls: 'sh-sym' })}More issues</span>
-  <div class="issues-row">${others.map((iss, i) => issueCover(iss, ctx, { tilt: [-2, 1.5][i % 2] })).join('')}</div>
+  <span class="label">${symbol('pyramid', { cls: 'sh-sym' })}All issues</span>
+  ${issueGrid(ctx.issues, ctx, { current: issue })}
 </section>`;
 }

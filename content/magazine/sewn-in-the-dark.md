@@ -4,7 +4,7 @@ deck: Kofi Adair builds tailoring from military surplus in a London railway arch
 category: Designers
 date: 2026-10-21
 author: Words by Priya Lund
-issue: "002"
+issue: "005"
 people:
   - kofi-adair
 cover: https://picsum.photos/seed/triad-sewn-dark/1800/1200?grayscale

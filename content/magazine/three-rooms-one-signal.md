@@ -4,7 +4,7 @@ deck: A fashion installation, a sound piece and a photo series — built separat
 category: Creative Projects
 date: 2026-09-18
 author: Words by the TRIAD Editors
-issue: "001"
+issue: "004"
 people:
   - ines-varga
 cover: https://picsum.photos/seed/triad-three-rooms/1800/1200?grayscale

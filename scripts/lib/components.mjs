@@ -85,6 +85,16 @@ export function issueCover(issue, ctx, { tilt = 0 } = {}) {
 </a>`;
 }
 
+/** Instagram-style grid of every issue: 3 columns, 4:5 tiles, newest first. */
+export function issueGrid(issues, ctx, { current = null } = {}) {
+  return `<ul class="ig-grid" role="list">${issues
+    .map((iss) => `<li><a class="ig-tile${iss === current ? ' is-here' : ''}" href="${ctx.url(`/magazine/issue-${iss.number}/`)}" data-cursor="N°${e(iss.number)}"${iss === current ? ' aria-current="page"' : ''}>
+    ${imgTag({ src: resolveImage(iss.cover, ctx), alt: `TRIAD N°${iss.number}${iss.title ? ` — ${iss.title}` : ''}${iss.date ? `, ${fmtDate(iss.date)}` : ''}`, sizes: '(max-width: 760px) 33vw, 22vw' })}
+    <span class="ig-meta"><span class="ig-no">N&deg;${e(iss.number)}</span>${iss.date ? `<span>${e(fmtDate(iss.date))}</span>` : ''}${iss.pages?.length > 1 ? `<span class="ig-pages" title="${iss.pages.length} pages">&#9638; ${iss.pages.length}</span>` : ''}</span>
+  </a></li>`)
+    .join('')}</ul>`;
+}
+
 export function marquee(items, cls = '') {
   const row = items.map((t) => `<span>${t}</span><span class="mq-sep" aria-hidden="true">+</span>`).join('');
   return `<div class="marquee ${cls}" aria-hidden="true"><div class="mq-track">${row}${row}</div></div>`;

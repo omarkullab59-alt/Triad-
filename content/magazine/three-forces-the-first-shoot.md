@@ -4,7 +4,7 @@ deck: Forest, stone, the Icelandic coast. The first pictures TRIAD made as TRIAD
 category: Fashion Editorials
 date: 2026-11-17
 author: Photography & styling by the TRIAD Collective
-issue: "003"
+issue: "004"
 cover: /uploads/triad/forest-walk.jpg
 featured: true
 find:

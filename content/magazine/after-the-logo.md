@@ -4,7 +4,7 @@ deck: Streetwear spent twenty years shouting its name. The most interesting labe
 category: Streetwear
 date: 2026-09-30
 author: Words by Jonah Reyes
-issue: "002"
+issue: "005"
 cover: https://picsum.photos/seed/triad-after-logo/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-logo-g1/900/1200?grayscale
