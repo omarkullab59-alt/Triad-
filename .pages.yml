@@ -190,6 +190,8 @@ content:
           - { name: number, label: Nummer, type: string }
           - { name: title, label: Titel, type: string }
           - { name: season, label: Saison, type: string }
+          - { name: date, label: "Datum (Instagram-Post)", type: date }
+          - { name: instagram, label: "Instagram-Post (Link)", type: string }
           - { name: cover, label: Cover, type: image }
           - { name: lines, label: Coverzeilen, type: string, list: true }
           - { name: current, label: Aktuelle Ausgabe, type: boolean }

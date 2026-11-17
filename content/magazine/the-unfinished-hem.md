@@ -4,7 +4,7 @@ deck: Raw edges, exposed linings and visible construction. Notes on fashion's gr
 category: Fashion Trends
 date: 2026-10-14
 author: Words by Elena Marsh
-issue: "003"
+issue: "004"
 cover: https://picsum.photos/seed/triad-unfinished-hem/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-hem-g1/900/1200?grayscale

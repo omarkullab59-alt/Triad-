@@ -4,7 +4,7 @@ deck: A conversation with stylist Mara Solenne on archives, flea markets and why
 category: Interviews
 date: 2026-11-11
 author: Interview by Priya Lund
-issue: "003"
+issue: "004"
 people:
   - mara-solenne
 cover: https://picsum.photos/seed/triad-third-person/1800/1200?grayscale

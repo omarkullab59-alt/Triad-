@@ -1,52 +1,136 @@
 {
   "items": [
     {
-      "number": "003",
-      "title": "THREE FORCES",
-      "season": "Winter 26",
-      "cover": "/uploads/triad/cover-red-figure.jpg",
-      "lines": [
-        "Fashion is only the beginning",
-        "Basement runways",
-        "Icons without gods"
-      ],
-      "current": true,
+      "number": "011",
+      "title": "",
+      "date": "2026-09-06",
+      "season": "Sep 26",
+      "cover": "/uploads/triad/ig-2026-09-06.jpg",
+      "lines": [],
       "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/Dc8Z4X_DMVT/",
+      "current": true
+    },
+    {
+      "number": "010",
+      "title": "",
+      "date": "2026-07-20",
+      "season": "Jul 26",
+      "cover": "/uploads/triad/ig-2026-07-20.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DbBfnG6jEGk/"
+    },
+    {
+      "number": "009",
+      "title": "",
+      "date": "2026-07-15",
+      "season": "Jul 26",
+      "cover": "/uploads/triad/iceland-hand.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/Da0mq59jJ6S/",
       "pages": [
-        "/uploads/triad/cover-red-figure.jpg",
-        "/uploads/triad/double-page-01.jpg",
         "/uploads/triad/iceland-hand.jpg",
         "/uploads/triad/post-15-7-26-02.jpg",
         "/uploads/triad/post-15-7-26-03.jpg",
         "/uploads/triad/post-15-7-26-04.jpg",
-        "/uploads/triad/post-15-7-26-05.jpg",
-        "/uploads/triad/poster-red-ring.jpg",
-        "/uploads/triad/backpage.jpg"
+        "/uploads/triad/post-15-7-26-05.jpg"
       ]
     },
     {
-      "number": "002",
+      "number": "008",
+      "title": "",
+      "date": "2026-03-12",
+      "season": "Mar 26",
+      "cover": "/uploads/triad/ig-2026-03-12.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DVye8xfDPO-/"
+    },
+    {
+      "number": "007",
+      "title": "",
+      "date": "2026-02-02",
+      "season": "Feb 26",
+      "cover": "/uploads/triad/ig-2026-02-02.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DUQQ6K5DHpt/"
+    },
+    {
+      "number": "006",
+      "title": "",
+      "date": "2025-12-06",
+      "season": "Dec 25",
+      "cover": "/uploads/triad/triad-banner.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DR7kWbrDH7G/"
+    },
+    {
+      "number": "005",
       "title": "OUTSIDE THE SYSTEM",
-      "season": "Summer 26",
+      "date": "2025-08-15",
+      "season": "Aug 25",
       "cover": "/uploads/triad/cover-maier-door.jpg",
       "lines": [
         "After the logo",
         "Grain as evidence",
         "Sewn in the dark"
       ],
-      "designed": false
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DNYkv5AsUjM/"
+    },
+    {
+      "number": "004",
+      "title": "THREE FORCES",
+      "date": "2025-08-12",
+      "season": "Aug 25",
+      "cover": "/uploads/triad/cover-red-figure.jpg",
+      "lines": [
+        "Fashion is only the beginning",
+        "Basement runways",
+        "Icons without gods"
+      ],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DNQ0c-6s2F4/",
+      "pages": [
+        "/uploads/triad/cover-red-figure.jpg",
+        "/uploads/triad/double-page-01.jpg",
+        "/uploads/triad/poster-red-ring.jpg",
+        "/uploads/triad/backpage.jpg"
+      ]
+    },
+    {
+      "number": "003",
+      "title": "",
+      "date": "2025-03-17",
+      "season": "Mar 25",
+      "cover": "/uploads/triad/ig-2025-03-17.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DHTlj8mMrL8/"
+    },
+    {
+      "number": "002",
+      "title": "",
+      "date": "2025-03-05",
+      "season": "Mar 25",
+      "cover": "/uploads/triad/ig-2025-03-05.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DG0zCARNf4o/"
     },
     {
       "number": "001",
-      "title": "THE SERPENT ISSUE",
-      "season": "Winter 25",
-      "cover": "/uploads/triad/poster-red-ring.jpg",
-      "lines": [
-        "Myth, wool and noise",
-        "The unfinished hem",
-        "Three rooms, one signal"
-      ],
-      "designed": true
+      "title": "",
+      "date": "2025-02-02",
+      "season": "Feb 25",
+      "cover": "/uploads/triad/ig-2025-02-02.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DFk8enpMS2U/"
     }
   ]
 }

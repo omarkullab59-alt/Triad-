@@ -4,7 +4,7 @@ deck: A winter editorial shot in an abandoned textile mill, where heavy cloth be
 category: Fashion Editorials
 date: 2026-11-08
 author: Words by Elena Marsh / Photography by Ines Varga
-issue: "003"
+issue: "004"
 people:
   - ines-varga
   - mara-solenne

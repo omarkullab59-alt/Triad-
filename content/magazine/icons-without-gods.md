@@ -4,7 +4,7 @@ deck: Religious imagery, mythological beasts and why contemporary culture keeps 
 category: Art & Culture
 date: 2026-10-05
 author: Words by Sam Okonkwo
-issue: "003"
+issue: "004"
 cover: https://picsum.photos/seed/triad-icons-gods/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-icons-g1/900/1200?grayscale

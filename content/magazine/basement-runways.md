@@ -4,7 +4,7 @@ deck: No invitations, no front row, no photographers in the pit. Inside the unde
 category: Underground Fashion
 date: 2026-11-02
 author: Words by Sam Okonkwo
-issue: "003"
+issue: "004"
 people:
   - dj-mono
 cover: https://picsum.photos/seed/triad-basement-runways/1800/1200?grayscale

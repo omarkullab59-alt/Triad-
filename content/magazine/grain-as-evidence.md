@@ -4,7 +4,7 @@ deck: Why a new generation of fashion photographers are choosing film, flash and
 category: Photography
 date: 2026-10-29
 author: Words by Jonah Reyes
-issue: "003"
+issue: "004"
 people:
   - ines-varga
 cover: https://picsum.photos/seed/triad-grain-evidence/1800/1200?grayscale
