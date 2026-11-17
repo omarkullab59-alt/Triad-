@@ -433,10 +433,74 @@
         })
         .join('');
       box.hidden = false;
+      updateAlert(p);
       if (!ai) $('[data-ai-result]', finder).hidden = true;
       if (push) history.replaceState(null, '', `${location.pathname}?q=${encodeURIComponent(ai ? p.q : raw)}`);
       box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     };
+    /* Price alert: eBay checked by the TRIAD server (official API), push to this device */
+    const alertBox = $('[data-alert-box]', finder);
+    const myBox = $('[data-my-alerts]', finder.parentElement || document);
+    const alertStatus = $('[data-alert-status]', finder);
+    let alertQuery = '';
+    const aSay = (t, kind = '') => { alertStatus.textContent = t; alertStatus.className = `alert-status label${kind ? ' is-' + kind : ''}`; };
+    const pushOk = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    const iosNeedsInstall = /iPhone|iPad|iPod/.test(navigator.userAgent) && !(navigator.standalone || matchMedia('(display-mode: standalone)').matches);
+    const keyBytes = (k) => { const b = atob(k.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (k.length % 4)) % 4)); return Uint8Array.from(b, (c) => c.charCodeAt(0)); };
+    const api = (path, body) => fetch(`${finder.dataset.ai}${path}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {}).then(async (r) => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || r.status); return d; });
+    const currentSub = async () => (pushOk ? (await navigator.serviceWorker.getRegistration())?.pushManager.getSubscription() : null);
+    function updateAlert(p) {
+      alertQuery = p.q;
+      $('[data-alert-query]', finder).textContent = `“${p.q}”`;
+      if (p.price) alertBox.querySelector('[name=max]').value = p.price;
+      const native = [...$$('.market a', finder)].filter((a) => /^(vinted|kleinanzeigen|grailed)$/i.test(a.querySelector('.market-name')?.textContent.trim() || ''));
+      $('[data-alert-native]', finder).innerHTML = native.map((a) => `<a class="chip" href="${a.href}" target="_blank" rel="noopener nofollow">${a.querySelector('.market-name').textContent} alert &#8599;</a>`).join('');
+      aSay(finder.dataset.ai ? '' : 'Alerts switch on as soon as the TRIAD server is connected.');
+      $('[data-alert-go]', finder).disabled = !finder.dataset.ai;
+    }
+    const ago = (t) => { if (!t) return 'not checked yet'; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'checked just now' : m < 60 ? `checked ${m} min ago` : `checked ${Math.round(m / 60)} h ago`; };
+    const loadMine = async () => {
+      if (!finder.dataset.ai || !myBox) return;
+      const sub = await currentSub().catch(() => null);
+      if (!sub) { myBox.hidden = true; return; }
+      try {
+        const d = await api('/alerts/mine', { endpoint: sub.endpoint });
+        myBox.hidden = !d.items.length;
+        $('[data-my-alerts-list]', myBox).innerHTML = d.items.map((a) => `<li class="my-alert"><span class="my-alert-q">${a.query.replace(/[<>&]/g, '')}</span><span class="label label--dim">${a.maxPrice ? `max ${a.maxPrice} € · ` : ''}${a.hits ? `${a.hits} new found · ` : ''}${ago(a.lastChecked)}</span><button type="button" class="chip" data-alert-del="${a.id}" aria-label="Delete alert ${a.query.replace(/"/g, '')}">Delete</button></li>`).join('');
+      } catch (_) { myBox.hidden = true; }
+    };
+    $('[data-alert-form]', finder).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!finder.dataset.ai || !alertQuery) return;
+      if (iosNeedsInstall) return aSay('On iPhone: first add TRIAD to your home screen (Share → “Add to Home Screen”), open it from there, then turn on the alert.', 'error');
+      if (!pushOk) return aSay('This browser can’t receive notifications. Try Chrome, Firefox, Edge or Safari (macOS / iOS 16.4+).', 'error');
+      const btn = $('[data-alert-go]', finder); btn.disabled = true; aSay('Asking for permission…');
+      try {
+        if ((await Notification.requestPermission()) !== 'granted') throw new Error('denied');
+        if (!(await navigator.serviceWorker.getRegistration())) await navigator.serviceWorker.register((window.TRIAD_BASE || '/') + 'sw.js');
+        const reg = await navigator.serviceWorker.ready;
+        const { publicKey, ebay } = await api('/alerts/vapid');
+        let sub = await reg.pushManager.getSubscription();
+        const fresh = () => reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(publicKey) });
+        try { sub = sub || await fresh(); } catch (_) { await sub?.unsubscribe(); sub = await fresh(); }
+        const max = alertBox.querySelector('[name=max]').value;
+        await api('/alerts/subscribe', { subscription: sub.toJSON(), query: alertQuery, maxPrice: max ? Number(max) : null });
+        aSay(ebay ? `Alert on: “${alertQuery}”${max ? ` up to ${max} €` : ''}. You’ll get a notification when something new is listed.` : 'Alert saved. eBay checks start as soon as the eBay key is connected.', 'ok');
+        loadMine();
+      } catch (x) {
+        aSay({ denied: 'Notifications are blocked — allow them for this site in your browser settings.', too_many_alerts: 'Max. 10 alerts per device — delete one first.', rate_limited: 'Too many tries — wait a minute.' }[x.message] || 'Could not turn on the alert. Try again.', 'error');
+      }
+      btn.disabled = false;
+    });
+    myBox?.addEventListener('click', async (e) => {
+      const del = e.target.closest('[data-alert-del]');
+      const sub = await currentSub().catch(() => null);
+      if (!sub) return;
+      if (del) { del.disabled = true; await api('/alerts/delete', { endpoint: sub.endpoint, id: del.dataset.alertDel }).catch(() => {}); loadMine(); }
+      if (e.target.closest('[data-alert-test]')) { e.target.textContent = 'Sending…'; const d = await api('/alerts/test', { endpoint: sub.endpoint }).catch(() => ({})); e.target.textContent = d.ok ? 'Test sent ✓' : 'Test failed'; }
+    });
+    loadMine();
+
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       if (photo && endpoint) return askAI();
@@ -820,7 +884,7 @@
   }
 
   /* ── Service worker (offline + installable app) ──────────────── */
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     addEventListener('load', () => navigator.serviceWorker.register((window.TRIAD_BASE || '/') + 'sw.js').catch(() => {}));
   }
 

@@ -21,3 +21,10 @@ binding = "DB"
 database_name = "triad-darkroom"
 
 # Secrets (set by the deploy workflow from GitHub secrets): ADMIN_TOKEN, HASH_SALT
+
+# Price alerts: check saved searches every 10 minutes (each alert ~ once an hour, 12 per run).
+# Free plan allows 5 cron triggers per account — this uses one.
+[triggers]
+crons = ["*/10 * * * *"]
+
+# Optional secrets for eBay checks (free developer account): EBAY_CLIENT_ID, EBAY_CLIENT_SECRET

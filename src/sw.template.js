@@ -34,3 +34,22 @@ self.addEventListener('fetch', (e) => {
     );
   }
 });
+
+/* Price alerts: show the notification the TRIAD server pushed; tapping it opens the find. */
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { title: 'TRIAD', body: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'TRIAD', {
+    body: d.body || '',
+    icon: `${BASE}assets/icons/icon-192.png`,
+    badge: `${BASE}assets/icons/icon-192.png`,
+    image: d.image || undefined,
+    tag: d.tag || undefined,
+    renotify: Boolean(d.tag),
+    data: { url: d.url && /^https?:|^\//.test(d.url) ? (d.url.startsWith('/') ? `${BASE}${d.url.slice(1)}` : d.url) : `${BASE}finder/` },
+  }));
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(self.clients.openWindow(e.notification.data && e.notification.data.url ? e.notification.data.url : `${BASE}finder/`));
+});

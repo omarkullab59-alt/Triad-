@@ -31,6 +31,10 @@ Wenn Sie im Finder ein Foto oder eine Beschreibung an „TRIAD AI“ senden, wir
 - **Reaktionen, Meldungen, Upload-Limit:** Damit niemand mehrfach abstimmt, speichern wir einen verschlüsselten Kurzwert („Hash“) aus Ihrer IP-Adresse und einem geheimen Schlüssel. Die IP-Adresse selbst wird nicht gespeichert (Art. 6 Abs. 1 lit. f DSGVO).
 - Abgelehnte Fotos löschen wir spätestens nach [30] Tagen.
 
+## Preisalarm (Finder)
+
+Wenn du einen Preisalarm einschaltest, speichern wir bei Cloudflare (D1-Datenbank): deinen Suchbegriff, den optionalen Höchstpreis und die Push-Adresse deines Browsers. Diese Adresse vergibt dein Browser-Hersteller (z. B. Google, Apple, Mozilla). Sie enthält keinen Namen und keine E-Mail-Adresse. Etwa einmal pro Stunde fragen wir mit deinem Suchbegriff bei eBay über die offizielle Schnittstelle neue Angebote ab. Gibt es Neues, schicken wir dir über den Push-Dienst deines Browsers eine verschlüsselte Benachrichtigung. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst Alarme jederzeit im Finder löschen. Widerrufst du die Benachrichtigungen im Browser, schalten wir den Alarm automatisch ab.
+
 ## Im Browser gespeichert (kein Cookie)
 
 Ihre Einstellung „Motion on/off“ und — wenn Sie etwas hochgeladen haben — Name und Instagram-Name für das nächste Mal (localStorage). Beides bleibt auf Ihrem Gerät; Sie können es über die Browser-Einstellungen löschen.

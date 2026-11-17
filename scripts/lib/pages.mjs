@@ -565,7 +565,30 @@ export function finderPage(ctx) {
     </header>
     <ol class="market-list" data-market-list></ol>
     <p class="label label--dim finder-note">Results open on each platform in a new tab. TRIAD is not affiliated with these marketplaces and does not see what you buy.</p>
+
+    <section class="alert-box" data-alert-box aria-labelledby="alert-title">
+      <header class="alert-head">
+        <span class="label">${symbol('air', { cls: 'chip-sym' })}Price alert</span>
+        <h2 id="alert-title" class="alert-title">Tell me when it drops.</h2>
+        <p class="serif alert-text">TRIAD checks eBay about once an hour and pings your phone when a new listing for <b data-alert-query></b> appears &mdash; free, no account.</p>
+      </header>
+      <form class="alert-form" data-alert-form>
+        <label class="alert-price"><span class="label">Max. price (optional)</span><span class="alert-price-row"><input type="number" name="max" min="1" max="99999" inputmode="numeric" placeholder="80"><span>&euro;</span></span></label>
+        <button type="submit" class="btn btn--solid" data-alert-go>&#128276; Turn on alert</button>
+        <p class="alert-status label" data-alert-status role="status"></p>
+      </form>
+      <div class="alert-native">
+        <span class="label label--dim">Vinted, Kleinanzeigen &amp; Grailed don&rsquo;t allow outside alerts &mdash; use their own (free): open your search and tap &ldquo;Save search&rdquo; / &ldquo;Suchauftrag&rdquo;.</span>
+        <div class="alert-native-links" data-alert-native></div>
+      </div>
+    </section>
   </div>
+
+  <section class="my-alerts" data-my-alerts hidden aria-labelledby="my-alerts-title">
+    <h2 id="my-alerts-title" class="label">${symbol('air', { cls: 'chip-sym' })}Your alerts on this device</h2>
+    <ul class="my-alerts-list" data-my-alerts-list></ul>
+    <button type="button" class="btn-line" data-alert-test>Send a test notification</button>
+  </section>
 
   <aside class="finder-photo">
     ${symbol('sierpinski', { cls: 'finder-photo-sym' })}

@@ -5,6 +5,7 @@ name: Deploy Finder AI (Cloudflare Worker)
 # CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID. ANTHROPIC_API_KEY is optional.
 # Darkroom: DARKROOM_ADMIN_TOKEN (long random password for the moderation page) and
 # DARKROOM_HASH_SALT (any random text). See docs/DARKROOM.md.
+# Price alerts (optional): EBAY_CLIENT_ID + EBAY_CLIENT_SECRET from developer.ebay.com. See docs/PREISALARM.md.
 # See docs/KI-FINDER.md.
 
 on:
@@ -23,7 +24,7 @@ jobs:
           node-version: 22
 
       - name: Unit tests (mocked AI + real SQLite for D1)
-        run: node tests/worker.test.mjs && node tests/darkroom.test.mjs
+        run: node tests/worker.test.mjs && node tests/darkroom.test.mjs && node tests/alerts.test.mjs
 
       - name: Check secrets
         id: check
@@ -47,12 +48,27 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker/finder-ai
           wranglerVersion: "4"
-          secrets: |
-            ADMIN_TOKEN
-            HASH_SALT
+
+      - name: Set optional secrets (only those that exist)
+        if: steps.check.outputs.ready == 'true'
+        working-directory: worker/finder-ai
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           ADMIN_TOKEN: ${{ secrets.DARKROOM_ADMIN_TOKEN }}
           HASH_SALT: ${{ secrets.DARKROOM_HASH_SALT }}
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          for name in ADMIN_TOKEN HASH_SALT EBAY_CLIENT_ID EBAY_CLIENT_SECRET ANTHROPIC_API_KEY; do
+            value="${!name}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | npx -y wrangler@4 secret put "$name" >/dev/null && echo "set $name"
+            else
+              echo "skip $name (no GitHub secret)"
+            fi
+          done
 
       - name: Show URL
         if: steps.check.outputs.ready == 'true'
