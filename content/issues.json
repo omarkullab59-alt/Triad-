@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "number": "011",
+      "number": "012",
       "title": "",
       "date": "2026-09-06",
       "season": "Sep 26",
@@ -9,20 +9,37 @@
       "lines": [],
       "designed": true,
       "instagram": "https://www.instagram.com/triad.closet/p/Dc8Z4X_DMVT/",
+      "pages": [
+        "/uploads/triad/ig-2026-09-06.jpg",
+        "/uploads/triad/issues/2026-09-06-02.jpg",
+        "/uploads/triad/issues/2026-09-06-03.jpg",
+        "/uploads/triad/issues/2026-09-06-04.jpg",
+        "/uploads/triad/issues/2026-09-06-05.jpg",
+        "/uploads/triad/issues/2026-09-06-06.jpg",
+        "/uploads/triad/issues/2026-09-06-07.jpg"
+      ],
       "current": true
     },
     {
-      "number": "010",
+      "number": "011",
       "title": "",
       "date": "2026-07-20",
       "season": "Jul 26",
       "cover": "/uploads/triad/ig-2026-07-20.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DbBfnG6jEGk/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DbBfnG6jEGk/",
+      "pages": [
+        "/uploads/triad/ig-2026-07-20.jpg",
+        "/uploads/triad/issues/2026-07-20-02.jpg",
+        "/uploads/triad/issues/2026-07-20-03.jpg",
+        "/uploads/triad/issues/2026-07-20-04.jpg",
+        "/uploads/triad/issues/2026-07-20-05.jpg",
+        "/uploads/triad/issues/2026-07-20-06.jpg"
+      ]
     },
     {
-      "number": "009",
+      "number": "010",
       "title": "",
       "date": "2026-07-15",
       "season": "Jul 26",
@@ -39,24 +56,55 @@
       ]
     },
     {
-      "number": "008",
+      "number": "009",
       "title": "",
       "date": "2026-03-12",
       "season": "Mar 26",
       "cover": "/uploads/triad/ig-2026-03-12.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DVye8xfDPO-/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DVye8xfDPO-/",
+      "pages": [
+        "/uploads/triad/ig-2026-03-12.jpg",
+        "/uploads/triad/issues/2026-03-12-02.jpg",
+        "/uploads/triad/issues/2026-03-12-03.jpg",
+        "/uploads/triad/issues/2026-03-12-04.jpg",
+        "/uploads/triad/issues/2026-03-12-05.jpg"
+      ]
     },
     {
-      "number": "007",
+      "number": "008",
       "title": "",
       "date": "2026-02-02",
       "season": "Feb 26",
       "cover": "/uploads/triad/ig-2026-02-02.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DUQQ6K5DHpt/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DUQQ6K5DHpt/",
+      "pages": [
+        "/uploads/triad/ig-2026-02-02.jpg",
+        "/uploads/triad/frame-in-fog.jpg",
+        "/uploads/triad/issues/2026-02-02-03.jpg",
+        "/uploads/triad/issues/2026-02-02-04.jpg",
+        "/uploads/triad/plane-wreck.jpg"
+      ]
+    },
+    {
+      "number": "007",
+      "title": "",
+      "date": "2026-01-31",
+      "season": "Jan 26",
+      "cover": "/uploads/triad/issues/2026-01-31-01.jpg",
+      "lines": [],
+      "designed": true,
+      "instagram": "https://www.instagram.com/triad.closet/p/DUK6y9VDFV3/",
+      "pages": [
+        "/uploads/triad/issues/2026-01-31-01.jpg",
+        "/uploads/triad/moss-pillar.jpg",
+        "/uploads/triad/river-framed.jpg",
+        "/uploads/triad/issues/2026-01-31-04.jpg",
+        "/uploads/triad/skogafoss-tracktop.jpg"
+      ]
     },
     {
       "number": "006",
@@ -66,7 +114,15 @@
       "cover": "/uploads/triad/triad-banner.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DR7kWbrDH7G/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DR7kWbrDH7G/",
+      "pages": [
+        "/uploads/triad/triad-banner.jpg",
+        "/uploads/triad/issues/2025-12-06-02.jpg",
+        "/uploads/triad/issues/2025-12-06-03.jpg",
+        "/uploads/triad/field-jacket-profile.jpg",
+        "/uploads/triad/issues/2025-12-06-05.jpg",
+        "/uploads/triad/issues/2025-12-06-06.jpg"
+      ]
     },
     {
       "number": "005",
@@ -80,7 +136,14 @@
         "Sewn in the dark"
       ],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DNYkv5AsUjM/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DNYkv5AsUjM/",
+      "pages": [
+        "/uploads/triad/cover-maier-door.jpg",
+        "/uploads/triad/issues/2025-08-15-02.jpg",
+        "/uploads/triad/issues/2025-08-15-03.jpg",
+        "/uploads/triad/boots-cargo.jpg",
+        "/uploads/triad/forest-walk.jpg"
+      ]
     },
     {
       "number": "004",
@@ -98,8 +161,11 @@
       "pages": [
         "/uploads/triad/cover-red-figure.jpg",
         "/uploads/triad/double-page-01.jpg",
-        "/uploads/triad/poster-red-ring.jpg",
-        "/uploads/triad/backpage.jpg"
+        "/uploads/triad/issues/2025-08-12-03.jpg",
+        "/uploads/triad/issues/2025-08-12-04.jpg",
+        "/uploads/triad/sleeve-print.jpg",
+        "/uploads/triad/barn-door-denim.jpg",
+        "/uploads/triad/betreten-verboten.jpg"
       ]
     },
     {
@@ -110,7 +176,16 @@
       "cover": "/uploads/triad/ig-2025-03-17.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DHTlj8mMrL8/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DHTlj8mMrL8/",
+      "pages": [
+        "/uploads/triad/ig-2025-03-17.jpg",
+        "/uploads/triad/issues/2025-03-17-02.jpg",
+        "/uploads/triad/issues/2025-03-17-03.jpg",
+        "/uploads/triad/issues/2025-03-17-04.jpg",
+        "/uploads/triad/issues/2025-03-17-05.jpg",
+        "/uploads/triad/issues/2025-03-17-06.jpg",
+        "/uploads/triad/issues/2025-03-17-07.jpg"
+      ]
     },
     {
       "number": "002",
@@ -120,7 +195,15 @@
       "cover": "/uploads/triad/ig-2025-03-05.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DG0zCARNf4o/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DG0zCARNf4o/",
+      "pages": [
+        "/uploads/triad/ig-2025-03-05.jpg",
+        "/uploads/triad/issues/2025-03-05-02.jpg",
+        "/uploads/triad/issues/2025-03-05-03.jpg",
+        "/uploads/triad/issues/2025-03-05-04.jpg",
+        "/uploads/triad/issues/2025-03-05-05.jpg",
+        "/uploads/triad/issues/2025-03-05-06.jpg"
+      ]
     },
     {
       "number": "001",
@@ -130,7 +213,15 @@
       "cover": "/uploads/triad/ig-2025-02-02.jpg",
       "lines": [],
       "designed": true,
-      "instagram": "https://www.instagram.com/triad.closet/p/DFk8enpMS2U/"
+      "instagram": "https://www.instagram.com/triad.closet/p/DFk8enpMS2U/",
+      "pages": [
+        "/uploads/triad/ig-2025-02-02.jpg",
+        "/uploads/triad/issues/2025-02-02-02.jpg",
+        "/uploads/triad/issues/2025-02-02-03.jpg",
+        "/uploads/triad/issues/2025-02-02-04.jpg",
+        "/uploads/triad/issues/2025-02-02-05.jpg",
+        "/uploads/triad/issues/2025-02-02-06.jpg"
+      ]
     }
   ]
 }
