@@ -205,7 +205,7 @@ collections:
           - { label: E-Mail, name: email, widget: string }
           - { label: KI-Finder Adresse (Worker-URL), name: aiEndpoint, widget: string, required: false, hint: "z. B. https://triad-finder-ai.<name>.workers.dev — leer = KI aus" }
           - { label: Hero-Bilder (Startseite), name: heroImages, widget: list, field: { label: Bild, name: image, widget: image } }
-          - { label: Kampagnenbild, name: campaignImage, widget: image }
+          - { label: "Kampagnenbild (großes Bild auf der Startseite — erscheint erst, wenn hier ein echtes Foto eingetragen ist)", name: campaignImage, widget: image }
           - { label: Social Links, name: social, widget: list, fields: [{ label: Name, name: label, widget: string }, { label: Link, name: url, widget: string }] }
           - { label: Magazin-Kategorien, name: magazineCategories, widget: list }
           - { label: News-Themen, name: newsTopics, widget: list }

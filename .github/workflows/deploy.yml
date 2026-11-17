@@ -1,13 +1,13 @@
 name: Build & deploy TRIAD
 
-# Runs on every push to main (new article, upload, code change) and every 3 hours
+# Runs on every push to main (new article, upload, code change) and every hour
 # to refresh the news wire. Publishes dist/ to the gh-pages branch.
 
 on:
   push:
     branches: [main]
   schedule:
-    - cron: "17 */3 * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:

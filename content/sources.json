@@ -71,6 +71,42 @@
       "url": "https://pitchfork.com/feed/feed-news/rss",
       "topic": "Culture",
       "active": true
+    },
+    {
+      "name": "Groove",
+      "url": "https://groove.de/feed/",
+      "topic": "Music",
+      "active": true
+    },
+    {
+      "name": "Monopol",
+      "url": "https://www.monopol-magazin.de/rss.xml",
+      "topic": "Art",
+      "active": true
+    },
+    {
+      "name": "Resident Advisor",
+      "url": "https://ra.co/xml/news.xml",
+      "topic": "Music",
+      "active": true
+    },
+    {
+      "name": "FashionUnited DE",
+      "url": "https://fashionunited.de/rss-news",
+      "topic": "Fashion",
+      "active": true
+    },
+    {
+      "name": "032c",
+      "url": "https://032c.com/feed",
+      "topic": "Culture",
+      "active": true
+    },
+    {
+      "name": "i-D",
+      "url": "https://i-d.co/feed/",
+      "topic": "Culture",
+      "active": true
     }
   ]
 }

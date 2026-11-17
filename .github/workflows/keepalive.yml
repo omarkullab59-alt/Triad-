@@ -1,0 +1,24 @@
+name: Keep schedules alive
+
+# GitHub pauses scheduled workflows in public repos after 60 days without activity.
+# Once a month this re-enables the hourly news refresh (and itself) via the API — no commits, no cost.
+
+on:
+  schedule:
+    - cron: "41 4 1 * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-enable scheduled workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in deploy.yml keepalive.yml; do
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable" && echo "enabled $wf"
+          done

@@ -65,6 +65,8 @@ export function homePage(ctx) {
   const lead = featured[0] || articles[0];
   const rest = articles.filter((a) => a !== lead).slice(0, 2);
   const current = issues.find((i) => i.current) || issues[0];
+  // The campaign band only appears once a real campaign photo is set in the CMS (no placeholder stock image).
+  const showCampaign = site.campaignImage && !/picsum\.photos/.test(site.campaignImage);
 
   return `
 <section class="hero" data-hero>
@@ -88,8 +90,6 @@ export function homePage(ctx) {
   <span class="hero-scroll label" aria-hidden="true">Scroll &darr;</span>
 </section>
 
-${marquee(news.slice(0, 6).map((n) => `${e(n.topic.toUpperCase())} &mdash; ${e(n.title)}`), 'marquee--news')}
-
 ${nowSection(ctx, lead)}
 
 <section class="block block--stories" id="latest">
@@ -106,7 +106,7 @@ ${nowSection(ctx, lead)}
   <a class="btn-line" href="${ctx.url('/about/')}">The philosophy &#8594;</a>
 </section>
 
-<section class="campaign" data-parallax-wrap>
+${showCampaign ? `<section class="campaign" data-parallax-wrap>
   <div class="campaign-media" data-parallax>${imgTag({ src: site.campaignImage, alt: 'TRIAD campaign: Built outside the system', sizes: '100vw' })}</div>
   <div class="campaign-text">
     <span class="label">CAMPAIGN / TRD-CMP-002</span>
@@ -114,7 +114,7 @@ ${nowSection(ctx, lead)}
     <a class="btn-line" href="${ctx.url('/archive/')}">Enter the archive &#8594;</a>
   </div>
   ${stamp({ top: 'OUTSIDE THE SYSTEM', bottom: 'APPROVED · NOT FOR SALE', center: 'III', cls: 'campaign-stamp' })}
-</section>
+</section>` : ''}
 
 <section class="block ways" aria-labelledby="ways-title">
   <h2 id="ways-title" class="label ways-title">${symbol('borromean', { cls: 'sh-sym' })}Three ways in</h2>
