@@ -81,7 +81,10 @@ export function homePage(ctx) {
     <span class="label hero-counter" data-hero-counter>PLATE 01 / 0${site.heroImages.length}</span>
   </div>
   <div class="plus-field" aria-hidden="true"><i class="plus" style="left:22%;top:30%"></i><i class="plus" style="right:18%;top:62%"></i><i class="plus" style="left:58%;top:18%"></i></div>
-  <div class="hero-emblem">${emblem({ title: 'TRIAD dragon emblem' })}</div>
+  <div class="hero-emblem mark-swap" data-mark-swap>
+    <div class="ms-a">${emblem({ title: 'TRIAD dragon emblem' })}</div>
+    <div class="ms-b"><span class="hand-mark" role="img" aria-label="TRIAD hand, three fingers raised"></span></div>
+  </div>
   <div class="hero-statement">
     <p class="hero-kicker serif">An independent fashion &amp; culture collective.</p>
     <p class="hero-rotator" aria-live="off"><span>FASHION.</span><span data-rotate="FASHION.|ART.|NOISE.|IMAGE.|MYTH.">FASHION.</span></p>
@@ -379,7 +382,10 @@ export function aboutPage(ctx) {
 <section class="about-intro">
   <span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}07 / ABOUT</span>
   <h1 class="about-title" data-split>${splitWords('TRIAD is not a magazine.')}</h1>
-  <div class="about-emblem">${emblem({ title: 'TRIAD emblem', motto: 'THREE FORCES · ONE VISION · ' })}</div>
+  <div class="about-emblem mark-swap" data-mark-swap>
+    <div class="ms-a">${emblem({ title: 'TRIAD emblem', motto: 'THREE FORCES · ONE VISION · ' })}</div>
+    <div class="ms-b"><span class="hand-mark" role="img" aria-label="TRIAD hand, three fingers raised"></span></div>
+  </div>
 </section>
 
 <section class="about-statements">
@@ -404,6 +410,7 @@ export function aboutPage(ctx) {
   ${sectionHead({ index: 'THE SYSTEM', title: 'Symbols.', kicker: 'A visual language built for print, garments, covers and screens.' }, ctx)}
   <div class="system-grid">
     <figure class="sys sys--emblem">${emblem({ title: 'Primary emblem' })}<figcaption><span class="label">01 — Primary emblem</span><span class="serif">Three serpent-dragons, each body drawn in three lines, chasing one another around a closed triangle. No beginning, no hierarchy.</span></figcaption></figure>
+    <figure class="sys sys--emblem sys--hand"><span class="hand-mark" role="img" aria-label="TRIAD hand"></span><figcaption><span class="label">01B — The hand</span><span class="serif">Three fingers raised, drawn square by square. It takes turns with the dragon: two marks, one collective.</span></figcaption></figure>
     <figure class="sys sys--glyph">${glyph()}<figcaption><span class="label">02 — Glyph</span><span class="serif">Three plus signs on the corners of a triangle. Three forces, added together. For tags, buttons, small sizes.</span></figcaption></figure>
     <figure class="sys sys--word"><div class="wm wm--stack"><span>TRI</span><i></i><span>AD</span></div><figcaption><span class="label">03 — Stacked wordmark</span></figcaption></figure>
     <figure class="sys sys--word"><div class="wm wm--spaced">T&thinsp;&mdash;&thinsp;R&thinsp;&mdash;&thinsp;I&thinsp;&mdash;&thinsp;A&thinsp;&mdash;&thinsp;D</div><figcaption><span class="label">04 — Technical wordmark</span></figcaption></figure>

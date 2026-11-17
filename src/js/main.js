@@ -26,6 +26,18 @@
     try { localStorage.setItem('triad-motion', reduced ? 'off' : 'on'); } catch (_) { /* ignore */ }
     applyMotion();
   });
+  /* ── Two marks take turns: dragon ↔ hand. With motion: swap every 7 s. Without: one per visit. ── */
+  const swaps = $$('[data-mark-swap]');
+  if (swaps.length) {
+    let first = Math.random() < 0.5;
+    try { const last = sessionStorage.getItem('triad-mark'); if (last) first = last !== 'b'; sessionStorage.setItem('triad-mark', first ? 'b' : 'a'); } catch (_) { /* ignore */ }
+    swaps.forEach((el, i) => el.classList.toggle('is-b', i % 2 ? first : !first));
+    setInterval(() => {
+      if (document.hidden || html.classList.contains('motion-off') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      swaps.forEach((el) => { const r = el.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) el.classList.toggle('is-b'); });
+    }, 7000);
+  }
+
   /* ── Colour mode: Auto (system) → Dark → Light ─────────────────── */
   const sysDark = matchMedia('(prefers-color-scheme: dark)');
   let themePref = 'auto';

@@ -122,7 +122,10 @@ ${body}
 <footer class="site-footer">
   ${marquee(['BUILT OUTSIDE THE SYSTEM', 'THREE FORCES. ONE VISION.', 'AN ARCHIVE OF WHAT&rsquo;S NEXT', 'FASHION IS ONLY THE BEGINNING', 'BEYOND THE ORDINARY'], 'marquee--footer')}
   <div class="footer-grid">
-    <div class="footer-emblem">${emblem({ motto: 'TRIAD · INDEPENDENT · MMXXVI · ' })}</div>
+    <div class="footer-emblem mark-swap" data-mark-swap>
+      <div class="ms-a">${emblem({ motto: 'TRIAD · INDEPENDENT · MMXXVI · ' })}</div>
+      <div class="ms-b"><span class="hand-mark" role="img" aria-label="TRIAD hand"></span></div>
+    </div>
     <div class="footer-col">
       ${label('Transmission')}
       <p class="serif footer-lead">Letters from the collective. Irregular. Never noise.</p>
