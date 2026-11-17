@@ -128,11 +128,11 @@ ${showCampaign ? `<section class="campaign" data-parallax-wrap>
       <strong class="way-title">Three forces, many hands.</strong>
       <span class="serif way-note">Artists, designers and local legends from the TRIAD circle.</span>
     </a>
-    <a class="way" href="${ctx.url('/magazine/')}">
+    <a class="way" href="${ctx.url(current.pages?.length ? `/magazine/issue-${current.number}/` : '/magazine/')}">
       <span class="way-img way-img--issue">${imgTag({ src: resolveImage(current.cover, ctx), alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}<span class="ic-mast">TRIAD</span><span class="ic-no">N&deg;${e(String(current.number))}</span></span>
       <span class="label">II / Print</span>
       <strong class="way-title">N&deg;${e(String(current.number))} &mdash; ${e(current.title)}</strong>
-      <span class="serif way-note">The current issue. Slow pages for fast times.</span>
+      <span class="serif way-note">${current.pages?.length ? `Flip through all ${current.pages.length} pages.` : 'The current issue. Slow pages for fast times.'}</span>
     </a>
     <a class="way" href="${ctx.url('/archive/')}" data-archive-today data-items='${e(JSON.stringify(archive.map((a) => ({ code: a.code, title: a.title, type: a.type, image: resolveImage(a.image, ctx) }))))}'>
       <span class="way-img"><img alt="" width="900" height="1200" loading="lazy" decoding="async"><span class="frame-code" data-today-code></span></span>
@@ -783,4 +783,29 @@ export function legalPage(ctx, l) {
   <header class="page-head"><span class="label page-kicker">${symbol('borromean', { cls: 'sh-sym' })}LEGAL &mdash; ${e(String(l.updated || ''))}</span><h1 class="page-title">${e(l.title)}</h1></header>
   <div class="na-body legal-body">${renderMarkdown(l.body, ctx)}</div>
 </article>`;
+}
+
+/* ── Issue reader: flip through the printed pages ─────────────────────── */
+export function issuePage(ctx, issue) {
+  const pages = issue.pages.map((src) => resolveImage(src, ctx));
+  return `
+<section class="page-head reader-head">
+  <a class="label" href="${ctx.url('/magazine/')}">&#8592; Magazine</a>
+  <span class="label page-kicker">${symbol('chord', { cls: 'sh-sym' })}PRINT &mdash; N&deg;${e(issue.number)} &middot; ${e(issue.season || '')}</span>
+  <h1 class="page-title">${e(issue.title)}</h1>
+  <p class="label label--dim">${pages.length} pages &middot; swipe, scroll or use &larr; &rarr; &middot; tap a page to open it full screen</p>
+</section>
+<section class="reader" data-reader aria-label="Issue ${e(issue.number)}, ${pages.length} pages">
+  <div class="reader-track" data-reader-track tabindex="0" aria-roledescription="carousel">
+    ${pages.map((src, i) => `<figure class="reader-page" data-reader-page aria-label="Page ${i + 1} of ${pages.length}">
+      <button type="button" class="reader-open" data-lightbox="${e(src)}" data-color data-caption="N°${e(issue.number)} — page ${i + 1}/${pages.length}" aria-label="Open page ${i + 1} full screen">${imgTag({ src, alt: `Issue ${issue.number}, page ${i + 1}`, sizes: '(max-width: 760px) 86vw, 42vw', eager: i < 2 })}</button>
+      <figcaption class="label label--dim">${i === 0 ? 'Cover' : i === pages.length - 1 ? 'Back' : String(i + 1).padStart(2, '0')}</figcaption>
+    </figure>`).join('')}
+  </div>
+  <div class="reader-controls">
+    <button type="button" class="chip" data-reader-prev aria-label="Previous page">&larr;</button>
+    <span class="label reader-count" data-reader-count aria-live="polite">1 / ${pages.length}</span>
+    <button type="button" class="chip" data-reader-next aria-label="Next page">&rarr;</button>
+  </div>
+</section>`;
 }

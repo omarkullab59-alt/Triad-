@@ -11,7 +11,17 @@
         "Icons without gods"
       ],
       "current": true,
-      "designed": true
+      "designed": true,
+      "pages": [
+        "/uploads/triad/cover-red-figure.jpg",
+        "/uploads/triad/double-page-01.jpg",
+        "/uploads/triad/post-15-7-26-04.jpg",
+        "/uploads/triad/post-15-7-26-02.jpg",
+        "/uploads/triad/post-15-7-26-03.jpg",
+        "/uploads/triad/post-15-7-26-05.jpg",
+        "/uploads/triad/poster-red-ring.jpg",
+        "/uploads/triad/backpage.jpg"
+      ]
     },
     {
       "number": "002",
