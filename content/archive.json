@@ -6,15 +6,15 @@
       "title": "Three Forces",
       "year": "2026",
       "image": "/uploads/triad/three-forces-triptych.jpg",
-      "note": "Issue 003 opener. One wall, three positions."
+      "note": "N°004 opener. One wall, three positions."
     },
     {
       "code": "TRD-ARC-102",
       "type": "campaign",
-      "title": "Cover — Issue 003",
+      "title": "Cover — N°004",
       "year": "2026",
       "image": "/uploads/triad/cover-red-figure.jpg",
-      "note": "Red figure, TRIAD vertical. Cover of Issue 003."
+      "note": "Red figure, TRIAD vertical. Cover of N°004."
     },
     {
       "code": "TRD-ARC-103",
@@ -159,6 +159,158 @@
       "year": "2026",
       "image": "/uploads/triad/sleeve-print.jpg",
       "note": "Printed slogans, detail."
+    },
+    {
+      "code": "TRD-ARC-121",
+      "type": "editorial",
+      "title": "Skógafoss",
+      "year": "2026",
+      "image": "/uploads/triad/skogafoss-tracktop.jpg",
+      "note": "Track top, wide trousers, a wall of water."
+    },
+    {
+      "code": "TRD-ARC-122",
+      "type": "editorial",
+      "title": "Wreck, Blue Hour",
+      "year": "2026",
+      "image": "/uploads/triad/plane-wreck.jpg",
+      "note": "Standing on the wing. Black scarf, last light on the snow."
+    },
+    {
+      "code": "TRD-ARC-123",
+      "type": "reference",
+      "title": "Cornflower",
+      "year": "2024",
+      "image": "/uploads/triad/cornflower-rings.jpg",
+      "note": "Two rings, one flower, long grass."
+    },
+    {
+      "code": "TRD-ARC-124",
+      "type": "editorial",
+      "title": "Long Coat",
+      "year": "2026",
+      "image": "/uploads/triad/long-coat-insulation.jpg",
+      "note": "Black wool coat against an insulation wall."
+    },
+    {
+      "code": "TRD-ARC-125",
+      "type": "reference",
+      "title": "Script Scarf",
+      "year": "2024",
+      "image": "/uploads/triad/script-scarf.jpg",
+      "note": "Handwritten print, flannel, medallion."
+    },
+    {
+      "code": "TRD-ARC-126",
+      "type": "reference",
+      "title": "Rust Sweat",
+      "year": "2024",
+      "image": "/uploads/triad/rust-sweat.jpg",
+      "note": "Washed crewneck, blossom print, asphalt."
+    },
+    {
+      "code": "TRD-ARC-127",
+      "type": "editorial",
+      "title": "Instax",
+      "year": "2026",
+      "image": "/uploads/triad/instax-cap.jpg",
+      "note": "Cap, shield glasses, black tie. One frame."
+    },
+    {
+      "code": "TRD-ARC-128",
+      "type": "editorial",
+      "title": "Veil, Skatepark",
+      "year": "2024",
+      "image": "/uploads/triad/veil-skatepark.jpg",
+      "note": "Script scarf over the head, graffiti in front."
+    },
+    {
+      "code": "TRD-ARC-129",
+      "type": "campaign",
+      "title": "Frame in Fog",
+      "year": "2026",
+      "image": "/uploads/triad/frame-in-fog.jpg",
+      "note": "Red jacket, black sand, mountain cut into a frame."
+    },
+    {
+      "code": "TRD-ARC-130",
+      "type": "editorial",
+      "title": "Field, Night",
+      "year": "2026",
+      "image": "/uploads/triad/field-night.jpg",
+      "note": "Short-sleeve shirt, tie, a bottle of water."
+    },
+    {
+      "code": "TRD-ARC-131",
+      "type": "editorial",
+      "title": "Moss Pillar",
+      "year": "2026",
+      "image": "/uploads/triad/moss-pillar.jpg",
+      "note": "Track top in front of a green rock."
+    },
+    {
+      "code": "TRD-ARC-132",
+      "type": "reference",
+      "title": "Price Tag",
+      "year": "2026",
+      "image": "/uploads/triad/price-tag.jpg",
+      "note": "Plush cap, tag still on."
+    },
+    {
+      "code": "TRD-ARC-133",
+      "type": "editorial",
+      "title": "Fence, Glare",
+      "year": "2024",
+      "image": "/uploads/triad/fence-glare.jpg",
+      "note": "Curls, low sun, tinted lenses."
+    },
+    {
+      "code": "TRD-ARC-134",
+      "type": "editorial",
+      "title": "Between Two Cars",
+      "year": "2026",
+      "image": "/uploads/triad/between-two-cars.jpg",
+      "note": "Chore jacket, flannel, flash at night."
+    },
+    {
+      "code": "TRD-ARC-135",
+      "type": "campaign",
+      "title": "River, Framed",
+      "year": "2026",
+      "image": "/uploads/triad/river-framed.jpg",
+      "note": "Green zip, black scarf, a river below."
+    },
+    {
+      "code": "TRD-ARC-136",
+      "type": "reference",
+      "title": "Layers",
+      "year": "2024",
+      "image": "/uploads/triad/layers.jpg",
+      "note": "Coat, flannel, scarf, chain."
+    },
+    {
+      "code": "TRD-ARC-137",
+      "type": "reference",
+      "title": "Reflection",
+      "year": "2024",
+      "image": "/uploads/triad/reflection.jpg",
+      "note": "Cap, clear frames, the camera in the lens."
+    },
+    {
+      "code": "TRD-ARC-138",
+      "type": "reference",
+      "title": "Lamp Post, May",
+      "year": "2024",
+      "image": "/uploads/triad/lamp-post-may.jpg",
+      "note": "A poster, a sign, wisteria."
+    },
+    {
+      "code": "TRD-ARC-139",
+      "type": "editorial",
+      "title": "Attic, Trench",
+      "year": "2026",
+      "image": "/uploads/triad/attic-trench.jpg",
+      "note": "Trench, green knit, white collar, boots up."
     },
     {
       "code": "TRD-ARC-002",
