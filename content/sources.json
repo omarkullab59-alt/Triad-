@@ -88,19 +88,19 @@
       "name": "Resident Advisor",
       "url": "https://ra.co/xml/news.xml",
       "topic": "Music",
-      "active": true
+      "active": false
     },
     {
       "name": "FashionUnited DE",
       "url": "https://fashionunited.de/rss-news",
       "topic": "Fashion",
-      "active": true
+      "active": false
     },
     {
       "name": "032c",
       "url": "https://032c.com/feed",
       "topic": "Culture",
-      "active": true
+      "active": false
     },
     {
       "name": "i-D",
