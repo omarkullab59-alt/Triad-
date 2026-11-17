@@ -193,6 +193,8 @@ content:
           - { name: cover, label: Cover, type: image }
           - { name: lines, label: Coverzeilen, type: string, list: true }
           - { name: current, label: Aktuelle Ausgabe, type: boolean }
+          - { name: designed, label: "Cover ist fertig gestaltet (keine Schrift drüberlegen)", type: boolean }
+          - { name: pages, label: "Seiten zum Durchblättern (in Reihenfolge)", type: image, list: true }
 
   - name: site
     label: Startseite & Allgemein

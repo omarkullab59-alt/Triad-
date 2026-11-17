@@ -190,6 +190,8 @@ collections:
               - { label: Cover, name: cover, widget: image }
               - { label: Coverzeilen, name: lines, widget: list, field: { label: Zeile, name: line, widget: string } }
               - { label: Aktuelle Ausgabe, name: current, widget: boolean, default: false, required: false }
+              - { label: "Cover ist fertig gestaltet (keine Schrift drüberlegen)", name: designed, widget: boolean, default: false, required: false }
+              - { label: "Seiten zum Durchblättern (in Reihenfolge)", name: pages, widget: list, required: false, field: { label: Seite, name: page, widget: image } }
       - name: site
         label: Startseite & Allgemein
         file: content/site.json
