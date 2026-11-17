@@ -11,6 +11,7 @@ import { parseFrontmatter } from './lib/frontmatter.mjs';
 import { renderMarkdown, renderGallery, wordCount, escapeHtml } from './lib/markdown.mjs';
 import { layout } from './lib/layout.mjs';
 import { brandFiles, symbolFiles, emblem } from './lib/brand.mjs';
+import { indexMedia } from './lib/images.mjs';
 import { AI_BOTS } from '../worker/finder-ai/src/index.js';
 import { homePage, magazinePage, articlePage, newsPage, newsArticlePage, archivePage, aboutPage, notFoundPage, finderPage, peoplePage, personPage, darkroomPage, darkroomAdminPage, legalPage } from './lib/pages.mjs';
 
@@ -48,7 +49,8 @@ export function build() {
     version: Date.now().toString(36),
     url: (p = '/') => (/^(https?:|mailto:|#)/.test(p) ? p : base + p.replace(/^\//, '')),
     renderGallery,
-  };
+  };  indexMedia(path.join(ROOT, 'static', 'uploads'), ctx.url('/uploads/')); // real sizes + srcset for uploaded photos
+
 
   // ── Content ────────────────────────────────────────────────
   const loadMd = (dir) =>
