@@ -211,7 +211,7 @@ content:
       - { name: email, label: E-Mail, type: string }
       - { name: aiEndpoint, label: "KI-Finder Adresse (Worker-URL, leer = aus)", type: string }
       - { name: heroImages, label: Hero-Bilder (Startseite), type: image, list: true }
-      - { name: campaignImage, label: Kampagnenbild, type: image }
+      - { name: campaignImage, label: "Kampagnenbild (großes Bild auf der Startseite — erscheint erst, wenn hier ein echtes Foto eingetragen ist)", type: image }
       - name: social
         label: Social Links
         type: object
