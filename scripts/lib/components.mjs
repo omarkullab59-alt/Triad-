@@ -74,7 +74,7 @@ export function wireRow(w) {
 }
 
 export function issueCover(issue, ctx, { tilt = 0 } = {}) {
-  return `<a class="issue-cover${issue.designed ? ' is-designed' : ''}" href="${issue.pages?.length ? ctx.url(`/magazine/issue-${issue.number}/`) : ctx.url('/magazine/') + '#issue-' + issue.number}" style="--tilt:${tilt}deg" data-cursor="Issue ${e(issue.number)}">
+  return `<a class="issue-cover${issue.designed ? ' is-designed' : ''}" href="${ctx.url(`/magazine/issue-${issue.number}/`)}" style="--tilt:${tilt}deg" data-cursor="Issue ${e(issue.number)}">
   ${imgTag({ src: resolveImage(issue.cover, ctx), alt: `TRIAD Issue ${issue.number} cover`, sizes: '(max-width: 760px) 80vw, 30vw' })}
   <span class="ic-mast">TRIAD</span>
   <span class="ic-no">N&deg;${e(issue.number)}</span>

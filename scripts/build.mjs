@@ -115,7 +115,7 @@ export function build() {
   for (const [name, svg] of Object.entries({ ...brandFiles(), ...symbolFiles() })) write(`assets/brand/${name}`, svg);
 
   // ── Pages ──────────────────────────────────────────────────
-  const org = { '@type': 'Organization', name: 'TRIAD', url: site.url };
+  const org = { '@type': 'Organization', name: 'TRIAD', url: site.url, sameAs: (site.social || []).map((x) => x.url) };
   const page = (rel, opts) => write(rel, layout(ctx, opts));
 
   page('index.html', {
@@ -125,7 +125,7 @@ export function build() {
     image: site.heroImages[0],
     jsonld: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'TRIAD', url: site.url, description: site.description, publisher: org },
   });
-  for (const iss of ctx.issues.filter((i) => i.pages?.length)) {
+  for (const iss of ctx.issues) {
     page(`magazine/issue-${iss.number}/index.html`, { title: `N°${iss.number} — ${iss.title}`, path: `/magazine/issue-${iss.number}/`, pageId: 'reader', theme: 'paper', image: iss.cover, body: issuePage(ctx, iss), description: `TRIAD N°${iss.number} — ${iss.title}. Flip through the printed issue.` });
   }
     page('magazine/index.html', { title: 'Magazine', path: '/magazine/', pageId: 'magazine', body: magazinePage(ctx), description: 'The TRIAD magazine: fashion editorials, photography, designers, interviews, art and culture.' });
@@ -205,7 +205,7 @@ export function build() {
   write('api/site.json', JSON.stringify({ ...site, issues: ctx.issues, creatives: ctx.creatives }));
 
   // ── SEO: sitemap, robots, RSS ──────────────────────────────
-  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/darkroom/', '/finder/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.issues.filter((i) => i.pages?.length).map((i) => `/magazine/issue-${i.number}/`), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
+  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/darkroom/', '/finder/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.issues.map((i) => `/magazine/issue-${i.number}/`), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
   write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${site.url}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
   // No AI training: block AI crawlers (search engines stay allowed) + machine-readable TDM reservation (§ 44b UrhG)
   write('robots.txt', `# TRIAD — no AI training on our work or our photographers' work.\n${AI_BOTS.map((b) => `User-agent: ${b}`).join('\n')}\nDisallow: /\n\nUser-agent: *\nAllow: /\nDisallow: ${base}admin/\nDisallow: ${base}darkroom/admin/\nSitemap: ${site.url}/sitemap.xml\n`);

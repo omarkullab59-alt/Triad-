@@ -1264,3 +1264,7 @@ html.night .alert-box { background: #151515; box-shadow: inset 0 0 0 1px var(--l
 .reader-page { width: auto; }
 .reader-open img { height: min(68vh, 900px); width: auto; max-width: 86vw; }
 @media (max-width: 760px) { .reader-page { width: 86vw; } .reader-open img { width: 100%; height: auto; } }
+
+.reader--single .reader-track { justify-content: center; overflow: visible; }
+.issue-more .issues-row { margin-top: 18px; }
+.issue-stories .mag-grid { margin-top: 10px; }

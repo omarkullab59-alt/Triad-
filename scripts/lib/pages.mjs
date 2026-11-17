@@ -22,7 +22,7 @@ function nowSection(ctx, lead) {
   <header class="now-head">
     <span class="label"><span class="live-dot" aria-hidden="true"></span>00 / NOW ON TRIAD</span>
     <h2 id="now-title" class="now-title">What&rsquo;s happening.</h2>
-    <span class="label label--dim">Updated ${e(built)} &middot; Berlin</span>
+    <span class="label label--dim">Updated ${e(built)} &middot; Berlin${ctx.site.social?.[0] ? ` &middot; <a class="now-ig" href="${e(ctx.site.social[0].url)}" target="_blank" rel="noopener me">${e(ctx.site.social[0].handle || ctx.site.social[0].label)} &#8599;</a>` : ''}</span>
   </header>
   <div class="now-grid">
     ${call ? `<a class="now-card now-call" href="${ctx.url('/darkroom/')}#submit">
@@ -128,7 +128,7 @@ ${showCampaign ? `<section class="campaign" data-parallax-wrap>
       <strong class="way-title">Three forces, many hands.</strong>
       <span class="serif way-note">Artists, designers and local legends from the TRIAD circle.</span>
     </a>
-    <a class="way" href="${ctx.url(current.pages?.length ? `/magazine/issue-${current.number}/` : '/magazine/')}">
+    <a class="way" href="${ctx.url(`/magazine/issue-${current.number}/`)}">
       <span class="way-img way-img--issue">${imgTag({ src: resolveImage(current.cover, ctx), alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}<span class="ic-mast">TRIAD</span><span class="ic-no">N&deg;${e(String(current.number))}</span></span>
       <span class="label">II / Print</span>
       <strong class="way-title">N&deg;${e(String(current.number))} &mdash; ${e(current.title)}</strong>
@@ -708,7 +708,7 @@ ${call ? `
       <ol class="dr-steps">
         <li><b>01</b><span>Upload up to 6 photos. We shrink them to web size in your browser and strip location data.</span></li>
         <li><b>02</b><span>The crew reviews every frame by hand. Nothing is public before that.</span></li>
-        <li><b>03</b><span>On the wall: credited with your name &amp; Instagram, plus your own page with all your frames to share.</span></li>
+        <li><b>03</b><span>On the wall: credited with your name &amp; Instagram, plus your own page with all your frames to share. Tag <a href="https://www.instagram.com/triad.closet/" target="_blank" rel="noopener">@triad.closet</a> when you post it.</span></li>
         <li><b>${symbol('delta', { cls: 'chip-sym' })}</b><span><strong>Never used to train AI.</strong> AI crawlers are blocked and text &amp; data mining is reserved (&sect;&nbsp;44b UrhG) &mdash; for every photo.</span></li>
       </ol>
     </header>
@@ -787,25 +787,36 @@ export function legalPage(ctx, l) {
 
 /* ── Issue reader: flip through the printed pages ─────────────────────── */
 export function issuePage(ctx, issue) {
-  const pages = issue.pages.map((src) => resolveImage(src, ctx));
+  const pages = (issue.pages?.length ? issue.pages : [issue.cover]).map((src) => resolveImage(src, ctx));
+  const stories = ctx.articles.filter((a) => String(a.issue) === String(issue.number));
+  const others = ctx.issues.filter((i) => i !== issue);
+  const flip = pages.length > 1;
   return `
 <section class="page-head reader-head">
   <a class="label" href="${ctx.url('/magazine/')}">&#8592; Magazine</a>
-  <span class="label page-kicker">${symbol('chord', { cls: 'sh-sym' })}PRINT &mdash; N&deg;${e(issue.number)} &middot; ${e(issue.season || '')}</span>
+  <span class="label page-kicker">${symbol('chord', { cls: 'sh-sym' })}PRINT &mdash; N&deg;${e(issue.number)} &middot; ${e(issue.season || '')}${issue.current ? ' &middot; CURRENT ISSUE' : ''}</span>
   <h1 class="page-title">${e(issue.title)}</h1>
-  <p class="label label--dim">${pages.length} pages &middot; swipe, scroll or use &larr; &rarr; &middot; tap a page to open it full screen</p>
+  <p class="label label--dim">${flip ? `${pages.length} pages &middot; swipe, scroll or use &larr; &rarr; &middot; tap a page to open it full screen` : `Cover${stories.length ? ` &middot; ${stories.length} ${stories.length === 1 ? 'story' : 'stories'} in this issue` : ''} &middot; tap to open full screen`}</p>
 </section>
-<section class="reader" data-reader aria-label="Issue ${e(issue.number)}, ${pages.length} pages">
+<section class="reader${flip ? '' : ' reader--single'}" data-reader aria-label="Issue ${e(issue.number)}, ${pages.length} ${pages.length === 1 ? 'page' : 'pages'}">
   <div class="reader-track" data-reader-track tabindex="0" aria-roledescription="carousel">
     ${pages.map((src, i) => `<figure class="reader-page" data-reader-page aria-label="Page ${i + 1} of ${pages.length}">
-      <button type="button" class="reader-open" data-lightbox="${e(src)}" data-color data-caption="N°${e(issue.number)} — page ${i + 1}/${pages.length}" aria-label="Open page ${i + 1} full screen">${imgTag({ src, alt: `Issue ${issue.number}, page ${i + 1}`, sizes: '(max-width: 760px) 86vw, 42vw', eager: i < 2 })}</button>
+      <button type="button" class="reader-open" data-lightbox="${e(src)}" data-color data-caption="N°${e(issue.number)} — ${pages.length > 1 ? `page ${i + 1}/${pages.length}` : 'cover'}" aria-label="Open ${pages.length > 1 ? `page ${i + 1}` : 'cover'} full screen">${imgTag({ src, alt: `Issue ${issue.number}, ${pages.length > 1 ? `page ${i + 1}` : 'cover'}`, sizes: '(max-width: 760px) 86vw, 42vw', eager: i < 2 })}</button>
       <figcaption class="label label--dim">${i === 0 ? 'Cover' : i === pages.length - 1 ? 'Back' : String(i + 1).padStart(2, '0')}</figcaption>
     </figure>`).join('')}
   </div>
-  <div class="reader-controls">
+  ${flip ? `<div class="reader-controls">
     <button type="button" class="chip" data-reader-prev aria-label="Previous page">&larr;</button>
     <span class="label reader-count" data-reader-count aria-live="polite">1 / ${pages.length}</span>
     <button type="button" class="chip" data-reader-next aria-label="Next page">&rarr;</button>
-  </div>
+  </div>` : ''}
+</section>
+${stories.length ? `<section class="block issue-stories">
+  ${sectionHead({ index: `N°${issue.number}`, sym: 'fire', title: 'In this issue.' }, ctx)}
+  <div class="mag-grid">${stories.map((a) => storyCard(a, ctx, {})).join('')}</div>
+</section>` : ''}
+<section class="block issue-more">
+  <span class="label">${symbol('pyramid', { cls: 'sh-sym' })}More issues</span>
+  <div class="issues-row">${others.map((iss, i) => issueCover(iss, ctx, { tilt: [-2, 1.5][i % 2] })).join('')}</div>
 </section>`;
 }
