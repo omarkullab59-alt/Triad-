@@ -1,0 +1,52 @@
+name: Build & deploy TRIAD Studio
+
+# Every push to main: test, build and publish to GitHub Pages.
+# One-time: Settings → Pages → Source: "GitHub Actions".
+# Optional repository VARIABLES (Settings → Secrets and variables → Actions → Variables; not secret, they are public URLs):
+#   STUDIO_AI_URL      URL of the triad-studio-ai Worker (shown after "Deploy Studio AI" ran)
+#   TRIAD_DARKROOM_URL URL of the TRIAD site's Worker (the one behind /darkroom/) for "Send to TRIAD"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_AI_URL: ${{ vars.STUDIO_AI_URL }}
+          VITE_DARKROOM_URL: ${{ vars.TRIAD_DARKROOM_URL }}
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

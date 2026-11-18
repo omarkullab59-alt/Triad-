@@ -1,0 +1,25 @@
+# TRIAD Studio AI: turns a sketch into a jewellery render (Cloudflare Workers AI, image-to-image).
+# Free plan, no credit card: Workers AI's daily free allocation. Deployed by .github/workflows/deploy-worker.yml
+name = "triad-studio-ai"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[vars]
+# Only these pages may call the Worker (browser Origin header). Add your own domain here if you get one.
+ALLOWED_ORIGINS = "https://omarkullab59-alt.github.io,http://localhost:5173,http://localhost:4173"
+# Extra check: the page must live under one of these paths (the Origin of github.io is shared by all your repos).
+ALLOWED_REFERERS = "https://omarkullab59-alt.github.io/triad-studio/,http://localhost:5173/,http://localhost:4173/"
+MODEL = "@cf/runwayml/stable-diffusion-v1-5-img2img"
+PER_MINUTE = "8"
+PER_DAY = "120"
+
+# Rate limit per IP across all Cloudflare locations (free on every plan). The Worker also keeps its own
+# per-instance count, so it stays protected even if this binding is removed.
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "4207"
+simple = { limit = 8, period = 60 }
