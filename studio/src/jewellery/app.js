@@ -436,7 +436,7 @@ export async function mount(main, typeId, query) {
   }
 
   /* ── colours ── */
-  const PALETTE = [['', 'Natural'], ['#c4ef2f', 'TRIAD lime'], ['#0a0a0a', 'Black'], ['#ece9e2', 'Bone'], ['#7a1018', 'Oxblood'], ['#1d3fbf', 'Cobalt'], ['#e8b4c8', 'Powder pink'], ['#2f5d3a', 'Moss'], ['#c0c4c8', 'Fog'], ['#b8860b', 'Old gold']];
+  const PALETTE = [['', 'Natural'], ['#c4ef2f', 'TRIAD lime']]; // TRIAD: lime #C4EF2F is the only colour
   function colourRow(label, help, value, onPick, natural = true) {
     const el = document.createElement('div'); el.className = 'ctl'; el.style.paddingTop = '6px';
     el.innerHTML = `<div class="ctl-head"><span class="ctl-name">${esc(label)}</span></div><p class="ctl-help">${esc(help)}</p><div class="chips" role="radiogroup" aria-label="${esc(label)}"></div>`;
