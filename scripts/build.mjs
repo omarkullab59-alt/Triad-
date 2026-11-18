@@ -126,7 +126,10 @@ export function build() {
     jsonld: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'TRIAD', url: site.url, description: site.description, publisher: org },
   });
   for (const iss of ctx.issues) {
-    page(`magazine/issue-${iss.number}/index.html`, { title: `N°${iss.number} — ${iss.title}`, path: `/magazine/issue-${iss.number}/`, pageId: 'reader', theme: 'paper', image: iss.cover, body: issuePage(ctx, iss), description: `TRIAD N°${iss.number} — ${iss.title}. Flip through the printed issue.` });
+    const issDate = iss.date ? new Date(iss.date + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : '';
+    const issName = `N°${iss.number}${iss.title ? ` — ${iss.title}` : issDate ? ` · ${issDate}` : ''}`;
+    const issDesc = `TRIAD ${issName}. ${iss.pages?.length > 1 ? `${iss.pages.length} pages from the post` : 'The issue'}${issDate && iss.title ? `, ${issDate}` : ''} — from the TRIAD fashion & culture collective. Flip through it.`;
+    page(`magazine/issue-${iss.number}/index.html`, { title: issName, path: `/magazine/issue-${iss.number}/`, pageId: 'reader', theme: 'paper', image: iss.cover, body: issuePage(ctx, iss), description: issDesc });
   }
     page('magazine/index.html', { title: 'Magazine', path: '/magazine/', pageId: 'magazine', body: magazinePage(ctx), description: 'The TRIAD magazine: fashion editorials, photography, designers, interviews, art and culture.' });
   for (const a of ctx.articles) {
