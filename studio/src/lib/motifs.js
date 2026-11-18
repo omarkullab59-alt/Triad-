@@ -211,7 +211,186 @@ export const MOTIFS = {
     c.lineWidth = S * 0.06; c.strokeStyle = '#000';
     for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + (i * TAU) / 3; c.beginPath(); c.arc(S / 2 + S * 0.15 * Math.cos(a), S / 2 + S * 0.15 * Math.sin(a), S * 0.23, 0, TAU); c.stroke(); }
   } },
+
+  /* ── cultures & eras ── */
+  triquetra: { label: 'Triquetra (Celtic)', draw(c, S) {
+    c.lineWidth = S * 0.05; c.strokeStyle = '#000'; c.lineJoin = 'round';
+    for (let i = 0; i < 3; i++) {
+      c.save(); c.translate(S / 2, S * 0.55); c.rotate((i * TAU) / 3);
+      c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(-S * 0.3, -S * 0.22, 0, -S * 0.42); c.quadraticCurveTo(S * 0.3, -S * 0.22, 0, 0); c.stroke(); c.restore();
+    }
+    c.beginPath(); c.arc(S / 2, S * 0.55, S * 0.2, 0, TAU); c.stroke();
+  } },
+  meander: { label: 'Meander (Greek key)', pattern: true, draw(c, S) {
+    c.lineWidth = S * 0.035; c.strokeStyle = '#000'; c.lineCap = 'square';
+    const u = S / 4;
+    for (let k = 0; k < 4; k++) {
+      const x = k * u, y = S * 0.32;
+      c.beginPath(); c.moveTo(x, y + u * 1.4); c.lineTo(x, y); c.lineTo(x + u * 0.8, y); c.lineTo(x + u * 0.8, y + u); c.lineTo(x + u * 0.3, y + u); c.lineTo(x + u * 0.3, y + u * 0.45); c.lineTo(x + u * 0.55, y + u * 0.45); c.stroke();
+      c.beginPath(); c.moveTo(x, y + u * 1.4); c.lineTo(x + u, y + u * 1.4); c.stroke();
+    }
+    c.beginPath(); c.moveTo(0, S * 0.25); c.lineTo(S, S * 0.25); c.stroke();
+  } },
+  seigaiha: { label: 'Seigaiha waves (Japanese)', pattern: true, draw(c, S) {
+    c.lineWidth = S * 0.016; c.strokeStyle = '#000';
+    const r = S / 8;
+    for (let row = 0; row < 16; row++) for (let col = -1; col < 6; col++) {
+      const x = col * r * 2 + (row % 2 ? r : 0), y = row * r * 0.55 + r * 0.6;
+      c.save(); c.beginPath(); c.arc(x, y, r, Math.PI, TAU); c.closePath();
+      c.globalCompositeOperation = 'destination-out'; c.fill(); c.globalCompositeOperation = 'source-over';
+      for (let k = 1; k <= 4; k++) { c.beginPath(); c.arc(x, y, (r * k) / 4, Math.PI, TAU); c.stroke(); }
+      c.restore();
+    }
+  } },
+  asanoha: { label: 'Asanoha hemp leaf (Japanese)', pattern: true, draw(c, S) {
+    c.lineWidth = S * 0.012; c.strokeStyle = '#000';
+    const a = S / 3, h = (a * Math.sqrt(3)) / 2;
+    for (let row = -1; row < 5; row++) for (let col = -1; col < 5; col++) {
+      for (const up of [true, false]) {
+        const x0 = col * a + (row % 2 ? a / 2 : 0), y0 = row * h;
+        const pts = up ? [[x0, y0 + h], [x0 + a, y0 + h], [x0 + a / 2, y0]] : [[x0 + a / 2, y0], [x0 + a * 1.5, y0], [x0 + a, y0 + h]];
+        const cx = (pts[0][0] + pts[1][0] + pts[2][0]) / 3, cy = (pts[0][1] + pts[1][1] + pts[2][1]) / 3;
+        c.beginPath(); c.moveTo(...pts[0]); c.lineTo(...pts[1]); c.lineTo(...pts[2]); c.closePath();
+        for (const p of pts) { c.moveTo(cx, cy); c.lineTo(...p); }
+        c.stroke();
+      }
+    }
+  } },
+  khatam: { label: 'Eight-point star (Islamic geometry)', draw(c, S) {
+    const star = (r) => { c.beginPath(); for (let i = 0; i < 16; i++) { const a = (i * Math.PI) / 8 - Math.PI / 2, rr = i % 2 ? r * 0.71 : r; c.lineTo(S / 2 + rr * Math.cos(a), S / 2 + rr * Math.sin(a)); } c.closePath(); };
+    star(S * 0.46); c.fill();
+    cut(c, () => { star(S * 0.36); c.fill(); });
+    star(S * 0.27); c.fill();
+    cut(c, () => { c.beginPath(); for (let i = 0; i < 8; i++) { const a = (i * TAU) / 8 + Math.PI / 8; c.lineTo(S / 2 + S * 0.12 * Math.cos(a), S / 2 + S * 0.12 * Math.sin(a)); } c.fill(); });
+  } },
+  stepfret: { label: 'Step fret (Mesoamerican)', pattern: true, draw(c, S) {
+    const u = S / 10;
+    c.beginPath(); c.moveTo(0, S * 0.8);
+    for (let i = 0; i < 5; i++) c.lineTo(i * u, S * 0.8 - i * u), c.lineTo((i + 1) * u, S * 0.8 - i * u);
+    c.lineTo(5 * u, S * 0.8); c.closePath(); c.fill();
+    c.lineWidth = u * 0.9; c.strokeStyle = '#000'; c.lineCap = 'square';
+    c.beginPath(); c.moveTo(5.5 * u, S * 0.8); c.lineTo(5.5 * u, S * 0.2); c.lineTo(9.5 * u, S * 0.2); c.lineTo(9.5 * u, S * 0.65); c.lineTo(7.4 * u, S * 0.65); c.lineTo(7.4 * u, S * 0.42); c.stroke();
+  } },
+  koru: { label: 'Koru spiral (Māori)', draw(c, S) {
+    c.lineWidth = S * 0.06; c.strokeStyle = '#000'; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(S * 0.5, S * 0.96);
+    for (let i = 0; i <= 160; i++) { const t = i / 160, a = Math.PI * 0.5 + t * TAU * 1.6, r = S * 0.38 * (1 - t * 0.8); c.lineTo(S * 0.5 + r * Math.cos(a) + S * 0.0, S * 0.5 - r * Math.sin(a) * 1.0); }
+    c.stroke();
+    const t = 1, a = Math.PI * 0.5 + t * TAU * 1.6, r = S * 0.38 * 0.2; c.beginPath(); c.arc(S * 0.5 + r * Math.cos(a), S * 0.5 - r * Math.sin(a), S * 0.07, 0, TAU); c.fill();
+  } },
+  deco: { label: 'Art Deco sunburst', draw(c, S) {
+    for (let i = 0; i < 13; i++) { const a = Math.PI + (i + 0.5) * (Math.PI / 13), w = 0.055; c.beginPath(); c.moveTo(S / 2, S * 0.85); c.lineTo(S / 2 + Math.cos(a - w) * S * 0.46, S * 0.85 + Math.sin(a - w) * S * 0.46); c.lineTo(S / 2 + Math.cos(a + w) * S * 0.46, S * 0.85 + Math.sin(a + w) * S * 0.46); c.fill(); }
+    cut(c, () => { c.beginPath(); c.arc(S / 2, S * 0.85, S * 0.2, Math.PI, TAU); c.fill(); });
+    c.beginPath(); c.arc(S / 2, S * 0.85, S * 0.14, Math.PI, TAU); c.fill();
+    c.fillRect(S * 0.02, S * 0.86, S * 0.96, S * 0.05);
+  } },
+  paisley: { label: 'Paisley (Persian / Indian)', draw(c, S) {
+    const tear = (k) => { c.beginPath(); c.moveTo(S * 0.68, S * (0.12 + (1 - k) * 0.2)); c.bezierCurveTo(S * (0.95 - (1 - k) * 0.15), S * 0.5, S * 0.75, S * (0.9 - (1 - k) * 0.15), S * 0.45, S * (0.9 - (1 - k) * 0.15)); c.bezierCurveTo(S * (0.15 + (1 - k) * 0.12), S * (0.9 - (1 - k) * 0.15), S * (0.12 + (1 - k) * 0.12), S * 0.5, S * 0.42, S * 0.45); c.bezierCurveTo(S * 0.62, S * 0.42, S * 0.55, S * 0.22, S * 0.68, S * (0.12 + (1 - k) * 0.2)); c.closePath(); };
+    tear(1); c.fill(); cut(c, () => { tear(0.8); c.fill(); }); tear(0.62); c.fill();
+    cut(c, () => { c.beginPath(); c.arc(S * 0.45, S * 0.66, S * 0.07, 0, TAU); c.fill(); });
+  } },
+  mandala: { label: 'Mandala', draw(c, S) {
+    c.lineWidth = S * 0.018; c.strokeStyle = '#000';
+    for (const [n, r0, r1, w] of [[16, 0.3, 0.47, 0.11], [12, 0.18, 0.31, 0.12], [8, 0.07, 0.19, 0.16]]) for (let i = 0; i < n; i++) {
+      const a = (i * TAU) / n; c.save(); c.translate(S / 2, S / 2); c.rotate(a);
+      c.beginPath(); c.moveTo(S * r0, 0); c.bezierCurveTo(S * (r0 + (r1 - r0) * 0.3), S * w * 0.55, S * (r0 + (r1 - r0) * 0.8), S * w * 0.45, S * r1, 0); c.bezierCurveTo(S * (r0 + (r1 - r0) * 0.8), -S * w * 0.45, S * (r0 + (r1 - r0) * 0.3), -S * w * 0.55, S * r0, 0); c.fill(); c.restore();
+    }
+    for (const r of [0.06, 0.48]) { c.beginPath(); c.arc(S / 2, S / 2, S * r, 0, TAU); c.stroke(); }
+  } },
+  fleur: { label: 'Fleur-de-lis', draw(c, S) {
+    c.beginPath(); c.moveTo(S / 2, S * 0.06); c.bezierCurveTo(S * 0.66, S * 0.25, S * 0.62, S * 0.45, S * 0.53, S * 0.6); c.lineTo(S * 0.47, S * 0.6); c.bezierCurveTo(S * 0.38, S * 0.45, S * 0.34, S * 0.25, S / 2, S * 0.06); c.fill();
+    for (const k of [-1, 1]) { c.beginPath(); c.moveTo(S * (0.5 + k * 0.04), S * 0.6); c.bezierCurveTo(S * (0.5 + k * 0.1), S * 0.3, S * (0.5 + k * 0.45), S * 0.3, S * (0.5 + k * 0.38), S * 0.52); c.bezierCurveTo(S * (0.5 + k * 0.33), S * 0.42, S * (0.5 + k * 0.2), S * 0.48, S * (0.5 + k * 0.17), S * 0.66); c.closePath(); c.fill(); }
+    c.fillRect(S * 0.3, S * 0.62, S * 0.4, S * 0.07);
+    c.beginPath(); c.moveTo(S * 0.44, S * 0.69); c.lineTo(S * 0.4, S * 0.92); c.lineTo(S * 0.6, S * 0.92); c.lineTo(S * 0.56, S * 0.69); c.fill();
+  } },
+  lotus: { label: 'Lotus', draw(c, S) {
+    // rounded, cupped petals around a centre petal, sitting on water
+    const petal = (a, l, w) => { c.save(); c.translate(S / 2, S * 0.74); c.rotate(a); c.beginPath(); c.moveTo(-S * w * 0.35, 0); c.bezierCurveTo(-S * w * 1.1, -S * l * 0.45, -S * w * 0.45, -S * l * 0.95, 0, -S * l); c.bezierCurveTo(S * w * 0.45, -S * l * 0.95, S * w * 1.1, -S * l * 0.45, S * w * 0.35, 0); c.closePath(); c.fill(); c.restore(); };
+    for (const [a, l, w] of [[-1.25, 0.3, 0.2], [1.25, 0.3, 0.2], [-0.62, 0.42, 0.2], [0.62, 0.42, 0.2], [0, 0.52, 0.2]]) petal(a, l, w);
+    cut(c, () => { c.lineWidth = S * 0.018; c.strokeStyle = '#000'; for (const a of [-0.62, 0, 0.62]) { c.save(); c.translate(S / 2, S * 0.74); c.rotate(a); c.beginPath(); c.moveTo(0, -S * 0.05); c.lineTo(0, -S * (a ? 0.3 : 0.4)); c.stroke(); c.restore(); } });
+    c.beginPath(); c.ellipse(S / 2, S * 0.77, S * 0.3, S * 0.06, 0, 0, TAU); c.fill();
+    c.lineWidth = S * 0.025; c.strokeStyle = '#000';
+    for (const y of [0.88, 0.95]) { c.beginPath(); for (let x = 0.12; x <= 0.88; x += 0.01) c.lineTo(S * x, S * (y + 0.012 * Math.sin(x * 40))); c.stroke(); }
+  } },
+  cloud: { label: 'Cloud scrolls (Chinese)', draw(c, S) {
+    c.lineWidth = S * 0.045; c.strokeStyle = '#000'; c.lineCap = 'round';
+    const curl = (x, y, r, dir) => { c.beginPath(); for (let i = 0; i <= 60; i++) { const t = i / 60, a = dir * t * TAU * 1.25, rr = r * (1 - t * 0.75); c.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)); } c.stroke(); };
+    curl(S * 0.3, S * 0.5, S * 0.17, 1); curl(S * 0.62, S * 0.42, S * 0.21, -1); curl(S * 0.8, S * 0.62, S * 0.12, 1);
+    c.beginPath(); c.moveTo(S * 0.08, S * 0.72); c.quadraticCurveTo(S * 0.5, S * 0.86, S * 0.92, S * 0.74); c.stroke();
+  } },
+  ankh: { label: 'Ankh (Egyptian)', draw(c, S) {
+    c.lineWidth = S * 0.09; c.strokeStyle = '#000'; c.lineCap = 'butt';
+    c.beginPath(); c.ellipse(S / 2, S * 0.27, S * 0.13, S * 0.18, 0, 0, TAU); c.stroke();
+    c.fillRect(S * 0.2, S * 0.43, S * 0.6, S * 0.09); c.fillRect(S * 0.455, S * 0.43, S * 0.09, S * 0.52);
+  } },
+  rosewindow: { label: 'Rose window (Gothic)', draw(c, S) {
+    c.beginPath(); c.arc(S / 2, S / 2, S * 0.47, 0, TAU); c.fill();
+    cut(c, () => {
+      for (let i = 0; i < 12; i++) { const a = (i * TAU) / 12; c.save(); c.translate(S / 2, S / 2); c.rotate(a); c.beginPath(); c.moveTo(S * 0.14, -S * 0.04); c.lineTo(S * 0.33, -S * 0.07); c.arc(S * 0.36, 0, S * 0.07, -Math.PI / 2, Math.PI / 2); c.lineTo(S * 0.14, S * 0.04); c.fill(); c.restore(); }
+      for (let i = 0; i < 12; i++) { const a = (i * TAU) / 12 + TAU / 24; c.beginPath(); c.arc(S / 2 + S * 0.4 * Math.cos(a), S / 2 + S * 0.4 * Math.sin(a), S * 0.035, 0, TAU); c.fill(); }
+      c.beginPath(); c.arc(S / 2, S / 2, S * 0.08, 0, TAU); c.fill();
+    });
+  } },
+  baroque: { label: 'Baroque scroll', draw(c, S) {
+    c.lineWidth = S * 0.05; c.strokeStyle = '#000'; c.lineCap = 'round';
+    for (const k of [-1, 1]) {
+      c.save(); c.translate(S / 2, S / 2); c.scale(k, 1);
+      c.beginPath(); for (let i = 0; i <= 80; i++) { const t = i / 80, a = -Math.PI / 2 + t * TAU * 1.1, r = S * 0.2 * (1 - t * 0.7); c.lineTo(S * 0.2 + r * Math.cos(a), -S * 0.05 + r * Math.sin(a)); } c.stroke();
+      c.beginPath(); c.moveTo(S * 0.2, -S * 0.25); c.bezierCurveTo(S * 0.05, -S * 0.3, 0, -S * 0.1, 0, S * 0.1); c.bezierCurveTo(0, S * 0.3, S * 0.25, S * 0.35, S * 0.38, S * 0.25); c.stroke();
+      c.beginPath(); c.ellipse(S * 0.15, S * 0.3, S * 0.09, S * 0.035, -0.6, 0, TAU); c.fill();
+      c.restore();
+    }
+    c.beginPath(); c.moveTo(S / 2, S * 0.08); c.lineTo(S * 0.55, S * 0.2); c.lineTo(S / 2, S * 0.3); c.lineTo(S * 0.45, S * 0.2); c.fill();
+  } },
+
+  /* ── surface patterns (for print and engraving) ── */
+  houndstooth: { label: 'Houndstooth', pattern: true, draw(c, S) {
+    const u = S / 6;
+    for (let y = -1; y < 7; y++) for (let x = -1; x < 7; x++) {
+      c.save(); c.translate(x * u, y * u); c.beginPath();
+      c.moveTo(0, 0); c.lineTo(u / 2, 0); c.lineTo(u, u / 2); c.lineTo(u, u); c.lineTo(u / 2, u); c.lineTo(u / 2, u * 1.25); c.lineTo(u * 0.25, u); c.lineTo(0, u); c.lineTo(-u * 0.25, u * 0.75); c.lineTo(0, u / 2); c.closePath(); c.fill(); c.restore();
+    }
+  } },
+  quilted: { label: 'Quilted diamonds', pattern: true, draw(c, S) {
+    c.lineWidth = S * 0.02; c.strokeStyle = '#000';
+    for (let i = -6; i <= 12; i++) { c.beginPath(); c.moveTo(i * S / 6, 0); c.lineTo(i * S / 6 + S, S); c.stroke(); c.beginPath(); c.moveTo(i * S / 6, 0); c.lineTo(i * S / 6 - S, S); c.stroke(); }
+    for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) { c.beginPath(); c.arc((x + (y % 2) * 0.5) * S / 6, y * S / 6, S * 0.012, 0, TAU); c.fill(); }
+  } },
+  leopard: { label: 'Leopard spots', pattern: true, draw(c, S) {
+    let seed = 7; const r = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    c.lineWidth = S * 0.022; c.strokeStyle = '#000';
+    for (let i = 0; i < 38; i++) {
+      const x = r() * S, y = r() * S, rr = S * (0.03 + r() * 0.035);
+      c.beginPath(); c.arc(x, y, rr, r() * TAU, r() * TAU + 4.4); c.stroke();
+      c.beginPath(); c.ellipse(x, y, rr * 0.45, rr * 0.35, r() * 3, 0, TAU); c.fill();
+    }
+  } },
+  zebra: { label: 'Zebra stripes', pattern: true, draw(c, S) {
+    for (let i = 0; i < 9; i++) { c.beginPath(); const y = i * S / 8; c.moveTo(0, y); for (let x = 0; x <= S; x += S / 20) c.lineTo(x, y + Math.sin(x / S * 9 + i) * S * 0.03); for (let x = S; x >= 0; x -= S / 20) c.lineTo(x, y + S * (0.03 + 0.02 * Math.sin(x / S * 5 + i * 2)) + Math.sin(x / S * 9 + i) * S * 0.03); c.fill(); }
+  } },
+  checker: { label: 'Checkerboard', pattern: true, draw(c, S) { const u = S / 8; for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) if ((x + y) % 2) c.fillRect(x * u, y * u, u, u); } },
+  studs: { label: 'Stud grid', pattern: true, draw(c, S) { const u = S / 7; for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) { c.save(); c.translate((x + 0.5) * u, (y + 0.5) * u); c.rotate(Math.PI / 4); c.fillRect(-u * 0.22, -u * 0.22, u * 0.44, u * 0.44); c.restore(); } } },
 };
+
+// Search words for the Finder (English + German). Cultures, eras, styles, moods.
+export const MOTIF_TAGS = {
+  snake: 'serpent animal reptile schlange tier gothic biker tattoo', coil: 'serpent coiled spiral schlange spirale', ouroboros: 'serpent infinity eternal alchemy circle unendlich ewigkeit alchemie', cobra: 'serpent egypt egyptian india schlange kobra',
+  dragon: 'drache dragon chinese japanese asian eastern fantasy mythology mythologie asiatisch', triad: 'triad drache dragon emblem logo serpent three drei',
+  skull: 'totenkopf schädel death memento mori gothic punk biker vanitas tattoo', rose: 'rose flower blume romantic victorian tattoo', flame: 'feuer flammen fire hot rock biker tattoo', lightning: 'blitz bolt electric storm energy',
+  thorns: 'dornen thorn vine ranke gothic punk crown', barbed: 'stacheldraht barbed wire punk industrial grunge', wings: 'flügel wings angel engel feather feder', eye: 'auge eye evil eye mystic all-seeing',
+  moon: 'mond moon star stern night nacht celestial mystic', sun: 'sonne sun sunburst sol celestial', cross: 'kreuz cross gothic medieval mittelalter religious',
+  glyph: 'triad zeichen plus three', fire: 'element fire feuer alchemy alchemie triangle dreieck', earth: 'element earth erde alchemy alchemie triangle', sierpinski: 'fractal fraktal triangle geometric geometrie', rings: 'borromean ringe rings three drei',
+  triquetra: 'celtic keltisch irish irland knot knoten trinity triquetra norse three drei', meander: 'greek griechisch antike antique key mäander roman römisch classical',
+  seigaiha: 'japanese japanisch japan wave welle wellen ocean meer edo kimono pattern muster', asanoha: 'japanese japanisch japan hemp leaf hanf star geometric kimono pattern',
+  khatam: 'islamic islamisch arabic arabisch moorish maurisch persian star stern geometric geometrie mosaic zellige moroccan marokko', stepfret: 'aztec azteken maya mesoamerican mexican mexiko inca inka step fret stufen andean',
+  koru: 'maori māori new zealand neuseeland polynesian spiral fern farn', deco: 'art deco 1920s 20er gatsby sunburst fan fächer', paisley: 'paisley persian persisch indian indisch boteh bandana kashmir',
+  mandala: 'mandala indian indisch hindu buddhist buddhistisch tibetan spiritual', fleur: 'fleur de lis lilie french französisch royal könig heraldry heraldik baroque', lotus: 'lotus egyptian indian buddhist zen asian blume',
+  cloud: 'chinese chinesisch cloud wolke xiangyun auspicious asian asiatisch', ankh: 'egyptian ägyptisch pharaoh ancient antik life leben', rosewindow: 'gothic gotisch cathedral kathedrale medieval mittelalter church kirche window fenster',
+  baroque: 'baroque barock rococo rokoko ornament scroll couture versailles gilded',
+  houndstooth: 'houndstooth hahnentritt textile tweed british couture pattern muster', quilted: 'quilted gesteppt couture leather leder bag tasche diamond raute',
+  leopard: 'leopard animal print tier wild 80s', zebra: 'zebra animal print stripes streifen', checker: 'checker schach karo skate punk 2tone', studs: 'studs nieten punk rock leather biker grunge',
+};
+
 export const motifOptions = () => Object.entries(MOTIFS).map(([k, m]) => [k, m.label]);
 
 /** Crop a canvas to its visible (non-transparent) part. */

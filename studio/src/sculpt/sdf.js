@@ -105,7 +105,25 @@ export function polygonize(prims, res = 90) {
       F[id] = op(F[id], d, p.k || 0);
     }
   };
-  for (const p of adds) splat(p, smin);
+  // narrow band: for big, thin primitives (shells) only evaluate blocks near the surface
+  const B = 4;
+  const splatNarrow = (p, op) => {
+    const m = (p.k || 0) + h * 2;
+    const i0 = Math.max(0, Math.floor((p.box[0] - m - o[0]) / h)), i1 = Math.min(nx - 1, Math.ceil((p.box[3] + m - o[0]) / h));
+    const j0 = Math.max(0, Math.floor((p.box[1] - m - o[1]) / h)), j1 = Math.min(ny - 1, Math.ceil((p.box[4] + m - o[1]) / h));
+    const k0 = Math.max(0, Math.floor((p.box[2] - m - o[2]) / h)), k1 = Math.min(nz - 1, Math.ceil((p.box[5] + m - o[2]) / h));
+    const reach = B * h * 1.8 + (p.k || 0);
+    for (let kb = k0; kb <= k1; kb += B) for (let jb = j0; jb <= j1; jb += B) for (let ib = i0; ib <= i1; ib += B) {
+      const ci = Math.min(ib + B / 2, i1), cj = Math.min(jb + B / 2, j1), ck = Math.min(kb + B / 2, k1);
+      const dc = p.d(o[0] + ci * h, o[1] + cj * h, o[2] + ck * h);
+      if (dc > reach) continue; // whole block is outside: leave as is
+      for (let k = kb; k <= Math.min(kb + B - 1, k1); k++) for (let j = jb; j <= Math.min(jb + B - 1, j1); j++) for (let i = ib; i <= Math.min(ib + B - 1, i1); i++) {
+        const id = idx(i, j, k);
+        F[id] = op(F[id], p.d(o[0] + i * h, o[1] + j * h, o[2] + k * h), p.k || 0);
+      }
+    }
+  };
+  for (const p of adds) (p.narrow ? splatNarrow : splat)(p, smin);
   for (const p of prims) if (p.sub) splat(p, (a, d, k) => smax(a, -d, k));
   for (const p of prims) if (p.inter) { for (let k = 0; k < nz; k++) for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const id = idx(i, j, k); F[id] = smax(F[id], p.d(o[0] + i * h, o[1] + j * h, o[2] + k * h), p.k || 0); } }
   // keep the grid border outside so the mesh is always closed

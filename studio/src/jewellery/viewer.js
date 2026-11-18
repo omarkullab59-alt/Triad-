@@ -29,12 +29,14 @@ export const HOME_LOOKS = {
 };
 export const ACCENT = { label: 'Lime enamel', swatch: '#c4ef2f' };
 
-function makeMaterial(key, home, vertexColors) {
-  const m = (home ? HOME_LOOKS[key] : MATERIALS[key]) || MATERIALS[key] || HOME_LOOKS[key] || MATERIALS.silver;
-  return new THREE.MeshPhysicalMaterial({ color: m.color, roughness: m.roughness, metalness: m.metalness, clearcoat: m.clearcoat || 0, envMapIntensity: 1.15, vertexColors });
+export const lookOf = (key, home) => (home ? HOME_LOOKS[key] : MATERIALS[key]) || MATERIALS[key] || HOME_LOOKS[key] || MATERIALS.silver;
+function makeMaterial(key, home, vertexColors, color) {
+  const m = lookOf(key, home);
+  // a custom colour on metal = coloured plating / anodising look; on other materials = paint, glaze or dye
+  return new THREE.MeshPhysicalMaterial({ color: color || m.color, roughness: m.roughness, metalness: color && m.metalness ? 0.85 : m.metalness, clearcoat: m.clearcoat || 0, envMapIntensity: 1.15, vertexColors });
 }
-function makeEnamel(vertexColors) {
-  return new THREE.MeshPhysicalMaterial({ vertexColors, color: '#9fd10f', roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
+function makeEnamel(vertexColors, color = '#9fd10f') {
+  return new THREE.MeshPhysicalMaterial({ vertexColors, color, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
 }
 
 export function createViewer(container, { reducedMotion = false } = {}) {
@@ -64,7 +66,8 @@ export function createViewer(container, { reducedMotion = false } = {}) {
 
   const root = new THREE.Group();
   scene.add(root);
-  let mats = [makeMaterial('silver'), makeEnamel(), makeEnamel()];
+  let mats = [makeMaterial('silver'), makeEnamel(), makeEnamel(), makeEnamel()];
+  let printCanvas = null, lastLook = null;
   let radius = 20;
   let frames = 2;
   let raf = 0;
@@ -119,17 +122,37 @@ export function createViewer(container, { reducedMotion = false } = {}) {
   });
   renderer.domElement.addEventListener('dblclick', toggleZoom);
 
+  function makePrint() {
+    const m = lastLook?.m || MATERIALS.silver;
+    if (!printCanvas) return new THREE.MeshPhysicalMaterial({ color: lastLook?.color || m.color, roughness: m.roughness, metalness: m.metalness });
+    const tex = new THREE.CanvasTexture(printCanvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    return new THREE.MeshPhysicalMaterial({ map: tex, roughness: Math.max(0.25, m.roughness), metalness: m.metalness * 0.6, clearcoat: 0.3, vertexColors: lastLook?.dirty || false });
+  }
   function clear() {
     for (const child of [...root.children]) { root.remove(child); child.geometry?.dispose(); child.dispose?.(); }
   }
 
   return {
     renderer, scene, camera, controls,
-    setMaterial(metal, accentOn, { home = false, dirty = false } = {}) {
-      new Set(mats).forEach((m) => m.dispose());
-      const main = makeMaterial(metal, home, dirty);
-      const enamel = makeEnamel(dirty);
-      mats = [main, accentOn ? enamel : main, enamel];
+    setMaterial(metal, accentOn, { home = false, dirty = false, color = '', accentColor = '', fillColor = '' } = {}) {
+      new Set(mats).forEach((m) => { m.map?.dispose(); m.dispose(); });
+      const main = makeMaterial(metal, home, dirty, color);
+      // lime is shown a touch darker so it reads like lime under studio light
+      const tone = (c) => (!c || c.toLowerCase() === '#c4ef2f' ? '#9fd10f' : c);
+      const enamel = makeEnamel(dirty, tone(accentColor));
+      const fill = makeEnamel(dirty, tone(fillColor || accentColor));
+      lastLook = { m: lookOf(metal, home), dirty, color };
+      mats = [main, accentOn ? enamel : main, fill, makePrint()];
+      for (const m of root.children) m.material = mats;
+      wake(2);
+    },
+    /** Texture for printed areas (group 3); null removes it. */
+    setPrint(canvas) {
+      printCanvas = canvas;
+      mats[3]?.map?.dispose(); mats[3]?.dispose();
+      mats[3] = makePrint();
       for (const m of root.children) m.material = mats;
       wake(2);
     },
@@ -206,6 +229,13 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       return out;
     },
     render,
+    /** Colour model for colour 3D printing / AR / other apps. */
+    async exportGLB() {
+      const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+      const root2 = root.clone();
+      root2.scale.setScalar(0.001); // glTF is in metres
+      return new GLTFExporter().parseAsync(root2, { binary: true });
+    },
     destroy() {
       cancelAnimationFrame(raf);
       ro.disconnect();

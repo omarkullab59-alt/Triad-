@@ -18,6 +18,9 @@ import { sketch3d } from '../make/sketch3d.js';
 import { model, loadModelFile } from '../make/model.js';
 import { sculpture } from '../sculpt/sculpture.js';
 import { wearable } from './types/wearable.js';
+import { couture } from '../sculpt/couture.js';
+import { printOnto } from './print.js';
+import { lookOf } from './viewer.js';
 import { engrave, SIDES, faceSize } from './engrave.js';
 import { textMask, canvasMask } from './revolve.js';
 import { motifOptions, renderMotif, motifPixels, MOTIFS, trimCanvas } from '../lib/motifs.js';
@@ -27,12 +30,12 @@ import { slider, choice, toggle, textField, ringSize } from '../ui/controls.js';
 import { $, $$, esc, toast, download, makeCanvas, fileToPixels, loadImage, imageToPixels, reducedMotion } from '../lib/dom.js';
 import { METALS, HOME, grams, weightLabel } from '../lib/sizes.js';
 import { saveDesign, takeHandoff } from '../lib/store.js';
-import { fontOptions, ensureFont, addFontFile, initFonts } from '../lib/fonts.js';
+import { fontOptions, ensureFont, addFontFile, initFonts, fontStack, isRTL } from '../lib/fonts.js';
 import { listSymbols, getSymbol, renderSymbol, symbolPixels } from '../lib/symbols.js';
 import { renderPoster, renderInfoCard } from './images.js';
 import { openSendDialog } from '../lib/send.js';
 
-export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
+export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, couture, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
 const MAX_VISIBLE = 5;
 const JEWEL_MATS = ['silver', 'chrome', 'gold', 'black'];
 
@@ -78,6 +81,15 @@ function parseQuery(T, q) {
       mode: q.get('emode') === 'emboss' ? 'emboss' : 'engrave', fill: q.get('efill') === '1',
     },
     order: q.get('order') === '1',
+    pr: {
+      kind: ['image', 'motif', 'text'].includes(q.get('pk')) ? q.get('pk') : 'none',
+      motif: MOTIFS[q.get('pm')] ? q.get('pm') : 'seigaiha', text: (q.get('pt') || 'TRIAD').slice(0, 40), font: q.get('pf') || 'Anton',
+      color: /^#[0-9a-f]{6}$/i.test(q.get('pc') || '') ? q.get('pc') : '#0a0a0a',
+      side: SIDES.some(([k]) => k === q.get('pside')) ? q.get('pside') : 'front',
+      size: n('psz', 70, 100), x: q.has('px') ? Number(q.get('px')) || 0 : 0, y: q.has('py') ? Number(q.get('py')) || 0 : 0, rot: q.has('pr') ? Number(q.get('pr')) || 0 : 0,
+      tile: q.get('ptile') === '1', tiles: Math.round(n('ptn', 4, 16)) || 4,
+    },
+    col: { color: /^#[0-9a-f]{6}$/i.test(q.get('col') || '') ? q.get('col') : '', accent: /^#[0-9a-f]{6}$/i.test(q.get('acol') || '') ? q.get('acol') : '#c4ef2f' },
     d: {
       dmg: n('dmg', 0, 100), dirt: n('dirt', 0, 100), seed: Math.round(n('dseed', 7, 99999)),
       style: DESTROY_STYLES.some(([k]) => k === q.get('dst')) ? q.get('dst') : 'erode',
@@ -127,8 +139,13 @@ export async function mount(main, typeId, query) {
         <div data-controls></div>
         <div class="group"><span class="label">Material</span>
           <div class="chips" role="radiogroup" aria-label="Material" data-metals></div>
+          <div data-colour style="margin-top:10px"></div>
           <div data-accent style="margin-top:6px"></div>
         </div>
+        <details class="more" data-print>
+          <summary>Print &amp; colour pattern <span class="tape" style="margin-left:6px;font-size:10px" data-print-badge hidden>on</span></summary>
+          <div data-print-body></div>
+        </details>
         <details class="more" data-engrave>
           <summary>Engrave &amp; emboss <span class="tape" style="margin-left:6px;font-size:10px" data-eng-badge hidden>on</span></summary>
           <div data-engrave-body></div>
@@ -157,7 +174,7 @@ export async function mount(main, typeId, query) {
   $$('.stage-tools button', main).forEach((b) => b.addEventListener('click', () => {
     ({ left: () => viewer.nudge(-0.4, 0), right: () => viewer.nudge(0.4, 0), in: () => viewer.zoom(0.75), out: () => viewer.zoom(1.33), fit: () => viewer.fit(T.view) })[b.dataset.v]();
   }));
-  const applyMaterial = () => viewer.setMaterial(st.metal, st.accent, { home: isHome(T) || !MATERIALS[st.metal], dirty: st.d.dirt > 0 });
+  const applyMaterial = () => viewer.setMaterial(st.metal, st.accent, { home: isHome(T) || !MATERIALS[st.metal], dirty: st.d.dirt > 0, color: st.col.color, accentColor: st.col.accent, fillColor: st.col.accent });
   applyMaterial();
 
   /* ── tabs ── */
@@ -206,7 +223,8 @@ export async function mount(main, typeId, query) {
       renderMotif(k, 96).then((c) => { b.innerHTML = `<img src="${c.toDataURL()}" alt="">`; });
       b.addEventListener('click', async () => {
         st.pixels = await motifPixels(k, typeId === 'wearable' ? 500 : 420);
-        Object.assign(st.p, { shape: 'custom', fill: false, bold: 1, threshold: 128, invert: false });
+        Object.assign(st.p, { shape: `m:${k}`, fill: false, bold: 1, threshold: 128, invert: false });
+        st.pixelsFrom = `m:${k}`;
         renderControls(); rebuild(true);
       });
       grid.append(b);
@@ -412,10 +430,107 @@ export async function mount(main, typeId, query) {
       b.addEventListener('click', () => pick(b));
       b.addEventListener('keydown', (e) => { const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (d) { e.preventDefault(); pick(btns[(i + d + btns.length) % btns.length], true); } });
     });
+    renderColour();
     const acc = $('[data-accent]', main);
     acc.innerHTML = '';
     acc.append(toggle({ name: 'accent', label: `${ACCENT.label} accent`, help: 'Colours the top, plate, front or handles in TRIAD lime (enamel, paint or glaze).', value: st.accent,
-      onInput: (v) => { st.accent = v; applyMaterial(); syncHash(); } }));
+      onInput: (v) => { st.accent = v; applyMaterial(); renderColour(); syncHash(); } }));
+  }
+
+  /* ── colours ── */
+  const PALETTE = [['', 'Natural'], ['#c4ef2f', 'TRIAD lime'], ['#0a0a0a', 'Black'], ['#ece9e2', 'Bone'], ['#7a1018', 'Oxblood'], ['#1d3fbf', 'Cobalt'], ['#e8b4c8', 'Powder pink'], ['#2f5d3a', 'Moss'], ['#c0c4c8', 'Fog'], ['#b8860b', 'Old gold']];
+  function colourRow(label, help, value, onPick, natural = true) {
+    const el = document.createElement('div'); el.className = 'ctl'; el.style.paddingTop = '6px';
+    el.innerHTML = `<div class="ctl-head"><span class="ctl-name">${esc(label)}</span></div><p class="ctl-help">${esc(help)}</p><div class="chips" role="radiogroup" aria-label="${esc(label)}"></div>`;
+    const box = $('.chips', el);
+    for (const [c, l] of PALETTE.filter(([c]) => natural || c)) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(c === value));
+      b.innerHTML = `<span class="swatch" style="background:${c || 'linear-gradient(135deg,#ddd,#888)'}"></span>${esc(l)}`;
+      b.addEventListener('click', () => onPick(c));
+      box.append(b);
+    }
+    const custom = document.createElement('label'); custom.className = 'chip';
+    custom.innerHTML = `<input type="color" value="${value || '#c4ef2f'}" aria-label="${esc(label)}: any colour" style="width:28px;height:28px;border:0;padding:0;background:none"> Any colour`;
+    custom.querySelector('input').addEventListener('change', (e) => onPick(e.target.value));
+    box.append(custom);
+    return el;
+  }
+  function renderColour() {
+    const box = $('[data-colour]', main);
+    box.innerHTML = '';
+    box.append(colourRow('Colour', 'Natural material, or paint / glaze / lacquer / coloured plating in any colour.', st.col.color, (c) => { st.col.color = c; applyMaterial(); renderColour(); syncHash(); }));
+    if (st.accent || st.e.fill) box.append(colourRow('Accent & fill colour', 'Colour of the accent parts and filled engravings (enamel).', st.col.accent, (c) => { st.col.accent = c || '#c4ef2f'; applyMaterial(); renderColour(); syncHash(); }, false));
+  }
+
+  /* ── print (colour pictures & patterns on the surface) ── */
+  function renderPrint() {
+    const body = $('[data-print-body]', main);
+    const pr = st.pr;
+    body.innerHTML = '<p class="ctl-help" style="margin-top:4px">Print a picture, motif, text or repeating pattern in colour onto any side — like a decal, UV print or ceramic transfer. The 3D shape stays the same; download “Colour model (GLB)” to keep the colours.</p>';
+    const set = (k, redraw) => (v) => { pr[k] = v; if (redraw) renderPrint(); rebuild(); };
+    body.append(choice({ name: 'pk', label: 'What', help: 'Choose what to print.', value: pr.kind, options: [['none', 'Nothing'], ['motif', 'Motif / pattern'], ['image', 'Picture (full colour)'], ['text', 'Text']], onInput: set('kind', true) }));
+    $('[data-print-badge]', main).hidden = pr.kind === 'none';
+    if (pr.kind === 'none') return;
+    if (pr.kind === 'motif') {
+      const wrap = document.createElement('div'); wrap.className = 'ctl'; wrap.dataset.key = 'pm';
+      wrap.innerHTML = '<div class="ctl-head"><span class="ctl-name">Motif or pattern</span></div><p class="ctl-help">Patterns (waves, houndstooth, leopard …) repeat nicely with “Repeat”.</p><div class="motif-grid" role="radiogroup" aria-label="Motif"></div>';
+      const grid = $('.motif-grid', wrap);
+      for (const [k, label] of motifOptions()) {
+        const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(k === pr.motif)); b.setAttribute('aria-label', label); b.title = label;
+        renderMotif(k, 96).then((c) => { b.innerHTML = `<img src="${c.toDataURL()}" alt="">`; });
+        b.addEventListener('click', () => { pr.motif = k; pr.tile = !!MOTIFS[k].pattern; renderPrint(); rebuild(); });
+        grid.append(b);
+      }
+      body.append(wrap);
+    }
+    if (pr.kind === 'text') body.append(textField({ name: 'pt', label: 'Text', help: 'Any language.', value: pr.text, max: 40, onInput: set('text') }), choice({ name: 'pf', label: 'Font', help: 'Style or script.', value: pr.font, options: fontOptions(), onInput: set('font') }));
+    if (pr.kind === 'image') {
+      const wrap = document.createElement('div'); wrap.className = 'ctl';
+      wrap.innerHTML = `<div class="ctl-head"><span class="ctl-name">Picture</span></div><p class="ctl-help">Photo, artwork or logo in full colour. Transparent PNGs keep the material showing through.</p><button type="button" class="btn">${st.printImg ? 'Change picture' : 'Upload picture'}</button><input type="file" accept="image/*" hidden>`;
+      const input = $('input', wrap);
+      $('button', wrap).addEventListener('click', () => input.click());
+      input.addEventListener('change', async () => {
+        const f = input.files[0]; if (!f) return;
+        const url = URL.createObjectURL(f);
+        try { const img = await loadImage(url); const k = Math.min(1, 1600 / Math.max(img.width, img.height)); const c = makeCanvas(Math.round(img.width * k), Math.round(img.height * k)); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); st.printImg = c; renderPrint(); rebuild(); }
+        catch { toast('This picture could not be opened.'); } finally { URL.revokeObjectURL(url); }
+      });
+      body.append(wrap);
+    }
+    if (pr.kind !== 'image') body.append(colourRow('Print colour', 'Colour of the motif, pattern or text.', pr.color, (c) => { pr.color = c || '#0a0a0a'; renderPrint(); rebuild(); }, false));
+    body.append(
+      choice({ name: 'pside', label: 'Where', help: 'The side to print on. “Around” wraps it like a label.', value: pr.side, options: SIDES, onInput: set('side') }),
+      slider({ name: 'psz', label: 'Size', help: 'Height compared with that side of the piece.', min: 5, max: 100, step: 1, unit: '%', value: pr.size, onInput: set('size') }),
+      toggle({ name: 'ptile', label: 'Repeat as a pattern', help: 'Tiles the motif over the whole print area.', value: pr.tile, onInput: set('tile', true) }),
+    );
+    if (pr.tile) body.append(slider({ name: 'ptn', label: 'Repeats', help: 'How many times across.', min: 1, max: 16, step: 1, value: pr.tiles, onInput: set('tiles') }));
+    body.append(
+      slider({ name: 'px', label: 'Move left / right', help: 'Position across that side.', min: -100, max: 100, step: 1, unit: '%', value: pr.x, onInput: set('x') }),
+      slider({ name: 'py', label: 'Move down / up', help: 'Position up and down.', min: -100, max: 100, step: 1, unit: '%', value: pr.y, onInput: set('y') }),
+      slider({ name: 'pr', label: 'Rotate', help: 'Turn the print.', min: -180, max: 180, step: 1, unit: '°', value: pr.rot, onInput: set('rot') }),
+    );
+    $('[data-print]', main).open = true;
+  }
+  /** The print as a canvas plus its aspect (width / height). */
+  async function printArt() {
+    const pr = st.pr;
+    const tint = (src, color) => { const c = makeCanvas(src.width, src.height); const x = c.getContext('2d'); x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height); return c; };
+    let art = null;
+    if (pr.kind === 'image') art = st.printImg;
+    if (pr.kind === 'motif') { const m = await renderMotif(pr.motif, 512); art = tint(MOTIFS[pr.motif].pattern ? m : trimCanvas(m, 6), pr.color); }
+    if (pr.kind === 'text' && pr.text.trim()) {
+      await ensureFont(pr.font, pr.text);
+      const c = makeCanvas(8, 8); let x = c.getContext('2d'); const font = fontStack(pr.font, 200, pr.text); x.font = font;
+      c.width = Math.ceil(x.measureText(pr.text).width) + 40; c.height = 280; x = c.getContext('2d');
+      x.font = font; x.fillStyle = pr.color; x.textAlign = 'center'; x.textBaseline = 'middle'; x.direction = isRTL(pr.text) ? 'rtl' : 'ltr'; x.fillText(pr.text, c.width / 2, c.height / 2);
+      art = c;
+    }
+    if (!art) return null;
+    if (!pr.tile) return { canvas: art, aspect: art.width / art.height };
+    const n = pr.tiles, tw = 256, th = Math.round((256 * art.height) / art.width);
+    const c = makeCanvas(tw * n, th * n); const x = c.getContext('2d');
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) x.drawImage(art, i * tw, j * th, tw, th);
+    return { canvas: c, aspect: c.width / c.height };
   }
 
   /* ── engrave & emboss (any object) ── */
@@ -460,7 +575,7 @@ export async function mount(main, typeId, query) {
       slider({ name: 'ex', label: 'Move left / right', help: 'Position across that side.', min: -100, max: 100, step: 1, unit: '%', value: e.x, onInput: set('x') }),
       slider({ name: 'ey', label: 'Move down / up', help: 'Position up and down on that side.', min: -100, max: 100, step: 1, unit: '%', value: e.y, onInput: set('y') }),
       slider({ name: 'er', label: 'Rotate', help: 'Turn the engraving.', min: -180, max: 180, step: 1, unit: '°', value: e.rot, onInput: set('rot') }),
-      toggle({ name: 'efill', label: 'Fill with lime enamel', help: 'Colours the engraving in TRIAD lime (enamel or paint).', value: e.fill, onInput: set('fill') }),
+      toggle({ name: 'efill', label: 'Fill with enamel', help: 'Colours the engraving (TRIAD lime or any colour under Material).', value: e.fill, onInput: (v) => { e.fill = v; renderColour(); rebuild(); } }),
     );
     $('[data-engrave]', main).open = true;
   }
@@ -500,6 +615,12 @@ export async function mount(main, typeId, query) {
   /* ── build ── */
   let timer = 0, fitNext = true, buildNo = 0;
   async function prepare() {
+    const src = T.params.find((d) => d.type === 'source');
+    if (src && String(st.p[src.key]).startsWith('m:') && st.pixelsFrom !== st.p[src.key] && MOTIFS[st.p[src.key].slice(2)]) {
+      st.pixels = await motifPixels(st.p[src.key].slice(2), typeId === 'wearable' ? 500 : 420);
+      st.pixelsFrom = st.p[src.key];
+      if (!st.renderedFrom) { st.renderedFrom = true; renderControls(); }
+    }
     st.motifCanvas = st.motifCanvas || new Map();
     for (const m of T.hasMotif?.(st.p) || []) if (!st.motifCanvas.has(m)) st.motifCanvas.set(m, await renderMotif(m, 700));
     const fonts = [];
@@ -516,7 +637,7 @@ export async function mount(main, typeId, query) {
   function rebuild(fit = false) {
     fitNext = fitNext || fit;
     clearTimeout(timer);
-    const heavy = st.d.dmg > 0 || st.d.dirt > 0;
+    const heavy = st.d.dmg > 0 || st.d.dirt > 0 || T.slow || st.e.kind !== 'none' || st.pr.kind !== 'none';
     if (heavy) $('[data-weight]', main).textContent = 'Building…';
     timer = setTimeout(async () => {
       const my = ++buildNo;
@@ -569,7 +690,34 @@ export async function mount(main, typeId, query) {
         console.error(e);
         r = { parts: [], volume: 0, minWall: 0, warnings: ['This combination could not be built. Try other values.'], dims: [], title: T.label, empty: true };
       }
+      // print (after destroy mode, so the colours sit on the final surface)
+      let printCanvas = null;
+      if (r && !r.empty && st.pr.kind !== 'none') {
+        try {
+          const art = await printArt();
+          if (my !== buildNo) return;
+          const box = new THREE.Box3();
+          for (const part of r.parts) if (!part.instances) { part.geometry.computeBoundingBox(); box.union(part.geometry.boundingBox); }
+          if (art && !box.isEmpty()) {
+            const [fw, fh] = faceSize(box, st.pr.side);
+            let h = (Math.min(fw, fh) * st.pr.size) / 100, w = h * art.aspect;
+            if (st.pr.tile && st.pr.size >= 100) { w = fw; h = fh; }
+            const opts = { box, side: st.pr.side, offset: [(st.pr.x / 100) * (fw / 2), (st.pr.y / 100) * (fh / 2)], rot: st.pr.rot, width: w, height: h };
+            r.parts = r.parts.map((part) => (part.instances ? part : { ...part, geometry: printOnto(part.geometry, opts) }));
+            // texture: the material colour behind, the print on top
+            const look = lookOf(st.metal, isHome(T) || !MATERIALS[st.metal]);
+            const W = Math.min(2048, Math.max(256, Math.round(1024 * Math.min(4, w / h)))), Hh = Math.min(2048, Math.round(W / (w / h)));
+            printCanvas = makeCanvas(W, Hh);
+            const x = printCanvas.getContext('2d');
+            x.fillStyle = st.col.color || look.color; x.fillRect(0, 0, W, Hh);
+            if (st.pr.tile && st.pr.size >= 100) { const th = W / art.aspect; for (let yy = 0; yy < Hh; yy += th) x.drawImage(art.canvas, 0, yy, W, th); } // whole side: keep the pattern's proportions
+            else x.drawImage(art.canvas, 0, 0, W, Hh);
+            r.dims.push(['Print', `${{ motif: MOTIFS[st.pr.motif].label, image: 'your picture', text: `“${st.pr.text}”` }[st.pr.kind]} · ${st.pr.side} · ${w.toFixed(0)} × ${h.toFixed(0)} mm`]);
+          }
+        } catch (e) { console.error(e); }
+      }
       if (my !== buildNo) return;
+      viewer.setPrint(printCanvas);
       st.result = r;
       viewer.setParts(r.parts);
       if (fitNext) { viewer.fit(T.view); fitNext = false; }
@@ -612,6 +760,7 @@ export async function mount(main, typeId, query) {
     for (const def of T.params) {
       let v = st.p[def.key];
       if (def.type === 'model') continue;
+      if (def.type === 'source' && String(v).startsWith('m:') && st.pixelsFrom === v) { q.set(def.key, v); continue; }
       if (def.type === 'source' && (st.pixels || v === 'custom')) {
         if (!st.result?.shapes?.length) continue;
         v = `o:${encodeShapes(st.result.shapes, st.result.box)}`;
@@ -625,6 +774,15 @@ export async function mount(main, typeId, query) {
     if (st.d.dmg) { q.set('dmg', st.d.dmg); q.set('dst', st.d.style); q.set('dseed', st.d.seed); }
     if (st.d.dirt) { q.set('dirt', st.d.dirt); q.set('dseed', st.d.seed); }
     engraveQuery(q);
+    const pr = st.pr;
+    if (pr.kind !== 'none') {
+      q.set('pk', pr.kind); if (pr.kind === 'motif') q.set('pm', pr.motif); if (pr.kind === 'text') { q.set('pt', pr.text); q.set('pf', pr.font); }
+      if (pr.kind !== 'image') q.set('pc', pr.color);
+      q.set('pside', pr.side); q.set('psz', pr.size); if (pr.x) q.set('px', pr.x); if (pr.y) q.set('py', pr.y); if (pr.rot) q.set('pr', pr.rot);
+      if (pr.tile) { q.set('ptile', '1'); q.set('ptn', pr.tiles); }
+    }
+    if (st.col.color) q.set('col', st.col.color);
+    if (st.col.accent !== '#c4ef2f') q.set('acol', st.col.accent);
     const s = q.toString();
     return `#/${typeId}${s ? `?${s}` : ''}`;
   }
@@ -640,6 +798,8 @@ export async function mount(main, typeId, query) {
     ...(T.params.some((d) => d.type === 'font' && String(st.p[d.key]).startsWith('Studio ')) ? ['Your uploaded font lives on this device. Others see a standard font.'] : []),
     ...(st.pixels && st.p.mode === 'relief' ? ['Reliefs come from your picture, which is not in the link.'] : []),
     ...(st.e.kind === 'image' ? ['The engraved picture stays on your device.'] : []),
+    ...(st.pr.kind === 'image' ? ['The printed picture stays on your device.'] : []),
+    ...(st.pr.kind !== 'none' || st.col.color ? ['STL files have no colour. Use “Colour model (GLB)” for colour 3D printing or other apps.'] : []),
   ];
 
   /* ── step 3 ── */
@@ -668,6 +828,7 @@ export async function mount(main, typeId, query) {
         <input type="text" id="design-name" maxlength="60" value="${esc(keepName || r.title)}"></div>
       <div class="save-actions">
         <button type="button" class="btn btn--lime" data-a="stl" ${r.empty ? 'disabled' : ''}>Download STL <small>3D print · casting · CNC</small></button>
+        <button type="button" class="btn" data-a="glb" ${r.empty ? 'disabled' : ''}>Colour model (GLB) <small>colours, print, enamel</small></button>
         <button type="button" class="btn" data-a="poster" ${r.empty ? 'disabled' : ''}>Image for Instagram <small>1080 × 1350 PNG</small></button>
         <label class="check"><input type="checkbox" data-mark checked> <span>Add TRIAD lettering to the image</span></label>
         <button type="button" class="btn" data-a="card" ${r.empty ? 'disabled' : ''}>Info card image <small>sizes &amp; weight for your maker</small></button>
@@ -685,6 +846,11 @@ export async function mount(main, typeId, query) {
         const buf = partsToSTL(st.result.parts, viewer.exportMatrix());
         download(new Blob([buf], { type: 'model/stl' }), `${fileBase()}.stl`);
         toast('STL saved. Open it in your slicer or send it to your maker.');
+      },
+      glb: async () => {
+        toast('Preparing the colour model…');
+        try { const buf = await viewer.exportGLB(); download(new Blob([buf], { type: 'model/gltf-binary' }), `${fileBase()}.glb`); toast('GLB saved: open it in any 3D app, colour 3D print services, or AR.'); }
+        catch (e) { console.error(e); toast('The colour model could not be made.'); }
       },
       poster: async () => { const c = await poster($('[data-mark]', box).checked); c.toBlob((b) => download(b, `${fileBase()}-instagram.png`)); toast('Image saved.'); },
       card: async () => {
@@ -725,6 +891,8 @@ export async function mount(main, typeId, query) {
   renderMaterials();
   renderEngrave();
   if (st.e.kind === 'none') $('[data-engrave]', main).open = false;
+  renderPrint();
+  if (st.pr.kind === 'none') $('[data-print]', main).open = false;
   renderDestroy();
   showTab('adjust', false, false);
   rebuild(true);
@@ -737,7 +905,7 @@ export async function mount(main, typeId, query) {
       Object.assign(st, parseQuery(T, q));
       st.pixels = null;
       applyMaterial();
-      renderControls(); renderMaterials(); renderEngrave(); renderDestroy(); rebuild(true);
+      renderControls(); renderMaterials(); renderEngrave(); renderPrint(); renderDestroy(); rebuild(true);
     },
     destroy() {
       clearTimeout(timer); buildNo++;

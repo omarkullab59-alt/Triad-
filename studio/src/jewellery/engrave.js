@@ -13,6 +13,29 @@ const VIEW = {
   top: [[0, -1, 0], [0, 0, -1]], bottom: [[0, 1, 0], [0, 0, 1]],
 };
 
+/** proj(x,y,z) → [u, v, h] for a side; proj.facing(point, normal) → how much the surface faces that side (−1…1). */
+export function projector(box, side, offset = [0, 0], rot = 0) {
+  const c = box.getCenter(new THREE.Vector3());
+  const around = side === 'around';
+  const [fwd, up] = VIEW[side] || VIEW.front;
+  const F = new THREE.Vector3(...fwd), U = new THREE.Vector3(...up), R = new THREE.Vector3().crossVectors(F, U), D = F.clone().negate();
+  const cr = Math.cos((-rot * Math.PI) / 180), sr = Math.sin((-rot * Math.PI) / 180);
+  const proj = (x, y, z) => {
+    const px = x - c.x, py = y - c.y, pz = z - c.z;
+    let u, v, h;
+    if (around) { const r = Math.hypot(px, pz); u = Math.atan2(px, pz) * r; v = py; h = r; }
+    else { u = px * R.x + py * R.y + pz * R.z; v = px * U.x + py * U.y + pz * U.z; h = px * D.x + py * D.y + pz * D.z; }
+    u -= offset[0]; v -= offset[1];
+    return [u * cr - v * sr, u * sr + v * cr, h];
+  };
+  proj.facing = (x, y, z, nx, ny, nz) => {
+    const l = Math.hypot(nx, ny, nz) || 1;
+    if (around) { const px = x - c.x, pz = z - c.z; return (nx * px + nz * pz) / (l * (Math.hypot(px, pz) || 1)); }
+    return (nx * D.x + ny * D.y + nz * D.z) / l;
+  };
+  return proj;
+}
+
 /** The face size (mm) an engraving can use on that side of a box: [width, height]. */
 export function faceSize(box, side) {
   const s = box.getSize(new THREE.Vector3());

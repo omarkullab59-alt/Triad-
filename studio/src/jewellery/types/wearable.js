@@ -29,7 +29,7 @@ const PATTERNS = {
     warrior: ['Warrior', (c, w, h) => { c.beginPath(); c.moveTo(w * 0.1, h * 0.1); c.lineTo(w * 0.5, h * 0.22); c.lineTo(w * 0.9, h * 0.1); c.lineTo(w * 0.85, h * 0.62); c.lineTo(w * 0.62, h * 0.95); c.lineTo(w * 0.38, h * 0.95); c.lineTo(w * 0.15, h * 0.62); c.fill(); cut(c, () => { for (const k of [-1, 1]) { c.beginPath(); c.moveTo(w * (0.5 + k * 0.06), h * 0.42); c.lineTo(w * (0.5 + k * 0.3), h * 0.33); c.lineTo(w * (0.5 + k * 0.24), h * 0.47); c.fill(); } c.beginPath(); c.rect(w * 0.44, h * 0.72, w * 0.12, h * 0.04); c.fill(); }); }],
   },
 };
-const MOTIF_KEYS = ['flame', 'thorns', 'lightning', 'skull', 'snake', 'wings', 'cross', 'sun', 'glyph', 'dragon', 'rose', 'triad'];
+const MOTIF_KEYS = Object.keys(MOTIFS).filter((k) => !MOTIFS[k].pattern || ['meander', 'stepfret'].includes(k));
 export const patternOptions = (kind) => [...Object.entries(PATTERNS[kind] || PATTERNS.crown).map(([k, [l]]) => [k, l]), ...MOTIF_KEYS.map((m) => [`m:${m}`, `Motif: ${MOTIFS[m].label}`])];
 
 const DEFAULTS = { crown: { height: 60 }, tiara: { height: 48 }, mask: { height: 110 } };

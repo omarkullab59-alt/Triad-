@@ -39,6 +39,8 @@ const ICONS = {
   draw: '<path d="M10 52c10-4 14-20 24-20s6 16 20 10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M40 8l14 14-22 22H18V30z" fill="none" stroke="currentColor" stroke-width="3"/>',
   symbol: '<g fill="none" stroke="currentColor" stroke-width="4"><circle cx="32" cy="32" r="22"/><path d="M32 12l17 30H15z"/></g><circle cx="32" cy="32" r="4" fill="currentColor"/>',
   sketch3d: '<path d="M10 50l16-30 10 16 6-8 12 22z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M10 50l8 6h44l-8-6" fill="none" stroke="currentColor" stroke-width="3"/>',
+  couture: '<path d="M14 18c4-10 32-10 36 0 4 14 0 30-18 40C14 48 10 32 14 18z" fill="none" stroke="currentColor" stroke-width="4"/><g fill="currentColor"><circle cx="24" cy="26" r="3"/><circle cx="40" cy="26" r="3"/><circle cx="32" cy="36" r="2.5"/><circle cx="26" cy="44" r="2.5"/><circle cx="38" cy="44" r="2.5"/></g>',
+  find: '<circle cx="27" cy="27" r="16" fill="none" stroke="currentColor" stroke-width="5"/><path d="M39 39l15 15" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>',
   wearable: '<path d="M8 50V20l12 14 12-22 12 22 12-14v30z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M8 50h48" stroke="currentColor" stroke-width="6"/>',
   sculpture: '<circle cx="32" cy="12" r="6" fill="currentColor"/><path d="M32 18v20M32 24l-12 8M32 24l12-10M32 38l-8 14M32 38l8 14" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 56h36" stroke="currentColor" stroke-width="5"/>',
   model: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M32 6l22 12v26L32 58 10 44V18z"/><path d="M10 18l22 12 22-12M32 30v28"/></g>',
@@ -52,6 +54,7 @@ const GROUPS = [
     ['bangle', 'Bangle', 'Open cuff or closed bangle'],
     ['chain', 'Chain', 'Link shape, size, length'],
     ['wearable', 'Crown · Tiara · Mask', 'Templates or your own drawing'],
+    ['couture', 'Couture mask', 'Veils, crystals, horns, cages'],
   ]],
   ['Home', [
     ['plate', 'Plate', 'Dinner, coupe, deep, wavy'],
@@ -61,6 +64,7 @@ const GROUPS = [
     ['sculpture', 'Sculpture', 'Figures, snakes, dragons, busts'],
   ]],
   ['Create', [
+    ['find', 'Finder', 'Search cultures, styles, shapes'],
     ['draw', 'Draw', 'Sketch it, see it rendered live'],
     ['symbol', 'Symbol', 'Design your own signs & logos'],
     ['sketch3d', 'Sketch to 3D', 'Cut-out, relief or turned'],
@@ -77,6 +81,11 @@ function home(main) {
     <p class="label muted">TRIAD Studio · free · no login</p>
     <h1>Design your own objects<em>no 3D skills needed.</em></h1>
     <p>Jewellery, crowns, masks, plates, cutlery, cabinets, sculptures — or your own symbol. Engrave snakes, dragons or your name on anything. Move a few sliders, wreck it in destroy mode if you like, take home a file your maker or 3D printer can use.</p>
+    <form class="hero-search" role="search" data-hero-search>
+      <label for="hs" class="visually-hidden">Find a culture, style or shape</label>
+      <input id="hs" type="search" placeholder="Find: japanese, gothic, celtic, crystal mask, dragon …" enterkeyhint="search" autocomplete="off">
+      <button class="btn btn--lime" type="submit">Find</button>
+    </form>
     <ol class="steps-intro label" aria-label="How it works">
       <li><span class="num num--on">1</span>What?</li><li><span class="num">2</span>Adjust</li><li><span class="num">3</span>Save &amp; share</li>
     </ol>
@@ -93,6 +102,7 @@ function home(main) {
     <ul class="saved-list">${saved.map((d) => `<li><a href="${esc(d.hash)}"><span class="label muted">${esc(NAMES[d.type] || d.type)}</span> ${esc(d.name)}</a>
       <button class="icon-btn" type="button" data-del="${esc(d.id)}" aria-label="Delete ${esc(d.name)}">×</button></li>`).join('')}</ul>
   </section>` : ''}`;
+  main.querySelector('[data-hero-search]').addEventListener('submit', (e) => { e.preventDefault(); location.hash = `#/find?q=${encodeURIComponent(main.querySelector('#hs').value)}`; });
   main.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
     deleteDesign(b.dataset.del);
     toast('Deleted.');
@@ -116,7 +126,7 @@ async function route() {
   if (!key || !NAMES[key]) { home(main); window.scrollTo(0, 0); return; }
   main.innerHTML = '<div class="stage-loading" style="min-height:50vh"><div class="spinner" role="img" aria-label="Loading"></div></div>';
   try {
-    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : await import('./jewellery/app.js');
+    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : key === 'find' ? await import('./find/app.js') : await import('./jewellery/app.js');
     if (currentKey !== key) return;
     current = await mod.mount(main, key, new URLSearchParams(query));
   } catch (e) {

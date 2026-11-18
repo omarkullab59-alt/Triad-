@@ -51,7 +51,7 @@ export function weld(geometry) {
   const tags = new Uint8Array(triCount);
   for (const g of geometry.groups) {
     const a = Math.floor(g.start / 3), b = Math.min(triCount, Math.floor((g.start + (Number.isFinite(g.count) ? g.count : Infinity)) / 3));
-    for (let t = a; t < b; t++) tags[t] = Math.max(0, Math.min(2, g.materialIndex | 0));
+    for (let t = a; t < b; t++) tags[t] = Math.max(0, Math.min(3, g.materialIndex | 0));
   }
   const map = new Map(); const verts = []; const tris = [];
   const q = 1e4;
