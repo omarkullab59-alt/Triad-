@@ -24,7 +24,7 @@ jobs:
           node-version: 22
 
       - name: Unit tests (mocked AI + real SQLite for D1)
-        run: node tests/worker.test.mjs && node tests/darkroom.test.mjs && node tests/alerts.test.mjs
+        run: node tests/worker.test.mjs && node tests/darkroom.test.mjs && node tests/alerts.test.mjs && node tests/stats.test.mjs
 
       - name: Check secrets
         id: check

@@ -24,7 +24,7 @@ E-Mail: [kontakt@triad…]
 
 ## Bildrechte
 
-Fotos im Darkroom: die jeweils genannten Fotograf:innen. Beispielbilder: picsum.photos (Unsplash-Lizenz). Platzhaltertexte und -personen sind fiktiv.
+Fotos im Darkroom: die jeweils genannten Fotograf:innen.
 
 ## Haftung für Links
 

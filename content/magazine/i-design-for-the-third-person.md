@@ -12,6 +12,7 @@ featured: true
 gallery:
   - https://picsum.photos/seed/triad-mara-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-mara-g2/900/1200?grayscale
+draft: true
 ---
 Mara Solenne works out of a Paris apartment stacked floor to ceiling with garments nobody else wanted. We met on a Tuesday morning. She had already been to two markets.
 

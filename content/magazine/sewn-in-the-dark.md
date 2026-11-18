@@ -17,6 +17,7 @@ gallery:
   - https://picsum.photos/seed/triad-sewn-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-sewn-g2/900/1200?grayscale
   - https://picsum.photos/seed/triad-sewn-g3/900/1200?grayscale
+draft: true
 ---
 The railway arch shakes every four minutes. Kofi Adair no longer notices. He is cutting the sleeve of a 1970s field jacket into a lapel, and the train passing overhead is just another rhythm in a room full of them.
 

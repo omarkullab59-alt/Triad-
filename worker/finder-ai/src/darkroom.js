@@ -80,7 +80,7 @@ function decodeImage(raw, max) {
   try { const bytes = b64ToBytes(b64); return imageType(bytes) ? bytes : null; } catch { return null; }
 }
 
-function isAdmin(request, env) {
+export function isAdmin(request, env) {
   const token = env.ADMIN_TOKEN;
   if (!token || token.length < 16) return false;
   const got = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');

@@ -10,12 +10,17 @@
 // POST /analyze   { text?: string, image?: base64-jpeg (no data: prefix) }
 // → { item, brand, brandConfidence, color, material, era, details[], queryDe, queryEn, alternatives[], note, confidence }
 
-import { handleDarkroom } from './darkroom.js';
+import { handleDarkroom, isAdmin } from './darkroom.js';
+import { handleStats } from './stats.js';
 import { handleAlerts, runAlerts } from './alerts.js';
 
-export const AI_BOTS = ['GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'CCBot', 'Google-Extended', 'Applebot-Extended',
-  'Bytespider', 'PerplexityBot', 'meta-externalagent', 'FacebookBot', 'Amazonbot', 'cohere-ai', 'Diffbot', 'ImagesiftBot', 'Omgilibot', 'Timpibot', 'img2dataset'];
-const AI_ROBOTS = `${AI_BOTS.map((b) => `User-agent: ${b}`).join('\n')}\nDisallow: /\n\nUser-agent: *\nDisallow: /darkroom/admin/\n`;
+// Crawlers that collect training data: blocked everywhere (website + image server).
+export const AI_BOTS = ['GPTBot', 'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'CCBot', 'Google-Extended', 'Applebot-Extended',
+  'Bytespider', 'meta-externalagent', 'FacebookBot', 'Amazonbot', 'cohere-ai', 'Diffbot', 'ImagesiftBot', 'Omgilibot', 'Timpibot', 'img2dataset'];
+// AI *search* crawlers (answer engines that link back): allowed on the website so people can find TRIAD,
+// but still blocked on the image server, so photographers' uploads stay out of them.
+export const AI_SEARCH_BOTS = ['OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot'];
+const AI_ROBOTS = `${[...AI_BOTS, ...AI_SEARCH_BOTS].map((b) => `User-agent: ${b}`).join('\n')}\nDisallow: /\n\nUser-agent: *\nDisallow: /darkroom/admin/\n`;
 
 const WORKERS_AI_MODEL = '@cf/mistralai/mistral-small-3.1-24b-instruct';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
@@ -175,6 +180,17 @@ export default {
         return await handleAlerts(request, env, url, (data, status, extra) => json(data, status, { ...h, ...extra }));
       } catch (e) {
         return json({ error: 'alerts_error' }, 500, h);
+      }
+    }
+
+    if (url.pathname.startsWith('/stats/')) {
+      const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+      if (request.method === 'POST' && !allowedOrigins(env).includes(origin)) return json({ error: 'origin_not_allowed' }, 403, h);
+      if (rateLimited(`st:${ip}`, 120)) return json({ error: 'rate_limited' }, 429, h);
+      try {
+        return await handleStats(request, env, url, (data, status, extra) => json(data, status, { ...h, ...extra }), isAdmin);
+      } catch (e) {
+        return json({ error: 'stats_error' }, 500, h);
       }
     }
 

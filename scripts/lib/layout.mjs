@@ -34,6 +34,7 @@ export function layout(ctx, { title, description, path, body, image, type = 'web
 ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta name="robots" content="noai, noimageai">
 <meta name="tdm-reservation" content="1">
+${site.aiEndpoint ? `<meta name="triad-api" content="${e(String(site.aiEndpoint).replace(/\/$/, ''))}">` : ''}
 <meta name="tdm-policy" content="${site.url}/legal/darkroom-rules/">
 <meta property="og:site_name" content="${site.title}">
 <meta property="og:title" content="${e(fullTitle)}">
@@ -50,7 +51,6 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <link rel="apple-touch-icon" href="${ctx.url('/assets/icons/icon-192.png')}">
 <link rel="manifest" href="${ctx.url('/manifest.webmanifest')}">
 <link rel="alternate" type="application/rss+xml" title="TRIAD" href="${ctx.url('/feed.xml')}">
-<link rel="preconnect" href="https://picsum.photos">
 ${ctx.localFonts
     ? `<link rel="stylesheet" href="${ctx.url('/assets/fonts/fonts.css')}?v=${v}">`
     : `<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -154,7 +154,6 @@ ${body}
     <span class="label">&copy; ${new Date().getFullYear()} TRIAD Collective</span>
     <span class="label label--dim">${site.location} &middot; <span class="clock" data-clock>BER --:--</span></span>
     <span class="label footer-legal"><a href="${ctx.url('/legal/impressum/')}">Impressum</a> &middot; <a href="${ctx.url('/legal/datenschutz/')}">Datenschutz</a> &middot; <a href="${ctx.url('/legal/darkroom-rules/')}">Darkroom rules</a></span>
-    <span class="label label--dim">Sample content is fictional and for demonstration only.</span>
     <span class="label">${glyph({ cls: 'footer-glyph' })}</span>
   </div>
 </footer>
