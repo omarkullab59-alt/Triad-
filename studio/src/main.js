@@ -39,6 +39,8 @@ const ICONS = {
   draw: '<path d="M10 52c10-4 14-20 24-20s6 16 20 10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M40 8l14 14-22 22H18V30z" fill="none" stroke="currentColor" stroke-width="3"/>',
   symbol: '<g fill="none" stroke="currentColor" stroke-width="4"><circle cx="32" cy="32" r="22"/><path d="M32 12l17 30H15z"/></g><circle cx="32" cy="32" r="4" fill="currentColor"/>',
   sketch3d: '<path d="M10 50l16-30 10 16 6-8 12 22z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M10 50l8 6h44l-8-6" fill="none" stroke="currentColor" stroke-width="3"/>',
+  wearable: '<path d="M8 50V20l12 14 12-22 12 22 12-14v30z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M8 50h48" stroke="currentColor" stroke-width="6"/>',
+  sculpture: '<circle cx="32" cy="12" r="6" fill="currentColor"/><path d="M32 18v20M32 24l-12 8M32 24l12-10M32 38l-8 14M32 38l8 14" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 56h36" stroke="currentColor" stroke-width="5"/>',
   model: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M32 6l22 12v26L32 58 10 44V18z"/><path d="M10 18l22 12 22-12M32 30v28"/></g>',
 };
 const GROUPS = [
@@ -49,12 +51,14 @@ const GROUPS = [
     ['earrings', 'Earrings', 'Studs or hoops, as a pair'],
     ['bangle', 'Bangle', 'Open cuff or closed bangle'],
     ['chain', 'Chain', 'Link shape, size, length'],
+    ['wearable', 'Crown · Tiara · Mask', 'Templates or your own drawing'],
   ]],
   ['Home', [
     ['plate', 'Plate', 'Dinner, coupe, deep, wavy'],
     ['vessel', 'Bowl · Cup · Vase', 'Bowls, cups, mugs, vases'],
     ['cutlery', 'Cutlery', 'Fork, knife, spoon, sets'],
     ['cabinet', 'Cabinet', 'Sideboard, wardrobe, shelf'],
+    ['sculpture', 'Sculpture', 'Figures, snakes, dragons, busts'],
   ]],
   ['Create', [
     ['draw', 'Draw', 'Sketch it, see it rendered live'],
@@ -72,7 +76,7 @@ function home(main) {
   <section class="hero">
     <p class="label muted">TRIAD Studio · free · no login</p>
     <h1>Design your own objects<em>no 3D skills needed.</em></h1>
-    <p>Jewellery, plates, cutlery, cabinets — or your own symbol. Move a few sliders, wreck it in destroy mode if you like, take home a file your maker or 3D printer can use.</p>
+    <p>Jewellery, crowns, masks, plates, cutlery, cabinets, sculptures — or your own symbol. Engrave snakes, dragons or your name on anything. Move a few sliders, wreck it in destroy mode if you like, take home a file your maker or 3D printer can use.</p>
     <ol class="steps-intro label" aria-label="How it works">
       <li><span class="num num--on">1</span>What?</li><li><span class="num">2</span>Adjust</li><li><span class="num">3</span>Save &amp; share</li>
     </ol>

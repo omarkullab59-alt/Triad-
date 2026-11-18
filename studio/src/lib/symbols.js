@@ -10,6 +10,7 @@
 // op: 'add' | 'cut'   symmetry: none | x | xy | r3 | r4 | r6
 import * as db from './db.js';
 import { fontStack, ensureFont, isRTL } from './fonts.js';
+import { renderMotif } from './motifs.js';
 
 export const SIZE = 1000;
 export const SHAPE_KINDS = [
@@ -67,6 +68,9 @@ export async function drawElement(ctx, el) {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.direction = isRTL(el.text) ? 'rtl' : 'ltr';
       if (el.outline) { ctx.lineWidth = el.w || 20; ctx.strokeText(el.text, 0, 0); } else ctx.fillText(el.text, 0, 0);
+    } else if (el.type === 'motif') {
+      const m = await renderMotif(el.motif, 700);
+      ctx.drawImage(m, -el.s / 2, -el.s / 2, el.s, el.s);
     } else if (el.type === 'image') {
       const img = await image(el.src);
       if (img) {

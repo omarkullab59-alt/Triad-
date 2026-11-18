@@ -20,6 +20,12 @@ export const HOME_LOOKS = {
   brass: { label: 'Brass', swatch: '#c8a24a', color: '#d6b25a', roughness: 0.3, metalness: 1 },
   black: { label: 'Black lacquer', swatch: '#151515', color: '#1a1a1a', roughness: 0.35, metalness: 0, clearcoat: 0.8 },
   concrete: { label: 'Concrete', swatch: '#9c9b97', color: '#a3a29d', roughness: 0.95, metalness: 0 },
+  bronze: { label: 'Bronze', swatch: '#8a6a3e', color: '#a07a45', roughness: 0.38, metalness: 1 },
+  marble: { label: 'Marble', swatch: '#ece9e3', color: '#efece6', roughness: 0.18, metalness: 0, clearcoat: 0.7 },
+  plaster: { label: 'Plaster', swatch: '#f4f1ea', color: '#f2efe8', roughness: 0.92, metalness: 0 },
+  terracotta: { label: 'Terracotta', swatch: '#b5603a', color: '#b45f3b', roughness: 0.85, metalness: 0 },
+  resin: { label: 'Black resin', swatch: '#1c1c1c', color: '#202020', roughness: 0.3, metalness: 0, clearcoat: 1 },
+  gold: MATERIALS.gold,
 };
 export const ACCENT = { label: 'Lime enamel', swatch: '#c4ef2f' };
 
@@ -58,7 +64,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
 
   const root = new THREE.Group();
   scene.add(root);
-  let mats = [makeMaterial('silver'), makeEnamel()];
+  let mats = [makeMaterial('silver'), makeEnamel(), makeEnamel()];
   let radius = 20;
   let frames = 2;
   let raf = 0;
@@ -120,9 +126,10 @@ export function createViewer(container, { reducedMotion = false } = {}) {
   return {
     renderer, scene, camera, controls,
     setMaterial(metal, accentOn, { home = false, dirty = false } = {}) {
-      mats.forEach((m) => m.dispose());
+      new Set(mats).forEach((m) => m.dispose());
       const main = makeMaterial(metal, home, dirty);
-      mats = [main, accentOn ? makeEnamel(dirty) : main];
+      const enamel = makeEnamel(dirty);
+      mats = [main, accentOn ? enamel : main, enamel];
       for (const m of root.children) m.material = mats;
       wake(2);
     },
@@ -204,7 +211,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       ro.disconnect();
       controls.dispose();
       clear();
-      mats.forEach((m) => m.dispose());
+      new Set(mats).forEach((m) => m.dispose());
       scene.environment?.dispose();
       pmrem.dispose();
       renderer.dispose();

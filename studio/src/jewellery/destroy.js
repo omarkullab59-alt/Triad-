@@ -4,7 +4,7 @@
 //   dirt:   dark grime in every dent (vertex colours) — also on undamaged pieces, for an "old" look
 // Works on any closed mesh: weld → refine (so flat faces get vertices) → displace along normals.
 import * as THREE from 'three';
-import { finish } from './revolve.js';
+import { finishTagged } from './revolve.js';
 
 /* ── seeded 3D gradient noise ───────────────────────────────────── */
 export function makeNoise(seed = 1) {
@@ -51,7 +51,7 @@ export function weld(geometry) {
   const tags = new Uint8Array(triCount);
   for (const g of geometry.groups) {
     const a = Math.floor(g.start / 3), b = Math.min(triCount, Math.floor((g.start + (Number.isFinite(g.count) ? g.count : Infinity)) / 3));
-    for (let t = a; t < b; t++) tags[t] = g.materialIndex === 1 ? 1 : 0;
+    for (let t = a; t < b; t++) tags[t] = Math.max(0, Math.min(2, g.materialIndex | 0));
   }
   const map = new Map(); const verts = []; const tris = [];
   const q = 1e4;
@@ -70,7 +70,7 @@ export function weld(geometry) {
 }
 
 /** Split every edge longer than maxEdge (shared midpoints keep the mesh closed). */
-export function refine({ verts, tris }, maxEdge, maxTris = 320000) {
+export function refine({ verts, tris }, maxEdge, maxTris = 320000, onlyWhere = null) {
   const len2 = (a, b) => (verts[a * 3] - verts[b * 3]) ** 2 + (verts[a * 3 + 1] - verts[b * 3 + 1]) ** 2 + (verts[a * 3 + 2] - verts[b * 3 + 2]) ** 2;
   const m2 = maxEdge * maxEdge;
   for (let pass = 0; pass < 12; pass++) {
@@ -85,7 +85,7 @@ export function refine({ verts, tris }, maxEdge, maxTris = 320000) {
       }
       return m;
     };
-    const split = (a, b) => len2(a, b) > m2;
+    const split = (a, b) => len2(a, b) > m2 && (!onlyWhere || onlyWhere((verts[a * 3] + verts[b * 3]) / 2, (verts[a * 3 + 1] + verts[b * 3 + 1]) / 2, (verts[a * 3 + 2] + verts[b * 3 + 2]) / 2, Math.sqrt(len2(a, b))));
     let changed = false;
     const out = [];
     for (let i = 0; i < tris.length; i += 4) {
@@ -189,9 +189,7 @@ export function destroy(geometry, { amount = 0, dirt = 0, style = 'erode', seed 
     cav[v] = depth > 0 ? Math.min(1, Math.max(0, -d / depth)) : 0;
   }
 
-  const main = [], acc = [];
-  for (let i = 0; i < tris.length; i += 4) (tris[i + 3] ? acc : main).push(tris[i], tris[i + 1], tris[i + 2]);
-  const g = finish(out, main, acc);
+  const g = finishTagged(out, tris);
   if (dirt > 0) {
     const col = new Float32Array(nV * 3);
     for (let v = 0; v < nV; v++) {

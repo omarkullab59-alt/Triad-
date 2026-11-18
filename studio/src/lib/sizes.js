@@ -53,6 +53,12 @@ export const HOME = {
   brass: { label: 'Brass', density: 8.5 },
   black: { label: 'Black lacquer', density: 0.75 },
   concrete: { label: 'Concrete', density: 2.3 },
+  bronze: { label: 'Bronze', density: 8.8 },
+  marble: { label: 'Marble', density: 2.7 },
+  plaster: { label: 'Plaster', density: 1.2 },
+  terracotta: { label: 'Terracotta', density: 1.9 },
+  resin: { label: 'Black resin', density: 1.15 },
+  gold: METALS.gold,
 };
 export const ALL_MATERIALS = { ...HOME, ...METALS };
 /** "4.4 g" / "1.25 kg" */

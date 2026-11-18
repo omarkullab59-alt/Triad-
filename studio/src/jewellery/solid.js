@@ -1,6 +1,6 @@
 // Small helpers shared by the home-object and sketch builders.
 import * as THREE from 'three';
-import { finish } from './revolve.js';
+import { finish, finishTagged } from './revolve.js';
 import { weld, refine } from './destroy.js';
 
 /** Box with metal (0) or accent (1) material, centred at (x, y, z). */
@@ -40,9 +40,7 @@ export function deform(geometry, maxEdge, fn) {
     const [x, y, z] = fn([verts[i], verts[i + 1], verts[i + 2]]);
     out[i] = x; out[i + 1] = y; out[i + 2] = z;
   }
-  const main = [], acc = [];
-  for (let i = 0; i < tris.length; i += 4) (tris[i + 3] ? acc : main).push(tris[i], tris[i + 1], tris[i + 2]);
-  return finish(out, main, acc);
+  return finishTagged(out, tris);
 }
 
 /** THREE.Shape(s) → solid, faces as accent group 1 (if accentFaces). */

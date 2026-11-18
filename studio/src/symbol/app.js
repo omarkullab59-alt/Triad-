@@ -5,6 +5,7 @@ import { SIZE, SHAPE_KINDS, SYMMETRY, renderSymbol, symbolPixels, drawElement, l
 import { fontOptions, addFontFile, initFonts } from '../lib/fonts.js';
 import { setHandoff } from '../lib/store.js';
 import { slider, choice } from '../ui/controls.js';
+import { motifOptions, renderMotif } from '../lib/motifs.js';
 
 const blank = () => ({ id: null, name: 'My symbol', symmetry: 'none', elements: [] });
 
@@ -24,6 +25,7 @@ export async function mount(main) {
       <button type="button" class="tool-btn" data-tool="shape" aria-pressed="false">Shape</button>
       <button type="button" class="tool-btn" data-tool="text" aria-pressed="false">Text</button>
       <button type="button" class="tool-btn" data-tool="select" aria-pressed="false">Move</button>
+      <button type="button" class="tool-btn" data-tool="motif" aria-pressed="false">Motif</button>
       <button type="button" class="tool-btn" data-act="image">Picture</button>
       <input type="file" accept="image/*" hidden data-file>
       <span class="sep" aria-hidden="true"></span>
@@ -48,6 +50,7 @@ export async function mount(main) {
       <button type="button" class="btn btn--lime" data-act="save">Save to my symbols</button>
       <button type="button" class="btn btn--solid" data-act="pendant">Make a pendant →</button>
       <button type="button" class="btn" data-act="obj">Make a 3D object →</button>
+      <button type="button" class="btn" data-act="crown">Crown / mask →</button>
       <button type="button" class="btn" data-act="png">Download PNG</button>
     </div>
     <p class="muted" style="font-size:14px">Saved symbols show up in Pendant, Earrings (studs), Ring (“Your symbol on top”) and Sketch to 3D. They stay on this device.</p>
@@ -128,6 +131,18 @@ export async function mount(main) {
         try { st.font = await addFontFile(e.target.files[0]); renderSide(); toast('Font added.'); } catch (err) { toast(err.message); }
       });
       side.append(up);
+    }
+    if (st.tool === 'motif') {
+      const wrap = document.createElement('div'); wrap.className = 'ctl';
+      wrap.innerHTML = '<span class="ctl-name">Motifs</span><p class="ctl-help">Tap one to add it. Then move, size and turn it, mirror or repeat it with Symmetry.</p><div class="motif-grid"></div>';
+      const grid = wrap.querySelector('.motif-grid');
+      for (const [k, label] of motifOptions()) {
+        const b = document.createElement('button'); b.type = 'button'; b.title = label; b.setAttribute('aria-label', `Add ${label}`);
+        renderMotif(k, 96).then((c) => { b.innerHTML = `<img src="${c.toDataURL()}" alt="">`; });
+        b.addEventListener('click', () => { commit(); doc.elements.push({ type: 'motif', motif: k, x: 500, y: 500, s: 600, rot: 0, op: st.op }); st.sel = doc.elements.length - 1; st.tool = 'select'; pressTools(); renderSide(); render(); });
+        grid.append(b);
+      }
+      side.append(wrap);
     }
     if (st.tool === 'select') side.insertAdjacentHTML('beforeend', '<p class="muted" style="font-size:14px;margin-top:10px">Tap a shape, text or picture to select it, then drag to move it.</p>');
   }
@@ -214,6 +229,11 @@ export async function mount(main) {
       if (!doc.elements.length) { toast('Draw something first.'); return; }
       setHandoff({ pixels: await symbolPixels(doc, 480), fill: false, bold: 0, params: { threshold: 128, mode: 'flat', size: 80, depth: 6 } });
       location.hash = '#/sketch3d';
+    },
+    crown: async () => {
+      if (!doc.elements.length) { toast('Draw something first.'); return; }
+      setHandoff({ pixels: await symbolPixels(doc, 500), fill: false, bold: 0, params: { threshold: 128 } });
+      location.hash = '#/wearable';
     },
     png: async () => (await pngOf()).toBlob((b) => download(b, `triad-symbol-${name().replace(/\W+/g, '-').toLowerCase()}.png`)),
   };

@@ -77,20 +77,27 @@ export function revolve({ profile, rx, rz = rx, segments = 192, start = 0, end =
   return finish(positions, main, acc);
 }
 
-/** Build an indexed BufferGeometry with group 0 = metal, group 1 = accent. Faces are flipped if inside-out. */
-export function finish(positions, main, acc = []) {
+/** Build an indexed BufferGeometry with group 0 = metal, 1 = accent, 2 = engraving fill. Faces are flipped if inside-out. */
+export function finish(positions, main, acc = [], fill = []) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const all = main.concat(acc);
+  const all = main.concat(acc, fill);
   if (signedVolume(positions, all) < 0) {
-    for (const list of [main, acc]) for (let i = 0; i < list.length; i += 3) { const t = list[i + 1]; list[i + 1] = list[i + 2]; list[i + 2] = t; }
+    for (const list of [main, acc, fill]) for (let i = 0; i < list.length; i += 3) { const t = list[i + 1]; list[i + 1] = list[i + 2]; list[i + 2] = t; }
   }
-  g.setIndex(main.concat(acc));
+  g.setIndex(main.concat(acc, fill));
   g.addGroup(0, main.length, 0);
   if (acc.length) g.addGroup(main.length, acc.length, 1);
+  if (fill.length) g.addGroup(main.length + acc.length, fill.length, 2);
   g.userData.groups = true;
   g.computeVertexNormals();
   return g;
+}
+/** Split tagged triangle list [a,b,c,tag,…] into the three material lists and finish. */
+export function finishTagged(positions, tris) {
+  const lists = [[], [], []];
+  for (let i = 0; i < tris.length; i += 4) lists[Math.min(2, tris[i + 3])].push(tris[i], tris[i + 1], tris[i + 2]);
+  return finish(positions, lists[0], lists[1], lists[2]);
 }
 
 /** Volume of a closed triangle mesh (mm³), sign tells orientation. */
@@ -194,7 +201,7 @@ export function hammerDepth(s, v, depth, period, cell = 1.7) {
 
 /** Rasterise text for engraving (any script, any font). Returns a sampler (s, v in mm, centred) → 0..1. */
 export function textMask(text, heightMm, makeCanvas, family = 'Inter Tight') {
-  const pxPerMm = 24;
+  const pxPerMm = Math.min(24, 260 / Math.max(heightMm, 0.1));
   const fontPx = Math.round(heightMm * pxPerMm);
   const canvas = makeCanvas(8, 8);
   let ctx = canvas.getContext('2d');

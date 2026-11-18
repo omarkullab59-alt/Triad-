@@ -28,7 +28,18 @@ Anton · Instrument Serif · Inter Tight · JetBrains Mono, kühle, neblige Stim
 | **Symbol** | Eigene Zeichen/Logos entwerfen: Pinsel, 10 Grundformen, Text (alle Schriften), Bild hochladen, Hinzufügen/Ausschneiden, Symmetrie (gespiegelt, 4×, 3× TRIAD, 6×). Eigene Bibliothek auf dem Gerät → Anhänger, Stecker, Ring-Oberseite, 3D-Objekt |
 | **Sketch to 3D** | Bild/Skizze/Design → flacher Ausschnitt, Relief (dunkel = hoch) oder gedrehtes Objekt (Vase/Becher aus der Silhouette, massiv oder hohl) |
 | **Upload 3D** | Eigene STL/OBJ/GLB/GLTF/PLY öffnen und weiterbearbeiten: Größe, Drehen, Material, Destroy-Modus, Export |
+| **Crown · Tiara · Mask** | Krone (Muster rundum wiederholt), Tiara (vorne), Maske (Gesicht gewölbt, Riemen-Schlitze). Vorlagen, Motive (Flammen, Dornen, Totenkopf …) oder **eigene Zeichnung** aus Draw/Symbol/Upload → in 3D gebogen. Kopfumfang, Höhe, Stärke, Wiederholungen, Grundband, Öffnung nach oben |
+| **Sculpture** | Figur in 10 Posen (Stehen, Kontrapost, Arme hoch, Denker, Knien, Tanzen, Gehen, Kämpfer, Meditieren, Greifen), Schlange (zusammengerollt, aufgerichtete Kobra, kriechend, Ouroboros), Drache (zusammengerollt, aufbäumend, fliegend, schlafend), Büste, Hand (6 Gesten), abstrakt (Ring, drei Ringe, Spirale, Steine, Gitterkugel, Bogen). Körperbau, Drehung, Neigung, Detail/facettiert, Sockel rund/eckig/Fels. Bronze, Marmor, Gips, Terrakotta … |
 | **Draw** | Zeichenfläche (Finger/Stift mit Druck/Maus), Pinsel, Radierer, 3 Stärken, Undo/Redo, Leeren, Foto als Hintergrund. 0,8 s nach dem letzten Strich: KI-Render daneben (Handy: darunter). Stile Silver/Chrome/Gold/Lime enamel/Frost/On skin + eigenes Textfeld, Regler „How close to my sketch“, „Build as 3D pendant“ |
+
+**Gravieren & Prägen (für alles, wie ein Stempel/Displace in Blender):** Text (alle Schriften/Sprachen), Motiv (Schlange, zusammengerollte Schlange,
+Ouroboros, Kobra, Drache, TRIAD-Drachen, Totenkopf, Rose, Flammen, Blitz, Dornenranke, Stacheldraht, Flügel, Auge, Mond, Sonne, gotisches Kreuz,
+TRIAD-Zeichen, Elemente, Sierpiński, drei Ringe), eigenes Symbol oder Bild. Seite vorne/hinten/oben/unten/links/rechts/rundherum, Größe, Position,
+Drehung, Tiefe, eingraviert oder erhaben, optional mit Lime-Emaille gefüllt. Steckt in der STL.
+
+**Verkaufen (Order this piece):** Preis-Schätzung nach Material, Gewicht, Gravur, Finish und Stückzahl; Anfrage per E-Mail oder Instagram-DM
+mit allen Angaben und Link zum Entwurf. „Copy shop link“ erzeugt einen Link, der direkt im Bestell-Dialog landet, z. B. für Instagram-Posts.
+Preise und Kontakt stehen in [`public/pricing.json`](public/pricing.json) (ohne Code änderbar).
 
 **Destroy-Modus (für alles):** Zerstörung in % (erodiert, gerissen, abgeplatzt, geschmolzen oder alles), Schmutz & Patina in %,
 „New random damage“. Steckt auch in der STL-Datei (der Schmutz nur in der Vorschau/den Bildern). Warnung, wenn die Wand zu dünn wird.
@@ -45,7 +56,7 @@ lokal speichern (localStorage), **Send to TRIAD** → Einreichung im Darkroom de
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 19 Tests: Größen, Geometrie/Gewicht, Dichtheit, Destroy, Umrisse, Objekte, Worker (KI gemockt)
+npm test           # 22 Tests inkl. Zufalls-Tests aller Werkzeuge, Dichtheit nach Gravur/Destroy, Worker (KI gemockt)
 ```
 
 Mit KI lokal: `cd worker && npx wrangler dev` und `VITE_AI_URL=http://localhost:8787 npm run dev`.
@@ -73,6 +84,9 @@ src/symbol/app.js          Symbol-Designer; src/lib/symbols.js Bibliothek + Zeic
 src/home/*.js              Teller, Gefäße, Besteck, Schrank
 src/make/*.js              Sketch to 3D, 3D-Upload
 src/jewellery/destroy.js   Destroy-Modus (Rauschen, Verfeinerung, Schmutz)
+src/jewellery/engrave.js   Gravieren/Prägen auf jeder Seite (Projektion + Tiefenpuffer)
+src/sculpt/                Skulpturen: Distanzfelder + Marching Cubes, Posen
+src/lib/motifs.js          Motiv-Bibliothek; src/lib/order.js Bestellung/Preis
 src/lib/fonts.js           Schriften, Sprachen, eigene Schriften (IndexedDB)
 src/lib/send.js            Send to TRIAD (Darkroom)
 worker/                    Cloudflare Worker „triad-studio-ai“ (Workers AI, Bild-zu-Bild)

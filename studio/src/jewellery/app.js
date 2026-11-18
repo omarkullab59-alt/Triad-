@@ -16,6 +16,13 @@ import { cutlery } from '../home/cutlery.js';
 import { cabinet } from '../home/cabinet.js';
 import { sketch3d } from '../make/sketch3d.js';
 import { model, loadModelFile } from '../make/model.js';
+import { sculpture } from '../sculpt/sculpture.js';
+import { wearable } from './types/wearable.js';
+import { engrave, SIDES, faceSize } from './engrave.js';
+import { textMask, canvasMask } from './revolve.js';
+import { motifOptions, renderMotif, motifPixels, MOTIFS, trimCanvas } from '../lib/motifs.js';
+import { openOrderDialog } from '../lib/order.js';
+import * as THREE from 'three';
 import { slider, choice, toggle, textField, ringSize } from '../ui/controls.js';
 import { $, $$, esc, toast, download, makeCanvas, fileToPixels, loadImage, imageToPixels, reducedMotion } from '../lib/dom.js';
 import { METALS, HOME, grams, weightLabel } from '../lib/sizes.js';
@@ -25,13 +32,14 @@ import { listSymbols, getSymbol, renderSymbol, symbolPixels } from '../lib/symbo
 import { renderPoster, renderInfoCard } from './images.js';
 import { openSendDialog } from '../lib/send.js';
 
-export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, plate, vessel, cutlery, cabinet, sketch3d, model };
+export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
 const MAX_VISIBLE = 5;
 const JEWEL_MATS = ['silver', 'chrome', 'gold', 'black'];
 
 const defaults = (t) => Object.fromEntries(t.params.map((q) => [q.key, q.default]));
 const materialsOf = (T) => T.materials || JEWEL_MATS;
 const isHome = (T) => T.category === 'home';
+const optionsOf = (d, p) => (typeof d.options === 'function' ? d.options(p) : d.options);
 function matInfo(T, key) {
   if (isHome(T)) return HOME[key] || METALS[key];
   return METALS[key] || HOME[key];
@@ -47,10 +55,11 @@ function parseQuery(T, q) {
       const n = Number(raw);
       if (Number.isFinite(n)) p[def.key] = def.type === 'range' ? Math.min(def.max, Math.max(def.min, n)) : Math.min(26, Math.max(12, n));
     } else if (def.type === 'toggle') p[def.key] = raw === '1';
-    else if (def.type === 'select') { if (def.options.some(([v]) => v === raw)) p[def.key] = raw; }
+    else if (def.type === 'select') p[def.key] = raw; // validated below (options can depend on other values)
     else if (def.type === 'model') { /* files never travel in links */ }
     else p[def.key] = String(raw).slice(0, def.type === 'source' ? 6000 : def.max || 60);
   }
+  for (const def of T.params) if (def.type === 'select' && !optionsOf(def, p).some(([v]) => v === p[def.key])) p[def.key] = typeof def.options === 'function' ? optionsOf(def, p)[0][0] : def.default;
   const mats = materialsOf(T);
   const n = (k, d, max) => { const v = Number(q.get(k)); return Number.isFinite(v) && q.has(k) ? Math.min(max, Math.max(0, v)) : d; };
   return {
@@ -58,6 +67,17 @@ function parseQuery(T, q) {
     metal: mats.includes(q.get('mat')) ? q.get('mat') : T.defaultMaterial || mats[0],
     accent: q.get('acc') === '1',
     sys: ['eu', 'us', 'mm'].includes(q.get('sys')) ? q.get('sys') : 'eu',
+    e: {
+      kind: ['text', 'motif', 'symbol', 'image'].includes(q.get('ek')) ? q.get('ek') : 'none',
+      text: (q.get('et') || 'TRIAD').slice(0, 40), font: q.get('ef') || 'Pirata One', motif: MOTIFS[q.get('em')] ? q.get('em') : 'snake', sym: q.get('es') || '',
+      side: SIDES.some(([k]) => k === q.get('eside')) ? q.get('eside') : T.engraveDefault?.side || 'front',
+      size: n('esz', T.engraveDefault?.size ?? 45, 100), x: q.has('ex') ? Math.max(-100, Math.min(100, Number(q.get('ex')) || 0)) : 0,
+      y: q.has('ey') ? Math.max(-100, Math.min(100, Number(q.get('ey')) || 0)) : T.engraveDefault?.y ?? 0,
+      rot: q.has('er') ? Math.max(-180, Math.min(180, Number(q.get('er')) || 0)) : 0,
+      depth: q.has('ed') ? Math.max(0.05, Math.min(8, Number(q.get('ed')) || 0.3)) : T.engraveDefault?.depth ?? (T.category === 'home' ? 1 : 0.3),
+      mode: q.get('emode') === 'emboss' ? 'emboss' : 'engrave', fill: q.get('efill') === '1',
+    },
+    order: q.get('order') === '1',
     d: {
       dmg: n('dmg', 0, 100), dirt: n('dirt', 0, 100), seed: Math.round(n('dseed', 7, 99999)),
       style: DESTROY_STYLES.some(([k]) => k === q.get('dst')) ? q.get('dst') : 'erode',
@@ -103,11 +123,16 @@ export async function mount(main, typeId, query) {
         <h1 class="section-title">${esc(T.label)}</h1>
         <div class="group" data-tpl-group><span class="label">Start from</span><div class="chips" data-templates></div></div>
         <div class="group" data-mysym hidden><span class="label">My symbols</span><div class="chips" data-mysyms></div></div>
+        <div class="group" data-motifs-group hidden><span class="label">Motifs</span><div class="motif-grid" data-motifs></div></div>
         <div data-controls></div>
         <div class="group"><span class="label">Material</span>
           <div class="chips" role="radiogroup" aria-label="Material" data-metals></div>
           <div data-accent style="margin-top:6px"></div>
         </div>
+        <details class="more" data-engrave>
+          <summary>Engrave &amp; emboss <span class="tape" style="margin-left:6px;font-size:10px" data-eng-badge hidden>on</span></summary>
+          <div data-engrave-body></div>
+        </details>
         <details class="more destroy" data-destroy>
           <summary>Destroy mode <span class="tape" style="margin-left:6px;font-size:10px" data-dmg-badge hidden></span></summary>
           <div data-destroy-body></div>
@@ -171,6 +196,22 @@ export async function mount(main, typeId, query) {
     });
     tplBox.append(b);
   });
+  // motifs as starting shapes (pendant, sketch → 3D, crowns)
+  if (T.params.some((d) => d.type === 'source')) {
+    $('[data-motifs-group]', main).hidden = false;
+    const grid = $('[data-motifs]', main);
+    for (const [k, label] of motifOptions()) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.title = label; b.setAttribute('aria-label', `Motif: ${label}`);
+      renderMotif(k, 96).then((c) => { b.innerHTML = `<img src="${c.toDataURL()}" alt="">`; });
+      b.addEventListener('click', async () => {
+        st.pixels = await motifPixels(k, typeId === 'wearable' ? 500 : 420);
+        Object.assign(st.p, { shape: 'custom', fill: false, bold: 1, threshold: 128, invert: false });
+        renderControls(); rebuild(true);
+      });
+      grid.append(b);
+    }
+  }
   // own symbols as starting shapes (pendant, sketch → 3D)
   if (T.params.some((d) => d.type === 'source')) {
     listSymbols().then((syms) => {
@@ -205,7 +246,16 @@ export async function mount(main, typeId, query) {
       const setAndRedraw = (v) => { st.p[d.key] = v; renderControls(); rebuild(); };
       const common = { name: d.key, label: d.label, help: d.help, value: st.p[d.key] };
       if (d.type === 'range') return slider({ ...common, min: d.min, max: d.max, step: d.step, unit: d.unit, onInput: set });
-      if (d.type === 'select') return choice({ ...common, options: d.options, onInput: setAndRedraw });
+      if (d.type === 'select') return choice({ ...common, options: optionsOf(d, st.p), onInput: (v) => {
+        st.p[d.key] = v;
+        for (const k of d.resets || []) {
+          const r = T.params.find((x) => x.key === k);
+          if (!r) continue;
+          if (r.defaultFor) st.p[k] = r.defaultFor(st.p) ?? st.p[k];
+          else if (typeof r.options === 'function') st.p[k] = optionsOf(r, st.p)[0][0];
+        }
+        renderControls(); rebuild(!!d.resets);
+      } });
       if (d.type === 'toggle') return toggle({ ...common, onInput: setAndRedraw });
       if (d.type === 'text') return textField({ ...common, max: d.max, onInput: set });
       if (d.type === 'ringsize') return ringSize({ ...common, system: st.sys, onInput: set, onSystem: (k) => { st.sys = k; renderControls(); syncHash(); } });
@@ -243,7 +293,7 @@ export async function mount(main, typeId, query) {
     return el;
   }
 
-  function symbolControl(d, common, set) {
+  function symbolControl(d, common, set, get = () => st.p[d.key]) {
     const el = document.createElement('div');
     el.className = 'ctl'; el.dataset.key = d.key;
     el.innerHTML = `<div class="ctl-head"><span class="ctl-name">${esc(d.label)}</span></div><p class="ctl-help">${esc(d.help)}</p><div class="chips" role="radiogroup" aria-label="${esc(d.label)}"></div>
@@ -254,7 +304,7 @@ export async function mount(main, typeId, query) {
       for (const s of opts) {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'chip'; b.setAttribute('role', 'radio');
-        b.setAttribute('aria-checked', String((st.p[d.key] || '') === s.id));
+        b.setAttribute('aria-checked', String((get() || '') === s.id));
         b.innerHTML = `${s.thumb ? `<img src="${s.thumb}" alt="" width="22" height="22" style="border-radius:3px;background:#fff">` : ''}${esc(s.name)}`;
         b.addEventListener('click', () => { $$('[role=radio]', box).forEach((x) => x.setAttribute('aria-checked', String(x === b))); set(s.id); });
         box.append(b);
@@ -368,6 +418,69 @@ export async function mount(main, typeId, query) {
       onInput: (v) => { st.accent = v; applyMaterial(); syncHash(); } }));
   }
 
+  /* ── engrave & emboss (any object) ── */
+  function renderEngrave() {
+    const body = $('[data-engrave-body]', main);
+    const e = st.e;
+    body.innerHTML = '<p class="ctl-help" style="margin-top:4px">Put text, a motif, your symbol or a picture onto any side. Engrave cuts it in, emboss lifts it out.</p>';
+    const set = (k, redraw) => (v) => { e[k] = v; if (redraw) renderEngrave(); rebuild(); };
+    body.append(choice({ name: 'ek', label: 'What', help: 'Choose what to put on the piece.', value: e.kind, options: [['none', 'Nothing'], ['text', 'Text'], ['motif', 'Motif'], ['symbol', 'My symbol'], ['image', 'Picture']], onInput: set('kind', true) }));
+    if (e.kind === 'none') { $('[data-eng-badge]', main).hidden = true; return; }
+    $('[data-eng-badge]', main).hidden = false;
+    if (e.kind === 'text') {
+      body.append(textField({ name: 'et', label: 'Text', help: 'Any language: names, dates, 東京, حب, Москва …', value: e.text, max: 40, onInput: set('text') }));
+      body.append(choice({ name: 'ef', label: 'Font', help: 'Style or script. Upload your own in Lettering or Symbol.', value: e.font, options: fontOptions(), onInput: set('font') }));
+    }
+    if (e.kind === 'motif') {
+      const wrap = document.createElement('div'); wrap.className = 'ctl'; wrap.dataset.key = 'em';
+      wrap.innerHTML = '<div class="ctl-head"><span class="ctl-name">Motif</span></div><p class="ctl-help">Snakes, dragons, skull, flames, thorns …</p><div class="motif-grid" role="radiogroup" aria-label="Motif"></div>';
+      const grid = $('.motif-grid', wrap);
+      for (const [k, label] of motifOptions()) {
+        const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(k === e.motif)); b.setAttribute('aria-label', label); b.title = label;
+        renderMotif(k, 96).then((c) => { b.innerHTML = `<img src="${c.toDataURL()}" alt="">`; });
+        b.addEventListener('click', () => { e.motif = k; $$('[role=radio]', grid).forEach((x) => x.setAttribute('aria-checked', String(x === b))); rebuild(); });
+        grid.append(b);
+      }
+      body.append(wrap);
+    }
+    if (e.kind === 'symbol') body.append(symbolControl({ key: 'es', label: 'Which symbol', help: 'Make your own in “Symbol”.' }, {}, (v) => { e.sym = v; rebuild(); }, () => e.sym));
+    if (e.kind === 'image') {
+      const wrap = document.createElement('div'); wrap.className = 'ctl'; wrap.dataset.key = 'ei';
+      wrap.innerHTML = `<div class="ctl-head"><span class="ctl-name">Picture</span></div><p class="ctl-help">A logo, drawing or photo. Dark parts are used.</p><button type="button" class="btn">${st.engImg ? 'Change picture' : 'Upload picture'}</button><input type="file" accept="image/*" hidden>`;
+      const input = $('input', wrap);
+      $('button', wrap).addEventListener('click', () => input.click());
+      input.addEventListener('change', async () => { try { const px = await fileToPixels(input.files[0], 700); st.engImg = alphaCanvas(px); renderEngrave(); rebuild(); } catch { toast('This picture could not be opened.'); } });
+      body.append(wrap);
+    }
+    body.append(
+      choice({ name: 'eside', label: 'Where', help: 'The side of the piece it goes on. “Around” wraps it like a label.', value: e.side, options: SIDES, onInput: set('side') }),
+      slider({ name: 'esz', label: 'Size', help: 'Height compared with that side of the piece.', min: 3, max: 100, step: 1, unit: '%', value: e.size, onInput: set('size') }),
+      slider({ name: 'ed', label: 'Depth', help: 'How deep it is cut (or how high it stands out).', min: 0.05, max: 8, step: 0.05, unit: 'mm', value: e.depth, onInput: set('depth') }),
+      choice({ name: 'emode', label: 'Cut in or stand out', help: 'Engrave cuts into the surface, emboss raises it.', value: e.mode, options: [['engrave', 'Engrave'], ['emboss', 'Emboss']], onInput: set('mode') }),
+      slider({ name: 'ex', label: 'Move left / right', help: 'Position across that side.', min: -100, max: 100, step: 1, unit: '%', value: e.x, onInput: set('x') }),
+      slider({ name: 'ey', label: 'Move down / up', help: 'Position up and down on that side.', min: -100, max: 100, step: 1, unit: '%', value: e.y, onInput: set('y') }),
+      slider({ name: 'er', label: 'Rotate', help: 'Turn the engraving.', min: -180, max: 180, step: 1, unit: '°', value: e.rot, onInput: set('rot') }),
+      toggle({ name: 'efill', label: 'Fill with lime enamel', help: 'Colours the engraving in TRIAD lime (enamel or paint).', value: e.fill, onInput: set('fill') }),
+    );
+    $('[data-engrave]', main).open = true;
+  }
+  function alphaCanvas(px) {
+    const c = makeCanvas(px.width, px.height); const x = c.getContext('2d');
+    const d = new ImageData(new Uint8ClampedArray(px.data), px.width, px.height);
+    for (let i = 0; i < d.data.length; i += 4) { const on = d.data[i] * 0.3 + d.data[i + 1] * 0.59 + d.data[i + 2] * 0.11 < 140; d.data[i] = d.data[i + 1] = d.data[i + 2] = 0; d.data[i + 3] = on ? 255 : 0; }
+    x.putImageData(d, 0, 0); return c;
+  }
+  async function engraveMask(sizeMm) {
+    const e = st.e;
+    if (e.kind === 'text' && e.text.trim()) { await ensureFont(e.font, e.text); return textMask(e.text.trim(), sizeMm, makeCanvas, e.font); }
+    let c = null;
+    if (e.kind === 'motif') c = await renderMotif(e.motif, 700);
+    if (e.kind === 'symbol' && e.sym) { const doc = await getSymbol(e.sym); if (doc) c = await renderSymbol(doc, 700); }
+    if (e.kind === 'image') c = st.engImg;
+    if (c) c = trimCanvas(c, 4);
+    return c ? canvasMask(c, sizeMm * (c.width / c.height), { useAlpha: true }) : null;
+  }
+
   /* ── destroy mode ── */
   function renderDestroy() {
     const body = $('[data-destroy-body]', main);
@@ -387,6 +500,8 @@ export async function mount(main, typeId, query) {
   /* ── build ── */
   let timer = 0, fitNext = true, buildNo = 0;
   async function prepare() {
+    st.motifCanvas = st.motifCanvas || new Map();
+    for (const m of T.hasMotif?.(st.p) || []) if (!st.motifCanvas.has(m)) st.motifCanvas.set(m, await renderMotif(m, 700));
     const fonts = [];
     for (const d of T.params) if (d.type === 'font') fonts.push([st.p[d.key], T.params.filter((x) => x.type === 'text').map((x) => st.p[x.key]).join('')]);
     await Promise.all(fonts.map(([f, t]) => ensureFont(f, t)));
@@ -412,7 +527,30 @@ export async function mount(main, typeId, query) {
         r = T.build(st.p, {
           makeCanvas, pixels: st.pixels, model: st.model,
           symbolCanvas: (id) => st.symCanvas.get(id) || null, symbolPixels: (id) => st.symPixels.get(id) || null,
+          motifCanvas: (id) => st.motifCanvas?.get(id) || null,
         });
+        // engrave / emboss
+        st.engraved = false;
+        if (!r.empty && st.e.kind !== 'none') {
+          const box = new THREE.Box3();
+          for (const part of r.parts) if (!part.instances) { part.geometry.computeBoundingBox(); box.union(part.geometry.boundingBox); }
+          if (!box.isEmpty()) {
+            const [fw, fh] = faceSize(box, st.e.side);
+            const sizeMm = (Math.min(fw, fh) * st.e.size) / 100;
+            const mask = await engraveMask(sizeMm);
+            if (my !== buildNo) return;
+            if (mask) {
+              const opts = { mask, box, side: st.e.side, offset: [(st.e.x / 100) * (fw / 2), (st.e.y / 100) * (fh / 2)], rot: st.e.rot, depth: st.e.depth, mode: st.e.mode, fill: st.e.fill, height: sizeMm };
+              r.parts = r.parts.map((part) => (part.instances ? part : { ...part, geometry: engrave(part.geometry, opts) }));
+              r.volume = r.parts.reduce((sum, part) => sum + geometryVolume(part.geometry) * (part.instances?.length || 1), 0);
+              if (st.e.mode === 'engrave') r.minWall = Math.max(0, (r.minWall || 0) - st.e.depth);
+              r.dims.push(['Engraving', `${{ text: `“${st.e.text}”`, motif: MOTIFS[st.e.motif].label, symbol: 'your symbol', image: 'your picture' }[st.e.kind]} · ${st.e.side} · ${sizeMm.toFixed(1)} mm · ${st.e.mode} ${st.e.depth} mm${st.e.fill ? ' · lime enamel' : ''}`]);
+              if (st.e.mode === 'engrave' && st.e.depth > (T.minWall || 0.8) * 0.6 && r.minWall < (T.minWall || 0.8)) r.warnings.push(`The engraving (${st.e.depth} mm) is deep for this wall. Make it shallower or the piece thicker.`);
+              if (r.parts.some((x) => x.instances)) r.warnings.push('Chains are not engraved link by link.');
+              st.engraved = true;
+            }
+          }
+        }
         if (!r.empty && (st.d.dmg > 0 || st.d.dirt > 0)) {
           let depth = 0;
           r.parts = r.parts.map((part) => {
@@ -457,6 +595,17 @@ export async function mount(main, typeId, query) {
   }
 
   /* ── link in the address bar ── */
+  function engraveQuery(q) {
+    const e = st.e;
+    if (e.kind === 'none') return;
+    q.set('ek', e.kind);
+    if (e.kind === 'text') { q.set('et', e.text); q.set('ef', e.font); }
+    if (e.kind === 'motif') q.set('em', e.motif);
+    if (e.kind === 'symbol') q.set('es', e.sym);
+    q.set('eside', e.side); q.set('esz', e.size); q.set('ed', e.depth);
+    if (e.x) q.set('ex', e.x); if (e.y) q.set('ey', e.y); if (e.rot) q.set('er', e.rot);
+    if (e.mode !== 'engrave') q.set('emode', e.mode); if (e.fill) q.set('efill', '1');
+  }
   function hashFor() {
     const q = new URLSearchParams();
     const d = defaults(T);
@@ -475,6 +624,7 @@ export async function mount(main, typeId, query) {
     if (st.sys !== 'eu') q.set('sys', st.sys);
     if (st.d.dmg) { q.set('dmg', st.d.dmg); q.set('dst', st.d.style); q.set('dseed', st.d.seed); }
     if (st.d.dirt) { q.set('dirt', st.d.dirt); q.set('dseed', st.d.seed); }
+    engraveQuery(q);
     const s = q.toString();
     return `#/${typeId}${s ? `?${s}` : ''}`;
   }
@@ -489,6 +639,7 @@ export async function mount(main, typeId, query) {
     ...(T.params.some((d) => d.type === 'symbol' && st.p[d.key]) ? ['Your own symbols live on this device. Others who open the link see the piece without it.'] : []),
     ...(T.params.some((d) => d.type === 'font' && String(st.p[d.key]).startsWith('Studio ')) ? ['Your uploaded font lives on this device. Others see a standard font.'] : []),
     ...(st.pixels && st.p.mode === 'relief' ? ['Reliefs come from your picture, which is not in the link.'] : []),
+    ...(st.e.kind === 'image' ? ['The engraved picture stays on your device.'] : []),
   ];
 
   /* ── step 3 ── */
@@ -522,6 +673,8 @@ export async function mount(main, typeId, query) {
         <button type="button" class="btn" data-a="card" ${r.empty ? 'disabled' : ''}>Info card image <small>sizes &amp; weight for your maker</small></button>
         <button type="button" class="btn" data-a="link">Share link <small>everything is in the link</small></button>
         <button type="button" class="btn" data-a="save">Save on this device <small>no account</small></button>
+        <button type="button" class="btn btn--lime" data-a="order" ${r.empty ? 'disabled' : ''}>Order this piece <small>price estimate &amp; request</small></button>
+        <button type="button" class="btn" data-a="shop">Copy shop link <small>opens straight to “Order”</small></button>
         <button type="button" class="btn btn--solid" data-a="send" ${r.empty ? 'disabled' : ''}>Send to TRIAD <small>submit to the Darkroom</small></button>
       </div>
       ${localOnly().map((w) => `<p class="muted" style="font-size:13px;margin-top:10px">${esc(w)}</p>`).join('')}
@@ -549,17 +702,33 @@ export async function mount(main, typeId, query) {
         const ok = saveDesign({ name: name(), type: typeId, hash: hashFor() });
         toast(ok ? 'Saved on this device. Find it on the start page.' : 'Your browser blocks saving here. Use “Share link” and keep the link instead.');
       },
+      order: () => openOrder(),
+      shop: async () => { const url = `${shareUrl()}&order=1`.replace(/#\/(\w+)&/, '#/$1?'); try { await navigator.clipboard.writeText(url); toast('Shop link copied: customers land on “Order this piece”.'); } catch { prompt('Copy this link:', url); } },
       send: () => openSendDialog({ makeImage: () => poster(true), title: name(), caption: `${st.result.title} · ${materialLabel()}. Designed in TRIAD Studio.` }),
     };
     $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => act[b.dataset.a]()));
   }
 
+  function openOrder() {
+    const r = st.result;
+    if (!r || r.empty) return;
+    openOrderDialog({
+      title: r.title, typeId, category: typeId === 'cabinet' ? 'home' : typeId === 'sculpture' ? 'sculpture' : T.category || 'jewel',
+      summary: [['Piece', r.title], ...r.dims.filter(([k]) => !['Weight'].includes(k))],
+      materials: materialsOf(T).map((k) => [k, matInfo(T, k).label, gramsFor(k)]), material: st.metal,
+      engraved: st.engraved, destroyed: st.d.dmg > 0, enamel: st.accent || st.e.fill, url: shareUrl(),
+    });
+  }
+
   /* ── go ── */
   renderControls();
   renderMaterials();
+  renderEngrave();
+  if (st.e.kind === 'none') $('[data-engrave]', main).open = false;
   renderDestroy();
   showTab('adjust', false, false);
   rebuild(true);
+  if (st.order) { const wait = setInterval(() => { if (st.result) { clearInterval(wait); openOrder(); } }, 200); }
   const onTheme = () => viewer.render();
   window.addEventListener('studio:theme', onTheme);
 
@@ -568,7 +737,7 @@ export async function mount(main, typeId, query) {
       Object.assign(st, parseQuery(T, q));
       st.pixels = null;
       applyMaterial();
-      renderControls(); renderMaterials(); renderDestroy(); rebuild(true);
+      renderControls(); renderMaterials(); renderEngrave(); renderDestroy(); rebuild(true);
     },
     destroy() {
       clearTimeout(timer); buildNo++;

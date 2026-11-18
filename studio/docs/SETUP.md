@@ -36,3 +36,11 @@ eurer Freigabe sichtbar. Solange das Feld leer ist, speichert der Knopf das Bild
 
 Domain in Settings → Pages eintragen und in `worker/wrangler.toml` bei `ALLOWED_ORIGINS`/`ALLOWED_REFERERS` ergänzen
 (und in `ALLOWED_ORIGINS` des Hauptseiten-Workers, wenn „Send to TRIAD“ von dort kommen soll).
+
+## 4. Verkaufen: Preise & Kontakt
+
+`public/pricing.json` (im Repo direkt auf github.com bearbeitbar):
+- `contact.email`: eure Bestell-Adresse. Leer = nur Instagram-DM (`contact.instagram`).
+- `perGram`: Preis pro Gramm je Material (inkl. Guss/Herstellung), `base`: Grundpreis je Bereich, `extras`: Gravur, Destroy-Modus, Emaille.
+- `finishes`: Oberflächen mit Aufpreis; `range`: Spanne der Schätzung (0.2 = ±20 %).
+Kunden sehen immer „Estimate only“, ihr bestätigt den Endpreis. Es gibt keine Zahlung auf der Seite.
