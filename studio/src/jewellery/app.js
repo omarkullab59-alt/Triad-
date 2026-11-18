@@ -437,20 +437,16 @@ export async function mount(main, typeId, query) {
 
   /* ── colours ── */
   const PALETTE = [['', 'Natural'], ['#c4ef2f', 'TRIAD lime']]; // TRIAD: lime #C4EF2F is the only colour
-  function colourRow(label, help, value, onPick, natural = true) {
+  function colourRow(label, help, value, onPick, natural = true, extra = []) {
     const el = document.createElement('div'); el.className = 'ctl'; el.style.paddingTop = '6px';
     el.innerHTML = `<div class="ctl-head"><span class="ctl-name">${esc(label)}</span></div><p class="ctl-help">${esc(help)}</p><div class="chips" role="radiogroup" aria-label="${esc(label)}"></div>`;
     const box = $('.chips', el);
-    for (const [c, l] of PALETTE.filter(([c]) => natural || c)) {
+    for (const [c, l] of [...PALETTE.filter(([c]) => natural || c), ...extra]) {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(c === value));
       b.innerHTML = `<span class="swatch" style="background:${c || 'linear-gradient(135deg,#ddd,#888)'}"></span>${esc(l)}`;
       b.addEventListener('click', () => onPick(c));
       box.append(b);
     }
-    const custom = document.createElement('label'); custom.className = 'chip';
-    custom.innerHTML = `<input type="color" value="${value || '#c4ef2f'}" aria-label="${esc(label)}: any colour" style="width:28px;height:28px;border:0;padding:0;background:none"> Any colour`;
-    custom.querySelector('input').addEventListener('change', (e) => onPick(e.target.value));
-    box.append(custom);
     return el;
   }
   function renderColour() {
@@ -495,7 +491,7 @@ export async function mount(main, typeId, query) {
       });
       body.append(wrap);
     }
-    if (pr.kind !== 'image') body.append(colourRow('Print colour', 'Colour of the motif, pattern or text.', pr.color, (c) => { pr.color = c || '#0a0a0a'; renderPrint(); rebuild(); }, false));
+    if (pr.kind !== 'image') body.append(colourRow('Print colour', 'Colour of the motif, pattern or text.', pr.color, (c) => { pr.color = c || '#0a0a0a'; renderPrint(); rebuild(); }, false, [['#0a0a0a', 'TRIAD black']]));
     body.append(
       choice({ name: 'pside', label: 'Where', help: 'The side to print on. “Around” wraps it like a label.', value: pr.side, options: SIDES, onInput: set('side') }),
       slider({ name: 'psz', label: 'Size', help: 'Height compared with that side of the piece.', min: 5, max: 100, step: 1, unit: '%', value: pr.size, onInput: set('size') }),
