@@ -35,7 +35,7 @@ collections:
         options: [Fashion Editorials, Photography, Designers, Fashion Trends, Underground Fashion, Streetwear, Creative Projects, Interviews, Art & Culture]
       - { label: Datum, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: Autor / Credits, name: author, widget: string, hint: "z. B. Words by … / Photography by …" }
-      - { label: Ausgabe (Issue), name: issue, widget: string, default: "003" }
+      - { label: Ausgabe (Issue), name: issue, widget: string, required: false, hint: "Nummer der Ausgabe, z. B. 012" }
       - { label: Titelbild, name: cover, widget: image }
       - { label: Auf Startseite hervorheben, name: featured, widget: boolean, default: false, required: false }
       - { label: Bildergalerie, name: gallery, widget: list, field: { label: Bild, name: image, widget: image }, required: false }
