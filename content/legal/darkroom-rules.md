@@ -23,7 +23,7 @@ updated: 2026-11-16
 
 Technisch und rechtlich sichern wir das so ab:
 
-- **KI-Crawler werden ausgesperrt** (u. a. GPTBot, ClaudeBot, Google-Extended, CCBot, Applebot-Extended, Bytespider, PerplexityBot, Meta), über die robots.txt der Website und des Bild-Servers. Normale Suchmaschinen bleiben erlaubt, damit man dich findet.
+- **KI-Crawler, die Trainingsdaten sammeln, werden ausgesperrt** (u. a. GPTBot, ClaudeBot, Google-Extended, CCBot, Applebot-Extended, Bytespider, Meta), über die robots.txt der Website und des Bild-Servers. Der Bild-Server mit deinen Uploads sperrt zusätzlich auch KI-Suchmaschinen (z. B. PerplexityBot). Normale Suchmaschinen und KI-Suchen dürfen die Website selbst finden, damit man TRIAD findet.
 - **Nutzungsvorbehalt für Text und Data Mining** nach § 44b Abs. 3 UrhG bzw. Art. 4 der EU-Richtlinie 2019/790, maschinenlesbar auf jeder Seite, in jedem Bild-Abruf (`tdm-reservation`, `noai, noimageai`) und in `/.well-known/tdmrep.json`.
 - Ehrlich gesagt: Kein Schutz im Netz ist lückenlos. Wer Regeln ignoriert, kann Bilder trotzdem kopieren. Unser Vorbehalt macht so eine Nutzung aber rechtswidrig und gibt dir eine Grundlage, dagegen vorzugehen.
 

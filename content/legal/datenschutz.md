@@ -17,9 +17,9 @@ Die Seite liegt bei GitHub Inc. (USA; EU-US Data Privacy Framework). Beim Aufruf
 
 Alle Schriften werden von dieser Website selbst geladen, nicht von Google-Servern.
 
-## Beispielbilder
+## Besucherzählung (ohne Cookies)
 
-Platzhalterbilder werden von picsum.photos geladen; dabei wird Ihre IP-Adresse an diesen Dienst übertragen. Sie werden durch eigene Fotos ersetzt.
+Wir zählen Seitenaufrufe, um zu sehen, welche Seiten gelesen werden und über welche Plattform Besucher kommen (z. B. Instagram, Google). Pro Aufruf wird nur ein Zähler für Tag, Seite und Herkunftsseite um eins erhöht. Es werden keine Cookies gesetzt, keine IP-Adressen, Kennungen oder Geräteinformationen gespeichert. Einzelne Personen lassen sich damit weder wiedererkennen noch über mehrere Seiten oder Tage verfolgen. Sendet Ihr Browser „Do Not Track“ oder „Global Privacy Control“, wird nicht gezählt. Die Zählung läuft über unseren Server bei Cloudflare. Rechtsgrundlage ist unser berechtigtes Interesse an einer einfachen Reichweitenmessung (Art. 6 Abs. 1 lit. f DSGVO); da nichts auf Ihrem Gerät gespeichert oder ausgelesen wird, ist keine Einwilligung nach § 25 TDDDG nötig.
 
 ## Finder mit Foto/KI
 

@@ -10,6 +10,7 @@ gallery:
   - https://picsum.photos/seed/triad-icons-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-icons-g2/900/1200?grayscale
   - https://picsum.photos/seed/triad-icons-g3/900/1200?grayscale
+draft: true
 ---
 Walk through any underground club, any independent fashion fair, any art school degree show, and you will find them: halos, serpents, winged creatures, crosses distorted until they are almost geometry.
 

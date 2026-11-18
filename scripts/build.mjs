@@ -61,7 +61,7 @@ export function build() {
         const { data, body } = parseFrontmatter(read(`${dir}/${f}`));
         return { ...data, slug: f.replace(/\.md$/, ''), body };
       })
-      .filter((x) => x.draft !== true)
+      .filter((x) => x.draft !== true && x.sample !== true)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   ctx.articles = loadMd('content/magazine').map((a, i, all) => ({
@@ -91,6 +91,8 @@ export function build() {
   const wirePath = path.join(ROOT, 'content/wire.json');
   ctx.wire = fs.existsSync(wirePath) ? JSON.parse(fs.readFileSync(wirePath, 'utf8')) : { updated: null, items: [] };
   ctx.issues = listOf(readJson('content/issues.json'));
+  { const cur = ctx.issues.find((i) => i.current) || ctx.issues[0]; if (cur) { site.currentIssue = cur.number; if (cur.season) site.season = String(cur.season).toUpperCase(); } }
+  ctx.hasSamples = false;
   ctx.marketplaces = listOf(readJson('content/marketplaces.json')).filter((m) => m.active !== false);
 
   ctx.people = loadMd('content/people')

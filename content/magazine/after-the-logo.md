@@ -9,6 +9,7 @@ cover: https://picsum.photos/seed/triad-after-logo/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-logo-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-logo-g2/900/1200?grayscale
+draft: true
 ---
 For a long time, the logo was the product. A box, a word, a symbol across the chest — the garment underneath almost didn't matter. That era is not over, but it has a rival.
 

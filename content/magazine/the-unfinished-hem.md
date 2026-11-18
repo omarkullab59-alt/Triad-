@@ -9,6 +9,7 @@ cover: https://picsum.photos/seed/triad-unfinished-hem/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-hem-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-hem-g2/900/1200?grayscale
+draft: true
 ---
 Look closely at the most interesting clothes of the season and you will find the same gesture repeated: a hem left raw, a basting stitch left in, a lining turned outward like a confession.
 

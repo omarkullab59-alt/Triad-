@@ -14,6 +14,7 @@ gallery:
   - https://picsum.photos/seed/triad-wool-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-wool-g2/900/1200?grayscale
   - https://picsum.photos/seed/triad-wool-g3/900/1200?grayscale
+draft: true
 ---
 The mill had been closed for eleven years. The looms were gone, sold for scrap, but the floor still carried their outline — rectangles of cleaner concrete where the machines once stood, like shadows that had forgotten to leave.
 

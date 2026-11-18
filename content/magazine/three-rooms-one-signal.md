@@ -12,6 +12,7 @@ gallery:
   - https://picsum.photos/seed/triad-rooms-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-rooms-g2/900/1200?grayscale
   - https://picsum.photos/seed/triad-rooms-g3/900/1200?grayscale
+draft: true
 ---
 The brief was one sentence: make something for a room you will never see. Three artists — a designer, a sound artist and a photographer — each received the same sentence and the same deadline. They were not allowed to speak to each other.
 

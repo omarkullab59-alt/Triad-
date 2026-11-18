@@ -14,6 +14,7 @@ gallery:
   - https://picsum.photos/seed/triad-basement-g2/900/1200?grayscale
   - https://picsum.photos/seed/triad-basement-g3/900/1200?grayscale
   - https://picsum.photos/seed/triad-basement-g4/900/1200?grayscale
+draft: true
 ---
 The address arrives at 9 p.m. by text message. No name, just a street and a door colour. Inside: a stairwell, a sound system borrowed from a club that closed last month, and around eighty people standing shoulder to shoulder in a room built for forty.
 

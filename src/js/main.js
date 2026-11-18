@@ -306,17 +306,97 @@
     lb.setAttribute('role', 'dialog');
     lb.setAttribute('aria-modal', 'true');
     lb.setAttribute('aria-label', 'Image viewer');
-    lb.innerHTML = '<img class="lb-img" alt=""><p class="lb-caption"></p><button class="lb-close" type="button">Close ✕</button><button class="lb-prev" type="button" aria-label="Previous">← Prev</button><button class="lb-next" type="button" aria-label="Next">Next →</button>';
+    lb.innerHTML = '<div class="lb-stage"><img class="lb-img" alt="" draggable="false"></div><p class="lb-caption"></p><button class="lb-close" type="button">Close ✕</button><button class="lb-prev" type="button" aria-label="Previous">← Prev</button><button class="lb-next" type="button" aria-label="Next">Next →</button><div class="lb-zoom" role="group" aria-label="Zoom"><button type="button" class="lb-zout" aria-label="Zoom out">−</button><span class="lb-zval" aria-live="polite">100%</span><button type="button" class="lb-zin" aria-label="Zoom in">+</button></div>';
     document.body.appendChild(lb);
     $('.lb-close', lb).onclick = closeLightbox;
     $('.lb-prev', lb).onclick = () => showLb(lbIndex - 1);
     $('.lb-next', lb).onclick = () => showLb(lbIndex + 1);
-    lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
-    let sx = 0;
-    lb.addEventListener('touchstart', (e) => (sx = e.touches[0].clientX), { passive: true });
-    lb.addEventListener('touchend', (e) => { const d = e.changedTouches[0].clientX - sx; if (Math.abs(d) > 50) showLb(lbIndex + (d < 0 ? 1 : -1)); });
+    lb.addEventListener('click', (e) => {
+      if (zm.moved) return;
+      if (e.target === lb) return closeLightbox();
+      if (!e.target.closest('.lb-stage') || zm.s > 1.01) return;
+      // a click on the empty area around the picture (object-fit: contain) closes, a click on the picture does not
+      const img = $('.lb-img', lb), r = $('.lb-stage', lb).getBoundingClientRect();
+      const nw = img.naturalWidth || r.width, nh = img.naturalHeight || r.height, f = Math.min(r.width / nw, r.height / nh);
+      const w = nw * f, h = nh * f, x0 = r.left + (r.width - w) / 2, y0 = r.top + (r.height - h) / 2;
+      if (e.clientX < x0 || e.clientX > x0 + w || e.clientY < y0 || e.clientY > y0 + h) closeLightbox();
+    });
+    initZoom();
+  }
+
+  /* Zoom: pinch, double-tap, mouse wheel, drag to pan, +/− buttons and keys (+ − 0) */
+  const zm = { s: 1, x: 0, y: 0, pts: new Map(), start: null, moved: false, lastTap: 0 };
+  const ZMAX = 5;
+  function zApply(anim) {
+    const img = $('.lb-img', lb), st = $('.lb-stage', lb);
+    // keep the picture covering its own box: limit the pan to the scaled overflow
+    const w = st.clientWidth, h = st.clientHeight;
+    const nw = img.naturalWidth || w, nh = img.naturalHeight || h;
+    const fit = Math.min(w / nw, h / nh), dw = nw * fit * zm.s, dh = nh * fit * zm.s;
+    const mx = Math.max(0, (dw - w) / 2), my = Math.max(0, (dh - h) / 2);
+    zm.x = Math.min(mx, Math.max(-mx, zm.x)); zm.y = Math.min(my, Math.max(-my, zm.y));
+    img.style.transition = anim ? 'transform .25s var(--ease)' : 'none';
+    img.style.transform = `translate(${zm.x}px, ${zm.y}px) scale(${zm.s})`;
+    lb.classList.toggle('is-zoomed', zm.s > 1.01);
+    $('.lb-zval', lb).textContent = `${Math.round(zm.s * 100)}%`;
+  }
+  function zTo(s, cx, cy, anim = true) {
+    const st = $('.lb-stage', lb).getBoundingClientRect();
+    const ns = Math.min(ZMAX, Math.max(1, s));
+    // keep the point under the finger/cursor where it is
+    const px = (cx ?? st.left + st.width / 2) - (st.left + st.width / 2), py = (cy ?? st.top + st.height / 2) - (st.top + st.height / 2);
+    zm.x = px - ((px - zm.x) * ns) / zm.s; zm.y = py - ((py - zm.y) * ns) / zm.s; zm.s = ns;
+    if (ns === 1) { zm.x = 0; zm.y = 0; }
+    zApply(anim);
+  }
+  function zReset() { zm.s = 1; zm.x = 0; zm.y = 0; zm.pts.clear(); if (lb) zApply(false); }
+  function initZoom() {
+    const st = $('.lb-stage', lb);
+    $('.lb-zin', lb).onclick = () => zTo(zm.s * 1.6);
+    $('.lb-zout', lb).onclick = () => zTo(zm.s / 1.6);
+    st.addEventListener('wheel', (e) => { e.preventDefault(); zTo(zm.s * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0025)), e.clientX, e.clientY, false); }, { passive: false });
+    st.addEventListener('dblclick', (e) => { e.preventDefault(); zTo(zm.s > 1.01 ? 1 : 2.5, e.clientX, e.clientY); });
+    st.addEventListener('pointerdown', (e) => {
+      try { st.setPointerCapture(e.pointerId); } catch (_) { /* synthetic pointer */ }
+      zm.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      zm.moved = false;
+      const p = [...zm.pts.values()];
+      zm.start = { s: zm.s, x: zm.x, y: zm.y, p0: p[0], d: p.length > 1 ? Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) : 0, mid: p.length > 1 ? { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 } : null, t: Date.now() };
+    });
+    st.addEventListener('pointermove', (e) => {
+      if (!zm.pts.has(e.pointerId)) return;
+      zm.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const p = [...zm.pts.values()], s0 = zm.start;
+      if (p.length > 1 && s0.d) {
+        const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y), mid = { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 };
+        zm.s = s0.s; zm.x = s0.x + (mid.x - s0.mid.x); zm.y = s0.y + (mid.y - s0.mid.y);
+        zTo(s0.s * (d / s0.d), mid.x, mid.y, false); zm.moved = true;
+      } else if (zm.s > 1.01) {
+        const dx = e.clientX - s0.p0.x, dy = e.clientY - s0.p0.y;
+        if (Math.abs(dx) + Math.abs(dy) > 3) zm.moved = true;
+        zm.x = s0.x + dx; zm.y = s0.y + dy; zApply(false);
+      }
+    });
+    const up = (e) => {
+      if (!zm.pts.has(e.pointerId)) return;
+      const s0 = zm.start, wasPinch = zm.pts.size > 1;
+      zm.pts.delete(e.pointerId);
+      if (zm.pts.size) { const p = [...zm.pts.values()]; zm.start = { s: zm.s, x: zm.x, y: zm.y, p0: p[0], d: 0, mid: null, t: Date.now() }; return; }
+      if (wasPinch) { if (zm.s < 1.05) zTo(1); return; }
+      const dx = e.clientX - s0.p0.x, dy = e.clientY - s0.p0.y;
+      // swipe to the next/previous picture only when not zoomed in
+      if (zm.s <= 1.01 && e.pointerType !== 'mouse' && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { zm.moved = true; showLb(lbIndex + (dx < 0 ? 1 : -1)); return; }
+      // double-tap (touch) toggles zoom
+      if (e.pointerType !== 'mouse' && Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+        const now = Date.now();
+        if (now - zm.lastTap < 300) { zTo(zm.s > 1.01 ? 1 : 2.5, e.clientX, e.clientY); zm.lastTap = 0; zm.moved = true; } else zm.lastTap = now;
+      }
+    };
+    st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+    addEventListener('resize', () => lb.classList.contains('is-open') && zApply(false));
   }
   function showLb(i) {
+    zReset();
     lbIndex = (i + lbItems.length) % lbItems.length;
     const el = lbItems[lbIndex];
     const img = $('.lb-img', lb);
@@ -349,6 +429,9 @@
     if (!lb || !lb.classList.contains('is-open')) return;
     if (e.key === 'ArrowRight') showLb(lbIndex + 1);
     if (e.key === 'ArrowLeft') showLb(lbIndex - 1);
+    if (e.key === '+' || e.key === '=') zTo(zm.s * 1.6);
+    if (e.key === '-') zTo(zm.s / 1.6);
+    if (e.key === '0') zTo(1);
   });
 
   /* ── Drag-to-scroll (creatives) ──────────────────────────────── */
@@ -873,6 +956,18 @@
     let token = ''; let tab = 'pending';
     try { token = sessionStorage.getItem('triad-dr-admin') || ''; } catch (_) { /* ignore */ }
     const authed = (path, opts = {}) => fetch(api + path, { ...opts, headers: { ...(opts.headers || {}), authorization: `Bearer ${token}`, 'content-type': 'application/json' } });
+    const statsBox = $('[data-dr-stats]', adm);
+    const loadStats = async () => {
+      if (!statsBox) return;
+      const r = await authed('/stats/summary?days=30').catch(() => null);
+      if (!r || !r.ok) { statsBox.innerHTML = '<p class="label label--dim">No visitor numbers yet.</p>'; return; }
+      const d = await r.json();
+      const bars = (rows, k) => { const max = Math.max(1, ...rows.map((x) => Number(x.n))); return rows.map((x) => `<li><span class="st-k">${String(x[k]).replace(/[<>&"]/g, '')}</span><span class="st-bar" style="--w:${(Number(x.n) / max * 100).toFixed(1)}%"></span><span class="st-n">${x.n}</span></li>`).join(''); };
+      statsBox.innerHTML = `<p class="st-total"><strong>${d.total}</strong> page views · last ${d.days} days</p>
+        <div class="st-cols"><div><h3 class="label">Where people come from</h3><ol class="st-list">${bars(d.sources, 'src') || '<li class="label label--dim">—</li>'}</ol></div>
+        <div><h3 class="label">Most viewed pages</h3><ol class="st-list">${bars(d.pages, 'path') || '<li class="label label--dim">—</li>'}</ol></div>
+        <div><h3 class="label">Per day</h3><ol class="st-list">${bars(d.byDay.slice(-14).reverse(), 'day') || '<li class="label label--dim">—</li>'}</ol></div></div>`;
+    };
     const open = async () => {
       st.textContent = 'Loading…'; st.className = 'label label--dim';
       const r = await authed(`/darkroom/admin/queue?status=${tab}`).catch(() => null);
@@ -883,7 +978,7 @@
         if (unauthorized) login.querySelector('p').textContent = 'Wrong key.';
         return;
       }
-      login.hidden = true; panel.hidden = false;
+      login.hidden = true; panel.hidden = false; if (!panel.dataset.statsLoaded) { panel.dataset.statsLoaded = "1"; loadStats(); }
       const d = await r.json();
       $$('[data-dr-count]', adm).forEach((s) => (s.textContent = d.totals[s.dataset.drCount] || ''));
       st.textContent = d.items.length ? '' : `Nothing ${tab}.`;
@@ -911,6 +1006,17 @@
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     addEventListener('load', () => navigator.serviceWorker.register((window.TRIAD_BASE || '/') + 'sw.js').catch(() => {}));
   }
+
+  /* Visitor counter: +1 per page view for (day, page, source). No cookies, no IDs, no IP stored.
+     Skipped when the browser sends Do Not Track / Global Privacy Control. */
+  (() => {
+    const m = document.querySelector('meta[name="triad-api"]');
+    if (!m || !m.content || !navigator.sendBeacon || navigator.doNotTrack === '1' || navigator.globalPrivacyControl || /\/admin\//.test(location.pathname)) return;
+    let r = '';
+    try { if (document.referrer) { const u = new URL(document.referrer); r = u.host === location.host ? 'self' : u.host; } } catch (_) { /* ignore */ }
+    const utm = new URLSearchParams(location.search).get('utm_source') || '';
+    try { navigator.sendBeacon(m.content + '/stats/hit', new Blob([JSON.stringify({ p: location.pathname, r, u: utm })], { type: 'text/plain' })); } catch (_) { /* ignore */ }
+  })();
 
   onScroll();
 })();

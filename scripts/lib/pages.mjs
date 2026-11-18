@@ -123,7 +123,7 @@ ${showCampaign ? `<section class="campaign" data-parallax-wrap>
   <h2 id="ways-title" class="label ways-title">${symbol('borromean', { cls: 'sh-sym' })}Three ways in</h2>
   <div class="ways-grid">
     <a class="way" href="${ctx.url('/people/')}">
-      <span class="way-img">${imgTag({ src: resolveImage(creatives[0]?.image, ctx), alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}</span>
+      <span class="way-img">${imgTag({ src: resolveImage(creatives.find((c) => !/picsum/.test(c.image || ''))?.image || '/uploads/triad/between-two-cars.jpg', ctx), alt: '', sizes: '(max-width: 760px) 100vw, 30vw' })}</span>
       <span class="label">I / Voices</span>
       <strong class="way-title">Three forces, many hands.</strong>
       <span class="serif way-note">Artists, designers and local legends from the TRIAD circle.</span>
@@ -274,10 +274,10 @@ export function newsPage(ctx) {
   <span class="label page-kicker">${symbol('air', { cls: 'sh-sym' })}02 / NEWS &mdash; CONTINUOUSLY UPDATED</span>
   <h1 class="page-title" data-split>${splitWords('The wire.')}</h1>
   <p class="page-deck serif">Fashion week, collections, collaborations, campaigns, emerging designers and the movements around them.</p>
-  <p class="sample-banner"><strong>Sample content.</strong> All entries currently shown are fictional placeholders written to demonstrate the layout. They do not describe real events, people or brands.</p>
+  ${news.some((n) => n.sample) ? '<p class="sample-banner"><strong>Sample content.</strong> Some entries are fictional placeholders.</p>' : ''}
 </section>
 
-<a class="news-lead" href="${ctx.url(lead.url)}" data-cursor="Read">
+${lead ? `<a class="news-lead" href="${ctx.url(lead.url)}" data-cursor="Read">
   ${frame({ src: lead.image, alt: '', code: 'LATEST', sizes: '(max-width: 760px) 100vw, 55vw', ctx })}
   <div class="news-lead-text">
     <div class="story-meta">${label(lead.topic)}<span class="dot"></span>${label(fmtDate(lead.date), 'label--dim')}${lead.sample ? '<span class="sample-tag">Sample</span>' : ''}</div>
@@ -300,7 +300,7 @@ export function newsPage(ctx) {
   </div>`
     )
     .join('')}
-</section>
+</section>` : ''}
 
 ${ctx.wire.items.length ? (() => {
   const srcs = [...new Set(ctx.wire.items.map((w) => w.source))].sort();
@@ -422,7 +422,7 @@ export function aboutPage(ctx) {
     <figure class="sys sys--stamp">${stamp({ top: 'TRIAD ARCHIVE', bottom: 'PROPERTY OF THE COLLECTIVE', center: '003' })}<figcaption><span class="label">06 — Archive stamp</span></figcaption></figure>
     <figure class="sys sys--codes">
       <ul class="codes">
-        <li><span class="label label--dim">Issue</span><span>N&deg;003 &mdash; WINTER 26</span></li>
+        <li><span class="label label--dim">Issue</span><span>N&deg;${e(ctx.site.currentIssue)} &mdash; ${e(ctx.site.season)}</span></li>
         <li><span class="label label--dim">Magazine</span><span>TRD-MAG-003-07</span></li>
         <li><span class="label label--dim">Archive</span><span>TRD-ARC-016</span></li>
         <li><span class="label label--dim">News</span><span>TRD-WIRE-2611-04</span></li>
@@ -483,6 +483,7 @@ export function peoplePage(ctx) {
   ${kinds.map(([v, l], i) => `<button type="button" class="chip${i ? '' : ' is-active'}" data-filter-value="${v}" aria-pressed="${i ? 'false' : 'true'}">${l} <sup>${v === 'all' ? ctx.people.length : ctx.people.filter((p) => p.kind === v).length}</sup></button>`).join('')}
 </div>
 
+${ctx.people.length ? '' : `<div class="people-empty"><p class="serif">The first voices are being recorded. Photographers, designers, DJs, makers — if you shape the culture around you, we want to talk.</p><a class="btn" href="${ctx.url('/darkroom/')}">Show us your work in the Darkroom &#8599;</a></div>`}
 <ol class="people-index" data-filter-target="people">
   ${ctx.people
     .map(
@@ -777,6 +778,7 @@ export function darkroomAdminPage(ctx) {
     </div>
     <p class="label label--dim" data-dr-admin-status role="status"></p>
     <ul class="dr-queue" data-dr-queue></ul>
+    <section class="dr-stats"><h2 class="label">Visitors</h2><div data-dr-stats><p class="label label--dim">Loading…</p></div></section>
   </div>
 </section>`;
 }

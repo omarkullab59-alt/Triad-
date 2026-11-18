@@ -11,6 +11,7 @@ cover: https://picsum.photos/seed/triad-grain-evidence/1800/1200?grayscale
 gallery:
   - https://picsum.photos/seed/triad-grain-g1/900/1200?grayscale
   - https://picsum.photos/seed/triad-grain-g2/900/1200?grayscale
+draft: true
 ---
 Every era of fashion photography has its idea of truth. For a while it was the studio: white paper, controlled light, nothing left to chance. Then it was the street. Now, among a loose network of young photographers, truth has a texture. It is grain.
 
