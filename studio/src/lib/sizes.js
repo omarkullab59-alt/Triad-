@@ -42,6 +42,22 @@ export const METALS = {
   gold: { label: 'Gold 18k', density: 15.6 },
   black: { label: 'Black silver (oxidised 925)', density: 10.36 },
 };
+// Home objects
+export const HOME = {
+  ceramic: { label: 'White ceramic', density: 2.4 },
+  stoneware: { label: 'Dark stoneware', density: 2.3 },
+  oak: { label: 'Oak', density: 0.72 },
+  walnut: { label: 'Walnut', density: 0.64 },
+  steel: { label: 'Stainless steel', density: 7.9 },
+  silver: METALS.silver,
+  brass: { label: 'Brass', density: 8.5 },
+  black: { label: 'Black lacquer', density: 0.75 },
+  concrete: { label: 'Concrete', density: 2.3 },
+};
+export const ALL_MATERIALS = { ...HOME, ...METALS };
+/** "4.4 g" / "1.25 kg" */
+export const weightLabel = (g) => (g >= 1000 ? `${(g / 1000).toFixed(g >= 10000 ? 1 : 2)} kg` : `${g < 10 ? g.toFixed(1) : Math.round(g)} g`);
+
 /** volume in mm³ → grams */
 export const grams = (volume, density) => (volume / 1000) * density;
 

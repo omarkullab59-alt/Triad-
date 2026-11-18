@@ -28,19 +28,42 @@ applyMode(getMode());
 const ICONS = {
   ring: '<ellipse cx="32" cy="36" rx="20" ry="18" fill="none" stroke="currentColor" stroke-width="5"/><path d="M24 14l8-8 8 8z" fill="currentColor"/>',
   pendant: '<path d="M32 4v10" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="17" r="4" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M32 22l18 30H14z" fill="none" stroke="currentColor" stroke-width="4"/>',
+  lettering: '<text x="32" y="44" text-anchor="middle" font-family="Georgia,serif" font-size="30" font-weight="700" fill="currentColor">Aا字</text>',
   earrings: '<circle cx="20" cy="34" r="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="46" cy="34" r="12" fill="none" stroke="currentColor" stroke-width="4"/>',
   bangle: '<path d="M14 40a18 14 0 1 1 36 0" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>',
   chain: '<g fill="none" stroke="currentColor" stroke-width="4"><ellipse cx="14" cy="32" rx="10" ry="6"/><ellipse cx="32" cy="32" rx="4" ry="9"/><ellipse cx="50" cy="32" rx="10" ry="6"/></g>',
+  plate: '<ellipse cx="32" cy="34" rx="26" ry="10" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="32" cy="33" rx="13" ry="4.5" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  vessel: '<path d="M18 12h28M20 12c-6 14 -6 34 4 42h16c10-8 10-28 4-42" fill="none" stroke="currentColor" stroke-width="4"/>',
+  cutlery: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M16 58V30M10 8v14a6 6 0 0 0 12 0V8M16 8v12"/><path d="M32 58V8c6 4 8 16 0 24"/><path d="M48 58V32"/><ellipse cx="48" cy="18" rx="6" ry="11"/></g>',
+  cabinet: '<g fill="none" stroke="currentColor" stroke-width="4"><rect x="12" y="8" width="40" height="44"/><path d="M32 8v44M12 52l-2 6M52 52l2 6"/></g><path d="M27 28v6M37 28v6" stroke="currentColor" stroke-width="4"/>',
   draw: '<path d="M10 52c10-4 14-20 24-20s6 16 20 10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M40 8l14 14-22 22H18V30z" fill="none" stroke="currentColor" stroke-width="3"/>',
+  symbol: '<g fill="none" stroke="currentColor" stroke-width="4"><circle cx="32" cy="32" r="22"/><path d="M32 12l17 30H15z"/></g><circle cx="32" cy="32" r="4" fill="currentColor"/>',
+  sketch3d: '<path d="M10 50l16-30 10 16 6-8 12 22z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M10 50l8 6h44l-8-6" fill="none" stroke="currentColor" stroke-width="3"/>',
+  model: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M32 6l22 12v26L32 58 10 44V18z"/><path d="M10 18l22 12 22-12M32 30v28"/></g>',
 };
-const TILES = [
-  ['ring', 'Ring', 'Size, band shape, signet, engraving'],
-  ['pendant', 'Pendant', 'From your sketch or photo'],
-  ['earrings', 'Earrings', 'Studs or hoops, as a pair'],
-  ['bangle', 'Bangle', 'Open cuff or closed bangle'],
-  ['chain', 'Chain', 'Link shape, size, length'],
-  ['draw', 'Draw', 'Sketch it, see it rendered live'],
+const GROUPS = [
+  ['Jewellery', [
+    ['ring', 'Ring', 'Size, band, signet, engraving'],
+    ['pendant', 'Pendant', 'From your sketch or photo'],
+    ['lettering', 'Lettering', 'Names in any script & font'],
+    ['earrings', 'Earrings', 'Studs or hoops, as a pair'],
+    ['bangle', 'Bangle', 'Open cuff or closed bangle'],
+    ['chain', 'Chain', 'Link shape, size, length'],
+  ]],
+  ['Home', [
+    ['plate', 'Plate', 'Dinner, coupe, deep, wavy'],
+    ['vessel', 'Bowl · Cup · Vase', 'Bowls, cups, mugs, vases'],
+    ['cutlery', 'Cutlery', 'Fork, knife, spoon, sets'],
+    ['cabinet', 'Cabinet', 'Sideboard, wardrobe, shelf'],
+  ]],
+  ['Create', [
+    ['draw', 'Draw', 'Sketch it, see it rendered live'],
+    ['symbol', 'Symbol', 'Design your own signs & logos'],
+    ['sketch3d', 'Sketch to 3D', 'Cut-out, relief or turned'],
+    ['model', 'Upload 3D', 'Work on your STL / OBJ / GLB'],
+  ]],
 ];
+const TILES = GROUPS.flatMap(([, t]) => t);
 const NAMES = Object.fromEntries(TILES.map(([k, n]) => [k, n]));
 
 function home(main) {
@@ -48,21 +71,22 @@ function home(main) {
   main.innerHTML = `
   <section class="hero">
     <p class="label muted">TRIAD Studio · free · no login</p>
-    <h1>Design your jewellery<em>no 3D skills needed.</em></h1>
-    <p>Pick a piece, move a few sliders, take home a file your jeweller or 3D printer can use.</p>
+    <h1>Design your own objects<em>no 3D skills needed.</em></h1>
+    <p>Jewellery, plates, cutlery, cabinets — or your own symbol. Move a few sliders, wreck it in destroy mode if you like, take home a file your maker or 3D printer can use.</p>
     <ol class="steps-intro label" aria-label="How it works">
       <li><span class="num num--on">1</span>What?</li><li><span class="num">2</span>Adjust</li><li><span class="num">3</span>Save &amp; share</li>
     </ol>
   </section>
   <h2 class="tiles-head wrap label">1 · What do you want to make?</h2>
-  <nav class="tiles" aria-label="Choose what to make">
-    ${TILES.map(([k, n, d]) => `<a class="tile${k === 'draw' ? ' tile--draw' : ''}" href="#/${k}">
+  ${GROUPS.map(([g, tiles]) => `<h3 class="wrap label muted" style="margin:22px auto 8px">${g}</h3>
+  <nav class="tiles" aria-label="${g}">
+    ${tiles.map(([k, n, d]) => `<a class="tile${k === 'draw' ? ' tile--draw' : ''}" href="#/${k}">
       <svg viewBox="0 0 64 64" aria-hidden="true">${ICONS[k]}</svg>
       <span><span class="tile-name">${n}</span><br><span class="tile-desc">${d}</span></span></a>`).join('')}
-  </nav>
+  </nav>`).join('')}
   ${saved.length ? `<section class="saved" aria-labelledby="saved-h">
     <h2 id="saved-h" class="label">Saved on this device</h2>
-    <ul class="saved-list">${saved.map((d) => `<li><a href="${esc(d.hash)}"><span class="label muted">${esc(NAMES[d.type] || d.type)}</span>${esc(d.name)}</a>
+    <ul class="saved-list">${saved.map((d) => `<li><a href="${esc(d.hash)}"><span class="label muted">${esc(NAMES[d.type] || d.type)}</span> ${esc(d.name)}</a>
       <button class="icon-btn" type="button" data-del="${esc(d.id)}" aria-label="Delete ${esc(d.name)}">×</button></li>`).join('')}</ul>
   </section>` : ''}`;
   main.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
@@ -88,7 +112,7 @@ async function route() {
   if (!key || !NAMES[key]) { home(main); window.scrollTo(0, 0); return; }
   main.innerHTML = '<div class="stage-loading" style="min-height:50vh"><div class="spinner" role="img" aria-label="Loading"></div></div>';
   try {
-    const mod = key === 'draw' ? await import('./draw/app.js') : await import('./jewellery/app.js');
+    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : await import('./jewellery/app.js');
     if (currentKey !== key) return;
     current = await mod.mount(main, key, new URLSearchParams(query));
   } catch (e) {

@@ -4,12 +4,12 @@ import worker, { buildPrompt, strengthFor, _reset } from '../worker/src/index.js
 
 const env = (ai) => ({
   ALLOWED_ORIGINS: 'https://omarkullab59-alt.github.io,http://localhost:5173',
-  ALLOWED_REFERERS: 'https://omarkullab59-alt.github.io/triad-studio/',
+  ALLOWED_REFERERS: 'https://omarkullab59-alt.github.io/Triad-/studio/',
   MODEL: '@cf/runwayml/stable-diffusion-v1-5-img2img', PER_MINUTE: '3', PER_DAY: '100', AI: ai,
 });
 const png = new Uint8Array([137, 80, 78, 71]);
 const okAI = { calls: [], async run(model, input) { this.calls.push(input); return png; } };
-const req = (body, { origin = 'https://omarkullab59-alt.github.io', referer = 'https://omarkullab59-alt.github.io/triad-studio/#/draw', ip = '1.1.1.1' } = {}) =>
+const req = (body, { origin = 'https://omarkullab59-alt.github.io', referer = 'https://omarkullab59-alt.github.io/Triad-/studio/#/draw', ip = '1.1.1.1' } = {}) =>
   new Request('https://w.example/render', { method: 'POST', headers: { origin, referer, 'cf-connecting-ip': ip, 'content-type': 'application/json' }, body: JSON.stringify(body) });
 const img = 'data:image/jpeg;base64,' + btoa('fake-jpeg-bytes');
 

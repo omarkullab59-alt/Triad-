@@ -1,6 +1,7 @@
 # TRIAD Studio
 
-Schmuck entwerfen ohne 3D-Kenntnisse. Eigenständige Website (UI auf Englisch), im Look der TRIAD-Hauptseite:
+Schmuck, Geschirr, Besteck und Möbel entwerfen ohne 3D-Kenntnisse. Eigene App im TRIAD-Repo, live unter
+**https://omarkullab59-alt.github.io/Triad-/studio/** (UI auf Englisch), im Look der TRIAD-Hauptseite:
 Lime `#C4EF2F` als einziger Akzent, Nachtmodus (Auto/Hell/Dunkel, gleiche Einstellung wie auf der Hauptseite),
 Anton · Instrument Serif · Inter Tight · JetBrains Mono, kühle, neblige Stimmung.
 
@@ -19,7 +20,18 @@ Anton · Instrument Serif · Inter Tight · JetBrains Mono, kühle, neblige Stim
 | **Earrings** | Creolen (Durchmesser, Draht, Profil, Öffnung) oder Stecker (5 Formen, Stift 0,8 mm), als Paar |
 | **Bangle** | Handgelenk-Umfang → Innenmaß, offene Cuff (Öffnung) oder geschlossen, Breite, Stärke, Profil, Gravur |
 | **Chain** | Glied oval/rund/eckig, Gliedgröße, Draht, Länge in cm (Glieder greifen ineinander, 0,3 mm Spiel) |
+| **Lettering** | Namen/Wörter in jeder Schrift: Japanisch, Arabisch (rechts nach links), Russisch, Chinesisch, Koreanisch, Hebräisch, Hindi, Thai, Armenisch, Georgisch; Gotik, Glitch, Schreibmaschine, Marker; **eigene Schriftdateien hochladen** (TTF/OTF/WOFF) |
+| **Plate** | mit Rand / Coupe / tief, Durchmesser, Höhe, Wandstärke, Rand rund/wellig/facettiert/TRIAD-Zacken, Standring |
+| **Bowl · Cup · Vase** | Schale, Tasse, Becher, Vase: Öffnung, Höhe, Bauch, Hals, Henkel, Fassungsvermögen in ml |
+| **Cutlery** | Gabel, Messer, Löffel oder 3er-Set: Länge, Griffbreite, Stärke, Griffende (rund/spitz/TRIAD-Zacken), Zinken, Biegung |
+| **Cabinet** | Sideboard, Schrank, Regal, Kommode: B×H×T, Böden, Türen, Schubladen, Plattenstärke, Füße/Sockel, Griffe |
+| **Symbol** | Eigene Zeichen/Logos entwerfen: Pinsel, 10 Grundformen, Text (alle Schriften), Bild hochladen, Hinzufügen/Ausschneiden, Symmetrie (gespiegelt, 4×, 3× TRIAD, 6×). Eigene Bibliothek auf dem Gerät → Anhänger, Stecker, Ring-Oberseite, 3D-Objekt |
+| **Sketch to 3D** | Bild/Skizze/Design → flacher Ausschnitt, Relief (dunkel = hoch) oder gedrehtes Objekt (Vase/Becher aus der Silhouette, massiv oder hohl) |
+| **Upload 3D** | Eigene STL/OBJ/GLB/GLTF/PLY öffnen und weiterbearbeiten: Größe, Drehen, Material, Destroy-Modus, Export |
 | **Draw** | Zeichenfläche (Finger/Stift mit Druck/Maus), Pinsel, Radierer, 3 Stärken, Undo/Redo, Leeren, Foto als Hintergrund. 0,8 s nach dem letzten Strich: KI-Render daneben (Handy: darunter). Stile Silver/Chrome/Gold/Lime enamel/Frost/On skin + eigenes Textfeld, Regler „How close to my sketch“, „Build as 3D pendant“ |
+
+**Destroy-Modus (für alles):** Zerstörung in % (erodiert, gerissen, abgeplatzt, geschmolzen oder alles), Schmutz & Patina in %,
+„New random damage“. Steckt auch in der STL-Datei (der Schmutz nur in der Vorschau/den Bildern). Warnung, wenn die Wand zu dünn wird.
 
 Für alle 3D-Teile: Materialvorschau (Silber 925, Chrom, Gold, schwarzes Silber, Lime-Emaille als Akzent), drehen, Pinch-Zoom,
 Doppeltipp = Zoom, Tasten (Pfeile, +/−) und Knöpfe für Tastatur-Bedienung.
@@ -33,14 +45,15 @@ lokal speichern (localStorage), **Send to TRIAD** → Einreichung im Darkroom de
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 14 Tests: Größen, Geometrie/Gewicht, Umrisserkennung, Worker (KI gemockt)
+npm test           # 19 Tests: Größen, Geometrie/Gewicht, Dichtheit, Destroy, Umrisse, Objekte, Worker (KI gemockt)
 ```
 
 Mit KI lokal: `cd worker && npx wrangler dev` und `VITE_AI_URL=http://localhost:8787 npm run dev`.
 
 ## Veröffentlichen
 
-Einrichtung Schritt für Schritt (GitHub Pages, Cloudflare, Variablen, Darkroom): [`docs/SETUP.md`](docs/SETUP.md).
+Läuft automatisch mit: Der Workflow „Build & deploy TRIAD“ baut bei jedem Push auf `main` auch das Studio und legt es nach `/studio/`.
+Im Menü der Hauptseite steht es unter **IV Make → Studio**. KI-Bilder und Send to TRIAD: [`docs/SETUP.md`](docs/SETUP.md).
 
 ## Aufbau
 
@@ -56,6 +69,11 @@ src/jewellery/outline.js   Bild → Maske → Marching Squares → Umriss; Dünn
 src/jewellery/viewer.js    three.js-Bühne (wird erst beim Öffnen eines Werkzeugs geladen)
 src/jewellery/stl.js       Binär-STL
 src/draw/app.js            Zeichenfläche + Live-Render
+src/symbol/app.js          Symbol-Designer; src/lib/symbols.js Bibliothek + Zeichnen
+src/home/*.js              Teller, Gefäße, Besteck, Schrank
+src/make/*.js              Sketch to 3D, 3D-Upload
+src/jewellery/destroy.js   Destroy-Modus (Rauschen, Verfeinerung, Schmutz)
+src/lib/fonts.js           Schriften, Sprachen, eigene Schriften (IndexedDB)
 src/lib/send.js            Send to TRIAD (Darkroom)
 worker/                    Cloudflare Worker „triad-studio-ai“ (Workers AI, Bild-zu-Bild)
 public/                    PWA-Manifest, Service Worker, Icons, robots.txt (kein KI-Training)

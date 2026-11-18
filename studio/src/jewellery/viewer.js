@@ -9,14 +9,26 @@ export const MATERIALS = {
   gold: { label: 'Gold', swatch: '#e2bb63', color: '#f2c867', roughness: 0.16, metalness: 1 },
   black: { label: 'Black silver', swatch: '#3a3b3d', color: '#47494c', roughness: 0.42, metalness: 1 },
 };
+// Home objects (same keys as HOME in lib/sizes.js; 'silver' is shared)
+export const HOME_LOOKS = {
+  ceramic: { label: 'White ceramic', swatch: '#f2f0ea', color: '#f4f2ec', roughness: 0.25, metalness: 0, clearcoat: 0.6 },
+  stoneware: { label: 'Dark stoneware', swatch: '#3b3833', color: '#45413b', roughness: 0.7, metalness: 0 },
+  oak: { label: 'Oak', swatch: '#c9a26b', color: '#c49a62', roughness: 0.65, metalness: 0 },
+  walnut: { label: 'Walnut', swatch: '#5d4030', color: '#5e3f2c', roughness: 0.6, metalness: 0 },
+  steel: { label: 'Stainless steel', swatch: '#b9bcbf', color: '#c9ccce', roughness: 0.28, metalness: 1 },
+  silver: MATERIALS.silver,
+  brass: { label: 'Brass', swatch: '#c8a24a', color: '#d6b25a', roughness: 0.3, metalness: 1 },
+  black: { label: 'Black lacquer', swatch: '#151515', color: '#1a1a1a', roughness: 0.35, metalness: 0, clearcoat: 0.8 },
+  concrete: { label: 'Concrete', swatch: '#9c9b97', color: '#a3a29d', roughness: 0.95, metalness: 0 },
+};
 export const ACCENT = { label: 'Lime enamel', swatch: '#c4ef2f' };
 
-function makeMaterial(key) {
-  const m = MATERIALS[key] || MATERIALS.silver;
-  return new THREE.MeshPhysicalMaterial({ color: m.color, roughness: m.roughness, metalness: m.metalness, envMapIntensity: 1.15 });
+function makeMaterial(key, home, vertexColors) {
+  const m = (home ? HOME_LOOKS[key] : MATERIALS[key]) || MATERIALS[key] || HOME_LOOKS[key] || MATERIALS.silver;
+  return new THREE.MeshPhysicalMaterial({ color: m.color, roughness: m.roughness, metalness: m.metalness, clearcoat: m.clearcoat || 0, envMapIntensity: 1.15, vertexColors });
 }
-function makeEnamel() {
-  return new THREE.MeshPhysicalMaterial({ color: '#9fd10f', roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
+function makeEnamel(vertexColors) {
+  return new THREE.MeshPhysicalMaterial({ vertexColors, color: '#9fd10f', roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
 }
 
 export function createViewer(container, { reducedMotion = false } = {}) {
@@ -107,10 +119,10 @@ export function createViewer(container, { reducedMotion = false } = {}) {
 
   return {
     renderer, scene, camera, controls,
-    setMaterial(metal, accentOn) {
+    setMaterial(metal, accentOn, { home = false, dirty = false } = {}) {
       mats.forEach((m) => m.dispose());
-      const main = makeMaterial(metal);
-      mats = [main, accentOn ? makeEnamel() : main];
+      const main = makeMaterial(metal, home, dirty);
+      mats = [main, accentOn ? makeEnamel(dirty) : main];
       for (const m of root.children) m.material = mats;
       wake(2);
     },
@@ -138,11 +150,11 @@ export function createViewer(container, { reducedMotion = false } = {}) {
     },
     /** Matrix that maps part coordinates to centred world coordinates (for STL export). */
     exportMatrix: () => root.matrixWorld.clone(),
-    fit() {
+    fit(view) {
       const fov = (camera.fov * Math.PI) / 180;
       const dist = (radius / Math.sin(fov / 2)) * (camera.aspect < 1 ? 1.25 / Math.max(camera.aspect, 0.55) : 1.15);
       controls.target.set(0, 0, 0);
-      const dir = new THREE.Vector3(0.42, 0.34, 1).normalize();
+      const dir = (view === 'top' ? new THREE.Vector3(0.2, 1.3, 0.75) : new THREE.Vector3(0.42, 0.34, 1)).normalize();
       camera.position.copy(dir.multiplyScalar(dist));
       camera.near = Math.max(0.1, dist / 100); camera.far = dist * 20;
       camera.updateProjectionMatrix();

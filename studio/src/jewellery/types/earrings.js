@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { revolve, makeProfile, geometryVolume } from '../revolve.js';
 import { MIN_WALL } from '../../lib/sizes.js';
+import { outlineFromPixels } from '../outline.js';
+import { pixelShapesToThree } from '../solid.js';
 
 const TOP = -Math.PI / 2;
 
@@ -34,7 +36,8 @@ export const earrings = {
     { key: 'wire', type: 'range', show: (p) => p.kind === 'hoop', label: 'Wire thickness', help: 'How thick the hoop is. 1.5–3 mm looks bold.', min: 0.6, max: 5, step: 0.1, unit: 'mm', default: 2 },
     { key: 'profile', type: 'select', show: (p) => p.kind === 'hoop', label: 'Wire shape', help: 'Round wire or a flat band.', default: 'round', options: [['round', 'Round'], ['flat', 'Flat band'], ['d', 'D-shape']] },
     { key: 'band', type: 'range', more: true, show: (p) => p.kind === 'hoop' && p.profile !== 'round', label: 'Band width', help: 'Width of the flat band, seen from the front.', min: 1, max: 10, step: 0.1, unit: 'mm', default: 3 },
-    { key: 'shape', type: 'select', show: (p) => p.kind === 'stud', label: 'Stud shape', help: 'The front you see on the ear.', default: 'peaks', options: [['peaks', 'TRIAD three peaks'], ['round', 'Round'], ['square', 'Square'], ['triangle', 'Triangle'], ['drop', 'Drop']] },
+    { key: 'shape', type: 'select', show: (p) => p.kind === 'stud', label: 'Stud shape', help: 'The front you see on the ear.', default: 'peaks', options: [['peaks', 'TRIAD three peaks'], ['round', 'Round'], ['square', 'Square'], ['triangle', 'Triangle'], ['drop', 'Drop'], ['mine', 'My symbol']] },
+    { key: 'sym', type: 'symbol', show: (p) => p.kind === 'stud' && p.shape === 'mine', label: 'Which symbol', help: 'Pick one of your symbols (make them in “Symbol”).', default: '' },
     { key: 'size', type: 'range', show: (p) => p.kind === 'stud', label: 'Stud size', help: 'Width of the front.', min: 3, max: 18, step: 0.5, unit: 'mm', default: 8 },
     { key: 'sthick', type: 'range', show: (p) => p.kind === 'stud', label: 'Stud thickness', help: 'Thickness of the front plate.', min: 0.6, max: 4, step: 0.1, unit: 'mm', default: 1.4 },
     { key: 'pair', type: 'toggle', label: 'Make a pair', help: 'Shows and exports two earrings.', default: true },
@@ -52,7 +55,7 @@ export const earrings = {
     { label: 'Round studs', p: { kind: 'stud', shape: 'round', size: 6, sthick: 1.6 } },
   ],
 
-  build(p) {
+  build(p, ctx = {}) {
     const parts = [];
     let one = 0, width = 0, minWall, dims;
     if (p.kind === 'hoop') {
@@ -69,7 +72,12 @@ export const earrings = {
       minWall = Math.min(T, W);
       dims = [['Hoop', `Ø ${p.diameter} mm outside · ${W === T ? `${T} mm wire` : `${W} × ${T} mm band`}`], ['Opening', p.gap > 0 ? `${p.gap} mm` : 'closed']];
     } else {
-      const front = new THREE.ExtrudeGeometry(studShape(p.shape, p.size), {
+      let shapeIn = studShape(p.shape === 'mine' ? 'round' : p.shape, p.size);
+      if (p.shape === 'mine' && ctx.symbolPixels?.(p.sym)) {
+        const res = outlineFromPixels(ctx.symbolPixels(p.sym), { threshold: 128, bold: 1 });
+        if (res.shapes.length) shapeIn = pixelShapesToThree(res.shapes, res.box, p.size).shapes;
+      }
+      const front = new THREE.ExtrudeGeometry(shapeIn, {
         depth: Math.max(0.05, p.sthick - 0.3), bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelOffset: -0.15, bevelSegments: 2, curveSegments: 24,
       });
       for (const gr of front.groups) gr.materialIndex = gr.materialIndex === 0 ? 1 : 0;

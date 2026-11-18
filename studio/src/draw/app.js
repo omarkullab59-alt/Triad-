@@ -56,6 +56,7 @@ export async function mount(main) {
     <div data-close style="max-width:560px"></div>
     <div class="btn-row">
       <button type="button" class="btn btn--lime" data-act="pendant">Build as 3D pendant →</button>
+      <button type="button" class="btn btn--solid" data-act="object">Make a 3D object →</button>
       <button type="button" class="btn" data-act="now" ${AI_URL ? '' : 'disabled'}>Render again</button>
       <button type="button" class="btn" data-act="save-sketch">Save sketch</button>
       <button type="button" class="btn" data-act="save-render" disabled>Save render</button>
@@ -151,6 +152,11 @@ export async function mount(main) {
       if (!st.strokes.some((s) => s.tool === 'brush')) { toast('Draw something first.'); return; }
       setHandoff({ dataUrl: sketchCanvas(SIZE / 2, false).toDataURL('image/png') });
       location.hash = '#/pendant';
+    },
+    object: () => {
+      if (!st.strokes.some((s) => s.tool === 'brush')) { toast('Draw something first.'); return; }
+      setHandoff({ dataUrl: sketchCanvas(SIZE / 2, false).toDataURL('image/png'), params: { mode: 'flat', size: 80, depth: 5 } });
+      location.hash = '#/sketch3d';
     },
     'save-sketch': () => sketchCanvas(SIZE, true).toBlob((b) => download(b, 'triad-sketch.png')),
     'save-render': () => { if (st.resultUrl) download(st.resultUrl, 'triad-render.jpg'); },

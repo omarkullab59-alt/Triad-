@@ -17,6 +17,7 @@ export const bangle = {
     { key: 'gap', type: 'range', more: true, show: (p) => p.open === 'cuff', label: 'Opening', help: 'Gap under the wrist. 25–30 mm lets most wrists slip in.', min: 10, max: 45, step: 1, unit: 'mm', default: 26 },
     { key: 'hammer', type: 'range', more: true, show: (p) => p.profile === 'hammered', label: 'Hammer depth', help: 'How deep the little hammer dents are.', min: 0.05, max: 0.5, step: 0.01, unit: 'mm', default: 0.22 },
     { key: 'textIn', type: 'text', more: true, label: 'Engraving inside', help: 'Hidden text on the inside. Up to 32 letters.', default: '', max: 32 },
+    { key: 'font', type: 'font', more: true, label: 'Engraving font', help: 'Any style or script, or your own font.', default: 'Inter Tight' },
     { key: 'depth', type: 'range', more: true, label: 'Engraving depth', help: 'How deep letters are cut.', min: 0.1, max: 0.6, step: 0.05, unit: 'mm', default: 0.3 },
   ],
   templates: [
@@ -26,12 +27,13 @@ export const bangle = {
     { label: 'D bangle', p: { open: 'closed', width: 8, thick: 2.5, profile: 'd' } },
   ],
 
+  fontsFor: (p) => [[p.font, p.textIn]],
   build(p, { makeCanvas }) {
     const { rx, rz } = braceletShape(p.wrist, p.open === 'cuff');
     const T = p.thick, W = p.width;
     const hammered = p.profile === 'hammered';
     const text = (p.textIn || '').trim();
-    const mask = text ? textMask(text, Math.min(W * 0.55, 5), makeCanvas) : null;
+    const mask = text ? textMask(text, Math.min(W * 0.55, 5), makeCanvas, p.font) : null;
     const profile = makeProfile(hammered ? 'flat' : p.profile, W, T, { innerStep: mask ? 0.12 : 0.8, outerStep: hammered ? 0.15 : 0.8 });
     const gapA = p.open === 'cuff' ? 2 * Math.asin(Math.min(0.95, p.gap / 2 / rx)) : 0;
     const per = Math.PI * (3 * (rx + rz) - Math.sqrt((3 * rx + rz) * (rx + 3 * rz)));

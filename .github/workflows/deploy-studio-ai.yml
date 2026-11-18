@@ -1,15 +1,14 @@
 name: Deploy Studio AI (Cloudflare Worker)
 
-# Publishes worker/ to Cloudflare's free plan (Workers AI daily free allocation, no credit card).
-# Needs two repository SECRETS (Settings → Secrets and variables → Actions → Secrets):
-#   CLOUDFLARE_API_TOKEN   token with the template "Edit Cloudflare Workers" + "Workers AI: Read"
-#   CLOUDFLARE_ACCOUNT_ID  from the Cloudflare dashboard (right column on "Workers & Pages")
-# See docs/SETUP.md.
+# TRIAD Studio's live sketch render (studio/worker). Free Workers AI allocation, no credit card.
+# Uses the same secrets as the Finder worker: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+# After the first run: copy the Worker URL into the repository VARIABLE STUDIO_AI_URL
+# (Settings → Secrets and variables → Actions → Variables) and re-run "Build & deploy TRIAD". See studio/docs/SETUP.md.
 
 on:
   push:
     branches: [main]
-    paths: ["worker/**", ".github/workflows/deploy-worker.yml"]
+    paths: ["studio/worker/**", ".github/workflows/deploy-studio-ai.yml"]
   workflow_dispatch:
 
 jobs:
@@ -21,6 +20,7 @@ jobs:
         with:
           node-version: 22
       - name: Worker tests (mocked AI)
+        working-directory: studio
         run: node --test tests/worker.test.mjs
       - name: Check secrets
         id: check
@@ -30,7 +30,7 @@ jobs:
         run: |
           if [ -z "$CF" ] || [ -z "$ID" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "### Studio AI not deployed: Cloudflare secrets missing (see docs/SETUP.md)" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Studio AI not deployed: Cloudflare secrets missing (see studio/docs/SETUP.md)" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
@@ -41,11 +41,11 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
+          workingDirectory: studio/worker
           wranglerVersion: "4"
       - name: Show URL
         if: steps.check.outputs.ready == 'true'
         run: |
           echo "### Studio AI is live" >> "$GITHUB_STEP_SUMMARY"
           echo "Worker URL: ${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Save it as repository variable STUDIO_AI_URL, then run 'Build & deploy TRIAD Studio'." >> "$GITHUB_STEP_SUMMARY"
+          echo "Save it as repository variable STUDIO_AI_URL, then run 'Build & deploy TRIAD'." >> "$GITHUB_STEP_SUMMARY"

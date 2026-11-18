@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { revolve, makeProfile, hammerDepth, textMask, smoothstep, angleDiff, geometryVolume } from '../revolve.js';
+import { revolve, makeProfile, hammerDepth, textMask, canvasMask, smoothstep, angleDiff, geometryVolume } from '../revolve.js';
 import { sizeSummary, MIN_WALL } from '../../lib/sizes.js';
 
 const TOP = -Math.PI / 2; // after the display rotation this angle points up
@@ -25,6 +25,8 @@ export const ring = {
     { key: 'hammer', type: 'range', more: true, show: (p) => p.profile === 'hammered', label: 'Hammer depth', help: 'How deep the little hammer dents are.', min: 0.05, max: 0.4, step: 0.01, unit: 'mm', default: 0.18 },
     { key: 'textIn', type: 'text', more: true, label: 'Engraving inside', help: 'Hidden text on the inside. Up to 24 letters.', default: '', max: 24 },
     { key: 'textOut', type: 'text', more: true, label: 'Engraving outside', help: 'Visible text on top (or on the signet plate).', default: '', max: 24 },
+    { key: 'font', type: 'font', more: true, label: 'Engraving font', help: 'Any style or script (Japanese, Arabic, Cyrillic …) or your own font.', default: 'Inter Tight' },
+    { key: 'mark', type: 'symbol', more: true, label: 'Your symbol on top', help: 'Engrave one of your own symbols on top (make them in “Symbol”).', default: '' },
     { key: 'depth', type: 'range', more: true, label: 'Engraving depth', help: 'How deep letters are cut. 0.3 mm reads well.', min: 0.1, max: 0.6, step: 0.05, unit: 'mm', default: 0.3 },
   ],
   templates: [
@@ -36,15 +38,19 @@ export const ring = {
     { label: 'Thin stacker', p: { profile: 'round', width: 1.6, thick: 1.6, style: 'plain' } },
   ],
 
-  build(p, { makeCanvas }) {
+  fontsFor: (p) => [[p.font, `${p.textIn}${p.textOut}`]],
+  build(p, { makeCanvas, symbolCanvas }) {
     const R = p.size / 2;
     const T = p.thick, W = p.width;
     const outerR = R + T;
     const hammered = p.profile === 'hammered';
     const textIn = (p.textIn || '').trim(), textOut = (p.textOut || '').trim();
     const engraveH = Math.min(W * 0.55, 3.2);
-    const maskIn = textIn ? textMask(textIn, engraveH, makeCanvas) : null;
-    const maskOut = textOut ? textMask(textOut, p.style === 'signet' ? Math.min(p.plateW, p.plateL) * 0.55 : engraveH, makeCanvas) : null;
+    const font = p.font || 'Inter Tight';
+    const maskIn = textIn ? textMask(textIn, engraveH, makeCanvas, font) : null;
+    const sym = p.mark && symbolCanvas ? symbolCanvas(p.mark) : null;
+    const topH = p.style === 'signet' ? Math.min(p.plateW, p.plateL) * (sym ? 0.8 : 0.55) : sym ? W * 0.85 : engraveH;
+    const maskOut = sym ? canvasMask(sym, topH, { useAlpha: true }) : textOut ? textMask(textOut, topH, makeCanvas, font) : null;
     const fine = maskIn || maskOut || hammered;
     const profile = makeProfile(hammered ? 'flat' : p.profile, W, T, { innerStep: maskIn ? 0.1 : 0.6, outerStep: maskOut || hammered ? 0.12 : 0.6 });
 

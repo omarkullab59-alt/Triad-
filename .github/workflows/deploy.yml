@@ -39,6 +39,17 @@ jobs:
           BASE_PATH: /${{ github.event.repository.name }}/
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
+      - name: Build TRIAD Studio (own app under /studio/)
+        working-directory: studio
+        run: |
+          npm ci
+          npm test
+          npm run build
+          rm -rf ../dist/studio && cp -r dist ../dist/studio
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/studio/
+          VITE_AI_URL: ${{ vars.STUDIO_AI_URL }}
+
       - name: Optimise uploaded images (max 2000px, ~82% quality)
         run: |
           shopt -s nullglob nocaseglob

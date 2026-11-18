@@ -6,6 +6,7 @@
 // The base curve is an ellipse (rx, rz) in the XZ plane; the band's width runs along Y.
 // modify(theta, point) may return { u, v, accent } to shape the band (signet plate, peaks, engraving, hammering).
 import * as THREE from 'three';
+import { fontStack, isRTL } from '../lib/fonts.js';
 
 export function revolve({ profile, rx, rz = rx, segments = 192, start = 0, end = Math.PI * 2, modify }) {
   const closed = Math.abs(end - start - Math.PI * 2) < 1e-6;
@@ -191,29 +192,36 @@ export function hammerDepth(s, v, depth, period, cell = 1.7) {
   return depth * Math.max(0, 1 - (best / r) ** 2);
 }
 
-/** Rasterise text for engraving. Returns a sampler (s, v in mm, centred) → 0..1. */
-export function textMask(text, heightMm, makeCanvas) {
+/** Rasterise text for engraving (any script, any font). Returns a sampler (s, v in mm, centred) → 0..1. */
+export function textMask(text, heightMm, makeCanvas, family = 'Inter Tight') {
   const pxPerMm = 24;
   const fontPx = Math.round(heightMm * pxPerMm);
   const canvas = makeCanvas(8, 8);
   let ctx = canvas.getContext('2d');
-  const font = `600 ${fontPx}px "Inter Tight", "Helvetica Neue", Arial, sans-serif`;
+  const font = fontStack(family, fontPx, text);
   ctx.font = font;
   const w = Math.ceil(ctx.measureText(text).width) + 8;
-  const h = Math.ceil(fontPx * 1.3);
+  const h = Math.ceil(fontPx * 1.45);
   canvas.width = w; canvas.height = h;
   ctx = canvas.getContext('2d');
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = '#fff'; ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  ctx.direction = isRTL(text) ? 'rtl' : 'ltr';
   ctx.fillText(text, w / 2, h / 2);
-  const data = ctx.getImageData(0, 0, w, h).data;
-  const lengthMm = w / pxPerMm;
+  return canvasMask(canvas, w / pxPerMm);
+}
+
+/** Any canvas (white = engrave, black = keep, or a symbol with alpha) as an engraving sampler `lengthMm` long. */
+export function canvasMask(canvas, lengthMm, { useAlpha = false } = {}) {
+  const { width: w, height: h } = canvas;
+  const data = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  const k = w / lengthMm; // px per mm
+  const at = (xx, yy) => (useAlpha ? data[(yy * w + xx) * 4 + 3] : data[(yy * w + xx) * 4]) / 255;
   const sample = (s, v) => {
-    const x = s * pxPerMm + w / 2;
-    const y = h / 2 - v * pxPerMm;
+    const x = s * k + w / 2;
+    const y = h / 2 - v * k;
     if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) return 0;
     const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
-    const at = (xx, yy) => data[(yy * w + xx) * 4] / 255;
     return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
   };
   return { sample, lengthMm };

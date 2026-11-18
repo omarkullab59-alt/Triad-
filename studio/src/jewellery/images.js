@@ -1,6 +1,5 @@
 // Instagram poster (1080 × 1350) and the info card for the jeweller.
 import { makeCanvas } from '../lib/dom.js';
-import { METALS } from '../lib/sizes.js';
 
 const W = 1080, H = 1350;
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -65,7 +64,7 @@ export async function renderPoster(viewer, { mark = true, title = '', material =
   return out;
 }
 
-export async function renderInfoCard(viewer, { name, result, metal, accent, url, weightText }) {
+export async function renderInfoCard(viewer, { name, result, materialLabel, weights, url }) {
   await fontsReady();
   const out = makeCanvas(W, H);
   const c = out.getContext('2d');
@@ -82,14 +81,15 @@ export async function renderInfoCard(viewer, { name, result, metal, accent, url,
 
   let y = 640;
   c.font = '400 78px Anton, Impact, sans-serif';
+  c.font = `400 78px Anton, ${'"Noto Sans JP", "Noto Naskh Arabic", "Noto Sans"'}, Impact, sans-serif`;
   c.fillText(String(name).toUpperCase().slice(0, 26), 52, y);
   y += 30;
   c.fillStyle = '#c4ef2f'; c.fillRect(52, y, 140, 10);
   y += 64;
   const rows = [
     ...result.dims,
-    ['Material', `${METALS[metal].label}${accent ? ' + lime enamel' : ''}`],
-    ['Weight', Object.keys(METALS).map((k) => `${METALS[k].label.split(' (')[0]} ≈ ${weightText(k)} g`).join('   ')],
+    ['Material', materialLabel],
+    ['Weight', weights.map(([l, w]) => `${l.split(' (')[0]} ≈ ${w}`).join('   ')],
     ['Thinnest', `${result.minWall.toFixed(2)} mm ${result.minWall < 0.8 ? '— below 0.8 mm!' : '(min. 0.8 mm ok)'}`],
   ];
   const wrap = (text, maxW) => {

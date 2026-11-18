@@ -12,7 +12,7 @@ binding = "AI"
 # Only these pages may call the Worker (browser Origin header). Add your own domain here if you get one.
 ALLOWED_ORIGINS = "https://omarkullab59-alt.github.io,http://localhost:5173,http://localhost:4173"
 # Extra check: the page must live under one of these paths (the Origin of github.io is shared by all your repos).
-ALLOWED_REFERERS = "https://omarkullab59-alt.github.io/triad-studio/,http://localhost:5173/,http://localhost:4173/"
+ALLOWED_REFERERS = "https://omarkullab59-alt.github.io/Triad-/studio/,http://localhost:5173/,http://localhost:4173/"
 MODEL = "@cf/runwayml/stable-diffusion-v1-5-img2img"
 PER_MINUTE = "8"
 PER_DAY = "120"
