@@ -24,7 +24,6 @@ import { lookOf } from './viewer.js';
 import { engrave, SIDES, faceSize } from './engrave.js';
 import { textMask, canvasMask } from './revolve.js';
 import { motifOptions, renderMotif, motifPixels, MOTIFS, trimCanvas } from '../lib/motifs.js';
-import { openOrderDialog } from '../lib/order.js';
 import * as THREE from 'three';
 import { slider, choice, toggle, textField, ringSize } from '../ui/controls.js';
 import { $, $$, esc, toast, download, makeCanvas, fileToPixels, loadImage, imageToPixels, reducedMotion } from '../lib/dom.js';
@@ -80,7 +79,6 @@ function parseQuery(T, q) {
       depth: q.has('ed') ? Math.max(0.05, Math.min(8, Number(q.get('ed')) || 0.3)) : T.engraveDefault?.depth ?? (T.category === 'home' ? 1 : 0.3),
       mode: q.get('emode') === 'emboss' ? 'emboss' : 'engrave', fill: q.get('efill') === '1',
     },
-    order: q.get('order') === '1',
     pr: {
       kind: ['image', 'motif', 'text'].includes(q.get('pk')) ? q.get('pk') : 'none',
       motif: MOTIFS[q.get('pm')] ? q.get('pm') : 'seigaiha', text: (q.get('pt') || 'TRIAD').slice(0, 40), font: q.get('pf') || 'Anton',
@@ -834,8 +832,6 @@ export async function mount(main, typeId, query) {
         <button type="button" class="btn" data-a="card" ${r.empty ? 'disabled' : ''}>Info card image <small>sizes &amp; weight for your maker</small></button>
         <button type="button" class="btn" data-a="link">Share link <small>everything is in the link</small></button>
         <button type="button" class="btn" data-a="save">Save on this device <small>no account</small></button>
-        <button type="button" class="btn btn--lime" data-a="order" ${r.empty ? 'disabled' : ''}>Order this piece <small>price estimate &amp; request</small></button>
-        <button type="button" class="btn" data-a="shop">Copy shop link <small>opens straight to “Order”</small></button>
         <button type="button" class="btn btn--solid" data-a="send" ${r.empty ? 'disabled' : ''}>Send to TRIAD <small>submit to the Darkroom</small></button>
       </div>
       ${localOnly().map((w) => `<p class="muted" style="font-size:13px;margin-top:10px">${esc(w)}</p>`).join('')}
@@ -868,22 +864,9 @@ export async function mount(main, typeId, query) {
         const ok = saveDesign({ name: name(), type: typeId, hash: hashFor() });
         toast(ok ? 'Saved on this device. Find it on the start page.' : 'Your browser blocks saving here. Use “Share link” and keep the link instead.');
       },
-      order: () => openOrder(),
-      shop: async () => { const url = `${shareUrl()}&order=1`.replace(/#\/(\w+)&/, '#/$1?'); try { await navigator.clipboard.writeText(url); toast('Shop link copied: customers land on “Order this piece”.'); } catch { prompt('Copy this link:', url); } },
       send: () => openSendDialog({ makeImage: () => poster(true), title: name(), caption: `${st.result.title} · ${materialLabel()}. Designed in TRIAD Studio.` }),
     };
     $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => act[b.dataset.a]()));
-  }
-
-  function openOrder() {
-    const r = st.result;
-    if (!r || r.empty) return;
-    openOrderDialog({
-      title: r.title, typeId, category: typeId === 'cabinet' ? 'home' : typeId === 'sculpture' ? 'sculpture' : T.category || 'jewel',
-      summary: [['Piece', r.title], ...r.dims.filter(([k]) => !['Weight'].includes(k))],
-      materials: materialsOf(T).map((k) => [k, matInfo(T, k).label, gramsFor(k)]), material: st.metal,
-      engraved: st.engraved, destroyed: st.d.dmg > 0, enamel: st.accent || st.e.fill, url: shareUrl(),
-    });
   }
 
   /* ── go ── */
@@ -896,7 +879,6 @@ export async function mount(main, typeId, query) {
   renderDestroy();
   showTab('adjust', false, false);
   rebuild(true);
-  if (st.order) { const wait = setInterval(() => { if (st.result) { clearInterval(wait); openOrder(); } }, 200); }
   const onTheme = () => viewer.render();
   window.addEventListener('studio:theme', onTheme);
 

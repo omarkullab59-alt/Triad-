@@ -191,11 +191,6 @@ export const MOTIFS = {
     c.beginPath(); c.arc(S / 2, S / 2, S * 0.2, 0, TAU); c.fill();
     for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU; c.save(); c.translate(S / 2, S / 2); c.rotate(a); c.beginPath(); c.moveTo(S * 0.24, -S * 0.04); c.lineTo(S * (i % 2 ? 0.4 : 0.47), 0); c.lineTo(S * 0.24, S * 0.04); c.fill(); c.restore(); }
   } },
-  cross: { label: 'Gothic cross', draw(c, S) {
-    const arm = (a) => { c.save(); c.translate(S / 2, S * 0.42); c.rotate(a); c.beginPath(); c.moveTo(-S * 0.05, 0); c.lineTo(-S * 0.05, -S * 0.28); c.lineTo(-S * 0.11, -S * 0.36); c.lineTo(0, -S * 0.33); c.lineTo(S * 0.11, -S * 0.36); c.lineTo(S * 0.05, -S * 0.28); c.lineTo(S * 0.05, 0); c.fill(); c.restore(); };
-    arm(0); arm(Math.PI / 2); arm(-Math.PI / 2);
-    c.save(); c.translate(S / 2, S * 0.42); c.scale(1, 1.55); c.rotate(Math.PI); c.beginPath(); c.moveTo(-S * 0.05, 0); c.lineTo(-S * 0.05, -S * 0.28); c.lineTo(-S * 0.11, -S * 0.36); c.lineTo(0, -S * 0.33); c.lineTo(S * 0.11, -S * 0.36); c.lineTo(S * 0.05, -S * 0.28); c.lineTo(S * 0.05, 0); c.fill(); c.restore();
-  } },
   glyph: { label: 'TRIAD glyph', draw(c, S) {
     c.lineWidth = S * 0.075; c.lineCap = 'square'; c.strokeStyle = '#000';
     for (const [x, y] of [[0.5, 0.2], [0.82, 0.76], [0.18, 0.76]]) { c.beginPath(); c.moveTo(S * (x - 0.13), S * y); c.lineTo(S * (x + 0.13), S * y); c.moveTo(S * x, S * (y - 0.13)); c.lineTo(S * x, S * (y + 0.13)); c.stroke(); }
@@ -256,7 +251,7 @@ export const MOTIFS = {
       }
     }
   } },
-  khatam: { label: 'Eight-point star (Islamic geometry)', draw(c, S) {
+  khatam: { label: 'Eight-point star (Moorish geometry)', draw(c, S) {
     const star = (r) => { c.beginPath(); for (let i = 0; i < 16; i++) { const a = (i * Math.PI) / 8 - Math.PI / 2, rr = i % 2 ? r * 0.71 : r; c.lineTo(S / 2 + rr * Math.cos(a), S / 2 + rr * Math.sin(a)); } c.closePath(); };
     star(S * 0.46); c.fill();
     cut(c, () => { star(S * 0.36); c.fill(); });
@@ -289,14 +284,6 @@ export const MOTIFS = {
     tear(1); c.fill(); cut(c, () => { tear(0.8); c.fill(); }); tear(0.62); c.fill();
     cut(c, () => { c.beginPath(); c.arc(S * 0.45, S * 0.66, S * 0.07, 0, TAU); c.fill(); });
   } },
-  mandala: { label: 'Mandala', draw(c, S) {
-    c.lineWidth = S * 0.018; c.strokeStyle = '#000';
-    for (const [n, r0, r1, w] of [[16, 0.3, 0.47, 0.11], [12, 0.18, 0.31, 0.12], [8, 0.07, 0.19, 0.16]]) for (let i = 0; i < n; i++) {
-      const a = (i * TAU) / n; c.save(); c.translate(S / 2, S / 2); c.rotate(a);
-      c.beginPath(); c.moveTo(S * r0, 0); c.bezierCurveTo(S * (r0 + (r1 - r0) * 0.3), S * w * 0.55, S * (r0 + (r1 - r0) * 0.8), S * w * 0.45, S * r1, 0); c.bezierCurveTo(S * (r0 + (r1 - r0) * 0.8), -S * w * 0.45, S * (r0 + (r1 - r0) * 0.3), -S * w * 0.55, S * r0, 0); c.fill(); c.restore();
-    }
-    for (const r of [0.06, 0.48]) { c.beginPath(); c.arc(S / 2, S / 2, S * r, 0, TAU); c.stroke(); }
-  } },
   fleur: { label: 'Fleur-de-lis', draw(c, S) {
     c.beginPath(); c.moveTo(S / 2, S * 0.06); c.bezierCurveTo(S * 0.66, S * 0.25, S * 0.62, S * 0.45, S * 0.53, S * 0.6); c.lineTo(S * 0.47, S * 0.6); c.bezierCurveTo(S * 0.38, S * 0.45, S * 0.34, S * 0.25, S / 2, S * 0.06); c.fill();
     for (const k of [-1, 1]) { c.beginPath(); c.moveTo(S * (0.5 + k * 0.04), S * 0.6); c.bezierCurveTo(S * (0.5 + k * 0.1), S * 0.3, S * (0.5 + k * 0.45), S * 0.3, S * (0.5 + k * 0.38), S * 0.52); c.bezierCurveTo(S * (0.5 + k * 0.33), S * 0.42, S * (0.5 + k * 0.2), S * 0.48, S * (0.5 + k * 0.17), S * 0.66); c.closePath(); c.fill(); }
@@ -317,19 +304,6 @@ export const MOTIFS = {
     const curl = (x, y, r, dir) => { c.beginPath(); for (let i = 0; i <= 60; i++) { const t = i / 60, a = dir * t * TAU * 1.25, rr = r * (1 - t * 0.75); c.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)); } c.stroke(); };
     curl(S * 0.3, S * 0.5, S * 0.17, 1); curl(S * 0.62, S * 0.42, S * 0.21, -1); curl(S * 0.8, S * 0.62, S * 0.12, 1);
     c.beginPath(); c.moveTo(S * 0.08, S * 0.72); c.quadraticCurveTo(S * 0.5, S * 0.86, S * 0.92, S * 0.74); c.stroke();
-  } },
-  ankh: { label: 'Ankh (Egyptian)', draw(c, S) {
-    c.lineWidth = S * 0.09; c.strokeStyle = '#000'; c.lineCap = 'butt';
-    c.beginPath(); c.ellipse(S / 2, S * 0.27, S * 0.13, S * 0.18, 0, 0, TAU); c.stroke();
-    c.fillRect(S * 0.2, S * 0.43, S * 0.6, S * 0.09); c.fillRect(S * 0.455, S * 0.43, S * 0.09, S * 0.52);
-  } },
-  rosewindow: { label: 'Rose window (Gothic)', draw(c, S) {
-    c.beginPath(); c.arc(S / 2, S / 2, S * 0.47, 0, TAU); c.fill();
-    cut(c, () => {
-      for (let i = 0; i < 12; i++) { const a = (i * TAU) / 12; c.save(); c.translate(S / 2, S / 2); c.rotate(a); c.beginPath(); c.moveTo(S * 0.14, -S * 0.04); c.lineTo(S * 0.33, -S * 0.07); c.arc(S * 0.36, 0, S * 0.07, -Math.PI / 2, Math.PI / 2); c.lineTo(S * 0.14, S * 0.04); c.fill(); c.restore(); }
-      for (let i = 0; i < 12; i++) { const a = (i * TAU) / 12 + TAU / 24; c.beginPath(); c.arc(S / 2 + S * 0.4 * Math.cos(a), S / 2 + S * 0.4 * Math.sin(a), S * 0.035, 0, TAU); c.fill(); }
-      c.beginPath(); c.arc(S / 2, S / 2, S * 0.08, 0, TAU); c.fill();
-    });
   } },
   baroque: { label: 'Baroque scroll', draw(c, S) {
     c.lineWidth = S * 0.05; c.strokeStyle = '#000'; c.lineCap = 'round';
@@ -376,16 +350,16 @@ export const MOTIFS = {
 export const MOTIF_TAGS = {
   snake: 'serpent animal reptile schlange tier gothic biker tattoo', coil: 'serpent coiled spiral schlange spirale', ouroboros: 'serpent infinity eternal alchemy circle unendlich ewigkeit alchemie', cobra: 'serpent egypt egyptian india schlange kobra',
   dragon: 'drache dragon chinese japanese asian eastern fantasy mythology mythologie asiatisch', triad: 'triad drache dragon emblem logo serpent three drei',
-  skull: 'totenkopf schädel death memento mori gothic punk biker vanitas tattoo', rose: 'rose flower blume romantic victorian tattoo', flame: 'feuer flammen fire hot rock biker tattoo', lightning: 'blitz bolt electric storm energy',
-  thorns: 'dornen thorn vine ranke gothic punk crown', barbed: 'stacheldraht barbed wire punk industrial grunge', wings: 'flügel wings angel engel feather feder', eye: 'auge eye evil eye mystic all-seeing',
-  moon: 'mond moon star stern night nacht celestial mystic', sun: 'sonne sun sunburst sol celestial', cross: 'kreuz cross gothic medieval mittelalter religious',
+  skull: 'totenkopf schädel skull gothic punk biker tattoo', rose: 'rose flower blume romantic victorian tattoo', flame: 'feuer flammen fire hot rock biker tattoo', lightning: 'blitz bolt electric storm energy',
+  thorns: 'dornen thorn vine ranke gothic punk crown', barbed: 'stacheldraht barbed wire punk industrial grunge', wings: 'flügel wings feather feder bird vogel', eye: 'auge eye graphic grafisch',
+  moon: 'mond moon star stern night nacht celestial', sun: 'sonne sun sunburst sol celestial',
   glyph: 'triad zeichen plus three', fire: 'element fire feuer alchemy alchemie triangle dreieck', earth: 'element earth erde alchemy alchemie triangle', sierpinski: 'fractal fraktal triangle geometric geometrie', rings: 'borromean ringe rings three drei',
-  triquetra: 'celtic keltisch irish irland knot knoten trinity triquetra norse three drei', meander: 'greek griechisch antike antique key mäander roman römisch classical',
+  triquetra: 'celtic keltisch irish irland knot knoten triquetra three drei', meander: 'greek griechisch antike antique key mäander roman römisch classical',
   seigaiha: 'japanese japanisch japan wave welle wellen ocean meer edo kimono pattern muster', asanoha: 'japanese japanisch japan hemp leaf hanf star geometric kimono pattern',
-  khatam: 'islamic islamisch arabic arabisch moorish maurisch persian star stern geometric geometrie mosaic zellige moroccan marokko', stepfret: 'aztec azteken maya mesoamerican mexican mexiko inca inka step fret stufen andean',
+  khatam: 'arabic arabisch moorish maurisch persian star stern geometric geometrie mosaic zellige moroccan marokko', stepfret: 'aztec azteken maya mesoamerican mexican mexiko inca inka step fret stufen andean',
   koru: 'maori māori new zealand neuseeland polynesian spiral fern farn', deco: 'art deco 1920s 20er gatsby sunburst fan fächer', paisley: 'paisley persian persisch indian indisch boteh bandana kashmir',
-  mandala: 'mandala indian indisch hindu buddhist buddhistisch tibetan spiritual', fleur: 'fleur de lis lilie french französisch royal könig heraldry heraldik baroque', lotus: 'lotus egyptian indian buddhist zen asian blume',
-  cloud: 'chinese chinesisch cloud wolke xiangyun auspicious asian asiatisch', ankh: 'egyptian ägyptisch pharaoh ancient antik life leben', rosewindow: 'gothic gotisch cathedral kathedrale medieval mittelalter church kirche window fenster',
+  fleur: 'fleur de lis lilie french französisch royal könig heraldry heraldik baroque', lotus: 'lotus flower blume water wasser asian asiatisch',
+  cloud: 'chinese chinesisch cloud wolke xiangyun auspicious asian asiatisch',
   baroque: 'baroque barock rococo rokoko ornament scroll couture versailles gilded',
   houndstooth: 'houndstooth hahnentritt textile tweed british couture pattern muster', quilted: 'quilted gesteppt couture leather leder bag tasche diamond raute',
   leopard: 'leopard animal print tier wild 80s', zebra: 'zebra animal print stripes streifen', checker: 'checker schach karo skate punk 2tone', studs: 'studs nieten punk rock leather biker grunge',

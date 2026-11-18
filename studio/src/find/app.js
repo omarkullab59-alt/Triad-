@@ -4,7 +4,7 @@ import { renderMotif } from '../lib/motifs.js';
 import { ensureFont } from '../lib/fonts.js';
 import { $, $$, esc } from '../lib/dom.js';
 
-const SUGGEST = ['japanese', 'celtic', 'gothic', 'art deco', 'baroque', 'islamic', 'aztec', 'egyptian', 'chinese', 'punk', 'snake', 'dragon', 'crystal', 'horns', 'couture', 'skull', 'arabic', 'russian', 'pattern', 'bronze'];
+const SUGGEST = ['japanese', 'celtic', 'gothic', 'art deco', 'baroque', 'moorish', 'aztec', 'greek', 'chinese', 'punk', 'snake', 'dragon', 'crystal', 'horns', 'couture', 'skull', 'arabic', 'russian', 'pattern', 'bronze'];
 
 export async function mount(main, _key, query) {
   const items = buildIndex();

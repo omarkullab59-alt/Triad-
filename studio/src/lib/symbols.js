@@ -4,7 +4,7 @@
 // doc = { id, name, symmetry, elements: [...], thumb }
 // element types (all in a 1000 × 1000 space, centre 500/500):
 //   { type: 'path', pts: [[x,y],…], w, op }                      freehand line
-//   { type: 'shape', shape, x, y, s, rot, op, outline, w }      circle, square, triangle, star, heart, ring, diamond, cross, peaks, line
+//   { type: 'shape', shape, x, y, s, rot, op, outline, w }      circle, square, triangle, star, heart, ring, diamond, cross (plus), peaks, line
 //   { type: 'text', text, font, x, y, s, rot, op }
 //   { type: 'image', src (dataURL), threshold, x, y, s, rot, op }
 // op: 'add' | 'cut'   symmetry: none | x | xy | r3 | r4 | r6
@@ -15,7 +15,7 @@ import { renderMotif } from './motifs.js';
 export const SIZE = 1000;
 export const SHAPE_KINDS = [
   ['circle', 'Circle'], ['square', 'Square'], ['triangle', 'Triangle'], ['star', 'Star'], ['heart', 'Heart'],
-  ['ring', 'Ring'], ['diamond', 'Diamond'], ['cross', 'Cross'], ['peaks', 'TRIAD peaks'], ['line', 'Line'],
+  ['ring', 'Ring'], ['diamond', 'Diamond'], ['cross', 'Plus'], ['peaks', 'TRIAD peaks'], ['line', 'Line'],
 ];
 export const SYMMETRY = [['none', 'None'], ['x', 'Mirror'], ['xy', 'Mirror 4×'], ['r3', 'Turn 3× (TRIAD)'], ['r4', 'Turn 4×'], ['r6', 'Turn 6×']];
 

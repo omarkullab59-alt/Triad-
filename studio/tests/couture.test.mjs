@@ -30,7 +30,7 @@ test('finder finds cultures in English and German', () => {
   assert.ok(top('keltisch').some((l) => /Triquetra/.test(l)));
   assert.ok(top('gotisch').length >= 2);
   assert.ok(top('crystal mask')[0] === 'Crystal veil');
-  assert.ok(top('arabisch').some((l) => /Arabic|Islamic/.test(l)));
+  assert.ok(top('arabisch').some((l) => /Arabic|Moorish/.test(l)));
   assert.equal(search('xqzv').length, 0);
   assert.ok(buildIndex().length > 120);
   for (const k of Object.keys(MOTIFS)) assert.ok(MOTIF_TAGS[k], `tags for motif ${k}`);

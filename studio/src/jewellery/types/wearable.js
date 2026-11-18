@@ -56,7 +56,6 @@ export const wearable = {
   templates: [
     { label: 'Royal crown', p: { kind: 'crown', pattern: 'classic', height: 60, repeat: 6 } },
     { label: 'TRIAD crown', p: { kind: 'crown', pattern: 'peaks', height: 55, repeat: 7, accent: true } },
-    { label: 'Thorn crown', p: { kind: 'crown', pattern: 'm:thorns', height: 30, repeat: 4, flare: 0 } },
     { label: 'Flame crown', p: { kind: 'crown', pattern: 'm:flame', height: 50, repeat: 8 } },
     { label: 'Tiara', p: { kind: 'tiara', pattern: 'classic', height: 48 } },
     { label: 'Masquerade', p: { kind: 'mask', pattern: 'masquerade', height: 85 } },

@@ -1,6 +1,6 @@
 // COUTURE MASKS & HEADPIECES: a shell that follows a real head (brow, nose, cheeks, chin), cut to a face, veil,
 // eye mask, mouthpiece or head band — then covered in crystals, pearls, studs, spikes, scales, ribs,
-// turned into a cage or openwork lattice, with optional horns or a halo. Everything in millimetres.
+// turned into a cage or openwork lattice, with optional horns or a crown of rays. Everything in millimetres.
 import * as THREE from 'three';
 import { polygonize, capsule, sphere } from './sdf.js';
 import { geometryVolume } from '../jewellery/revolve.js';
@@ -50,8 +50,8 @@ export const COUTURE_STYLES = {
   jaw: { label: 'Bone mouthpiece', tags: 'jaw kiefer bone knochen skeleton skelett teeth zähne dark romantic', p: { form: 'mouth', surface: 'ribs', density: 5, horns: 'none' } },
   cage: { label: 'Cage mask', tags: 'cage käfig wire draht armor grid gitter', p: { form: 'face', surface: 'cage', density: 12, eyes: 'open', horns: 'none' } },
   lattice: { label: 'Openwork lattice', tags: 'openwork durchbrochen lattice 3d print parametric organic fluid futuristic', p: { form: 'face', surface: 'lattice', eyes: 'open', horns: 'none' } },
-  scales: { label: 'Scaled mask', tags: 'scales schuppen reptile reptil dragon drache snake schlange armor', p: { form: 'face', surface: 'scales', eyes: 'slits', density: 7, horns: 'devil' } },
-  halo: { label: 'Halo headpiece', tags: 'halo heiligenschein crown krone spikes rays strahlen saint religious headpiece', p: { form: 'crown', surface: 'studs', density: 7, horns: 'halo' } },
+  scales: { label: 'Scaled mask', tags: 'scales schuppen reptile reptil dragon drache snake schlange armor', p: { form: 'face', surface: 'scales', eyes: 'slits', density: 7, horns: 'pointed' } },
+  rays: { label: 'Crown of rays', tags: 'crown krone spikes stacheln rays strahlen headpiece kopfschmuck sun sonne', p: { form: 'crown', surface: 'studs', density: 7, horns: 'rays' } },
 };
 
 function project(head, P, target, iters = 8) {
@@ -82,7 +82,7 @@ export const couture = {
     { key: 'surface', type: 'select', label: 'Surface', help: 'Smooth, covered in crystals, pearls, studs, spikes or scales, ribbed, an open cage, or an openwork lattice.', default: 'crystals',
       options: [['smooth', 'Smooth'], ['crystals', 'Crystals'], ['pearls', 'Pearls'], ['studs', 'Studs'], ['spikes', 'Spikes'], ['scales', 'Scales'], ['ribs', 'Ribs'], ['cage', 'Cage (open)'], ['lattice', 'Lattice (openwork)']] },
     { key: 'eyes', type: 'select', label: 'Eyes', help: 'Open, narrow slits, or closed (you see through fine mesh or not at all — a statement piece).', default: 'open', options: [['open', 'Open'], ['slits', 'Slits'], ['closed', 'Closed']] },
-    { key: 'horns', type: 'select', label: 'Horns / halo', help: 'Add curled ram horns, two devil horns or a halo of spikes.', default: 'none', options: [['none', 'None'], ['ram', 'Ram horns'], ['devil', 'Devil horns'], ['halo', 'Halo of spikes']] },
+    { key: 'horns', type: 'select', label: 'Horns / rays', help: 'Add curled ram horns, two pointed horns or a crown of spike rays.', default: 'none', options: [['none', 'None'], ['ram', 'Ram horns'], ['pointed', 'Pointed horns'], ['rays', 'Crown of rays']] },
     { key: 'density', type: 'range', label: 'Pattern size', help: 'Distance between crystals, studs, spikes, ribs or cage bars.', min: 3, max: 18, step: 0.5, unit: 'mm', default: 6 },
     // more
     { key: 'grain', type: 'range', more: true, label: 'Embellishment size', help: 'How big each crystal, pearl, stud or spike is.', min: 0.4, max: 1.6, step: 0.05, unit: '×', default: 1 },
@@ -110,7 +110,7 @@ export const couture = {
     // the shell: from the skin outwards, t thick, cut to the region
     const lattice = p.surface === 'lattice';
     const gs = 0.55 / s;
-    // the region cut belongs to the shell only (so horns, halo and spikes can reach beyond it)
+    // the region cut belongs to the shell only (so horns, rays and spikes can reach beyond it)
     const shellD = (x, y, z) => {
       const reg = region(x, y, z);
       let d = Math.max(Math.abs(head(x, y, z) - t / 2 - 0.6) - t / 2, reg);
@@ -178,14 +178,14 @@ export const couture = {
       }
       if (p.form === 'mouth' && surf === 'ribs') for (let x = -26; x <= 26; x += 6.5) { const { p: P, n } = project(head, [x * s, -58 * s, 95 * s], outer); prims.push(capsule(at(P, n, 0), at(P, [n[0], n[1] - 0.8, n[2]], sp * 0.9), sp * 0.22, sp * 0.12, { k: 0.4 })); } // teeth
     }
-    // horns & halo
+    // horns & rays
     const H = (pts3, r0, r1) => { for (let i = 0; i < pts3.length - 1; i++) prims.push(capsule(pts3[i], pts3[i + 1], r0 + ((r1 - r0) * i) / (pts3.length - 1), r0 + ((r1 - r0) * (i + 1)) / (pts3.length - 1), { k: 2 })); };
     if (p.horns === 'ram') for (const sx of [-1, 1]) {
       const c0 = [sx * 62 * s, 58 * s, 30 * s];
       H(Array.from({ length: 28 }, (_, i) => { const a = (i / 27) * Math.PI * 1.7, r = 40 * s * (1 - i / 40); return [c0[0] + sx * (Math.sin(a) * r * 0.35 + i * 0.9 * s), c0[1] + Math.cos(a) * r - r, c0[2] + Math.sin(a) * r]; }), 16 * s, 4 * s);
     }
-    if (p.horns === 'devil') for (const sx of [-1, 1]) H(Array.from({ length: 10 }, (_, i) => { const u = i / 9; return [sx * (36 + 18 * u) * s, (78 + 70 * u) * s, (40 - 20 * u * u) * s]; }), 11 * s, 1.2 * s);
-    if (p.horns === 'halo') for (let i = 0; i < 17; i++) {
+    if (p.horns === 'pointed') for (const sx of [-1, 1]) H(Array.from({ length: 10 }, (_, i) => { const u = i / 9; return [sx * (36 + 18 * u) * s, (78 + 70 * u) * s, (40 - 20 * u * u) * s]; }), 11 * s, 1.2 * s);
+    if (p.horns === 'rays') for (let i = 0; i < 17; i++) {
       const a = -Math.PI * 0.8 + (i / 16) * Math.PI * 1.6;
       const base = project(head, [Math.sin(a) * 76 * s, 58 * s, Math.cos(a) * 92 * s], t, 5).p;
       const L = (i % 2 ? 45 : 75) * s;

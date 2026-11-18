@@ -21,7 +21,7 @@ export const POSES = {
   dance: { label: 'Dancing', lean: -8, twist: 22, head: [-15, -12], arms: [[125, 10, 25], [70, -25, 35]], legs: [[45, 18, 70], [-6, 6, 0]] },
   walk: { label: 'Walking', lean: 4, twist: 8, head: [0, 0], arms: [[8, -25, 20], [8, 30, 25]], legs: [[26, 3, 10], [-18, 3, 26]] },
   guard: { label: 'Fighter', lean: 12, twist: 18, head: [0, 10], arms: [[25, 70, 110], [20, 55, 120]], legs: [[18, 16, 22], [-12, 14, 18]] },
-  lotus: { label: 'Meditating', seat: 'floor', lean: 0, twist: 0, head: [0, 5], arms: [[14, 30, 40], [14, 30, 40]], legs: [[88, 48, 150], [88, 48, 150]] },
+  crosslegged: { label: 'Sitting cross-legged', seat: 'floor', lean: 0, twist: 0, head: [0, 5], arms: [[14, 30, 40], [14, 30, 40]], legs: [[88, 48, 150], [88, 48, 150]] },
   reach: { label: 'Reaching', lean: 18, twist: -10, head: [8, -25], arms: [[100, 80, 5], [20, -30, 20]], legs: [[-15, 5, 5], [25, 5, 15]] },
 };
 
