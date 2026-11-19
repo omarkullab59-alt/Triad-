@@ -1,5 +1,8 @@
 // The 3D editor for every object: 1. What? (start page) → 2. Adjust → 3. Save & share
 import { createViewer, MATERIALS, HOME_LOOKS, ACCENT } from './viewer.js';
+import { createHistory, changedKeys } from '../lib/history.js';
+import { showMenu, closeMenu, showShortcuts } from '../ui/menu.js';
+import { ICON } from '../ui/icons.js';
 import { partsToSTL } from './stl.js';
 import { encodeShapes } from './outline.js';
 import { geometryVolume } from './revolve.js';
@@ -37,11 +40,19 @@ import { fontOptions, ensureFont, addFontFile, initFonts, fontStack, isRTL } fro
 import { listSymbols, getSymbol, renderSymbol, symbolPixels } from '../lib/symbols.js';
 import { renderPoster, renderInfoCard } from './images.js';
 import { openSendDialog } from '../lib/send.js';
-import { designPicker, designCanvas, designPixels, designShape } from '../lib/designs.js';
+import { designPicker, designCanvas, designPixels, designShape, listDesigns } from '../lib/designs.js';
 import { getProject, saveProject, openProjectDialog } from '../lib/projects.js';
 
 export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, couture, garment, belt, hat, tape, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
 const MAX_VISIBLE = 5;
+const CATEGORY = { jewel: 'Jewellery', wear: 'Wear', home: 'Home', make: 'Create' };
+const MOD = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘' : 'Ctrl';
+export const SHORTCUTS = [
+  [`${MOD} · Z`, 'Undo'], [`${MOD} · Shift · Z`, 'Redo (also Ctrl Y)'], [`${MOD} · S`, 'Save project'], [`${MOD} · E`, 'Export panel'],
+  ['1', 'Front view'], ['3', 'Side view'], ['7', 'Top view'], ['0', 'Perspective view'], ['F', 'Frame the object'],
+  ['W', 'Wireframe on / off'], ['G', 'Ground grid on / off'], ['+ · −', 'Zoom in / out'], ['← · → · ↑ · ↓', 'Turn (viewport focused)'],
+  ['Right-click', 'Viewport menu'], ['?', 'This list'],
+];
 const JEWEL_MATS = ['silver', 'chrome', 'gold', 'black'];
 
 const defaults = (t) => Object.fromEntries(t.params.map((q) => [q.key, q.default]));
@@ -119,29 +130,57 @@ export async function mount(main, typeId, query) {
 
   main.innerHTML = `
   <div class="tool">
-    <section class="stage" aria-label="3D preview">
-      <p class="stage-hint label">Drag to turn · pinch or double-tap to zoom</p>
-      <div class="stage-tools" role="group" aria-label="View">
-        <button type="button" data-v="left" aria-label="Turn left">⟲</button>
-        <button type="button" data-v="right" aria-label="Turn right">⟳</button>
-        <button type="button" data-v="in" aria-label="Zoom in">+</button>
-        <button type="button" data-v="out" aria-label="Zoom out">−</button>
-        <button type="button" data-v="fit" aria-label="Reset view">⌂</button>
+    <section class="stage" aria-label="3D viewport">
+      <div class="vp-bar" role="toolbar" aria-label="Viewport tools">
+        <div class="seg-group" role="group" aria-label="Camera" data-cams>
+          <button type="button" data-cam="persp" data-tip="Perspective (0)" aria-pressed="true">Persp</button>
+          <button type="button" data-cam="front" data-tip="Front (1)" aria-pressed="false">Front</button>
+          <button type="button" data-cam="right" data-tip="Side (3)" aria-pressed="false">Side</button>
+          <button type="button" data-cam="top" data-tip="Top (7)" aria-pressed="false">Top</button>
+        </div>
+        <div class="seg-group" role="group" aria-label="Drawing" data-viewsw hidden>
+          <button type="button" data-view="3d" aria-pressed="true">3D</button><button type="button" data-view="flat" aria-pressed="false">Flat</button><button type="button" data-view="edit" aria-pressed="false" data-tip="Drag points on the flat drawing">Edit points</button>
+        </div>
+        <span class="vp-spacer"></span>
+        <div class="tb-group" role="group" aria-label="History">
+          <button type="button" class="tb" data-act="undo" data-tip="Undo (${MOD} Z)" aria-label="Undo" disabled>${ICON.undo}</button>
+          <button type="button" class="tb" data-act="redo" data-tip="Redo (${MOD} Shift Z)" aria-label="Redo" disabled>${ICON.redo}</button>
+        </div>
+        <div class="tb-group" role="group" aria-label="Display">
+          <button type="button" class="tb" data-act="wire" data-tip="Wireframe (W)" aria-label="Wireframe" aria-pressed="false">${ICON.wire}</button>
+          <button type="button" class="tb" data-act="grid" data-tip="Ground grid (G)" aria-label="Ground grid" aria-pressed="false">${ICON.grid}</button>
+        </div>
+        <div class="tb-group" role="group" aria-label="Zoom">
+          <button type="button" class="tb" data-act="out" data-tip="Zoom out (−)" aria-label="Zoom out">${ICON.zoomOut}</button>
+          <button type="button" class="tb" data-act="in" data-tip="Zoom in (+)" aria-label="Zoom in">${ICON.zoomIn}</button>
+          <button type="button" class="tb" data-act="fit" data-tip="Frame object (F)" aria-label="Frame object">${ICON.fit}</button>
+        </div>
+        <button type="button" class="tb" data-act="menu" data-tip="More" aria-label="More viewport actions" aria-haspopup="menu">${ICON.more}</button>
       </div>
-      <p class="stage-weight label" aria-live="polite" data-weight></p>
-      <div class="view-switch" role="group" aria-label="View" data-viewsw hidden>
-        <button type="button" data-view="3d" aria-pressed="true">3D</button><button type="button" data-view="flat" aria-pressed="false">Flat</button><button type="button" data-view="edit" aria-pressed="false">Edit points</button>
-      </div>
+      <p class="stage-hint label">Drag to turn · pinch to zoom</p>
+      <div class="vp-busy" data-busy hidden><span class="spinner spinner--sm" aria-hidden="true"></span>Building</div>
       <div class="flat-view" data-flat hidden></div>
+      <div class="statusbar">
+        <span class="sb-state" data-sb-state role="status" aria-live="polite"><i aria-hidden="true"></i><span>Ready</span></span>
+        <span class="sb-item" data-weight></span>
+        <span class="sb-item sb-wide" data-sb-size></span>
+        <span class="sb-item sb-wide" data-sb-tris></span>
+        <span class="sb-item sb-wide" data-sb-time></span>
+        <span class="vp-spacer"></span>
+        <button type="button" class="tb tb--sm" data-act="keys" data-tip="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">${ICON.keyboard}</button>
+      </div>
     </section>
-    <section class="panel">
-      <div class="stepbar" role="tablist" aria-label="Steps">
-        <a href="#/"><span class="num">1</span>What?</a>
-        <button type="button" role="tab" id="tab-adjust" aria-controls="adjust" data-tab="adjust"><span class="num">2</span>Adjust</button>
-        <button type="button" role="tab" id="tab-save" aria-controls="save" data-tab="save"><span class="num">3</span>Save &amp; share</button>
+    <section class="panel" aria-label="Properties">
+      <header class="panel-head">
+        <a class="tb panel-back" href="#/" data-tip="All tools" aria-label="All tools">${ICON.back}</a>
+        <div class="panel-name"><span class="label muted">${CATEGORY[T.category] || 'Jewellery'}</span><h1>${esc(T.label)}</h1></div>
+        <button type="button" class="tb" data-act="save" data-tip="Save project (${MOD} S)" aria-label="Save project">${ICON.save}</button>
+      </header>
+      <div class="stepbar" role="tablist" aria-label="Panels">
+        <button type="button" role="tab" id="tab-adjust" aria-controls="adjust" data-tab="adjust">Design</button>
+        <button type="button" role="tab" id="tab-save" aria-controls="save" data-tab="save">Export</button>
       </div>
       <div id="adjust" role="tabpanel" aria-labelledby="tab-adjust">
-        <h1 class="section-title">${esc(T.label)}</h1>
         <div class="group" data-tpl-group><span class="label">Start from</span><div class="chips" data-templates></div></div>
         <div class="group" data-mysym hidden><span class="label">My symbols</span><div class="chips" data-mysyms></div></div>
         <div class="group" data-motifs-group hidden><span class="label">Motifs</span><div class="motif-grid" data-motifs></div></div>
@@ -168,7 +207,7 @@ export async function mount(main, typeId, query) {
           <div data-destroy-body></div>
         </details>
         <div data-checks aria-live="polite"></div>
-        <p style="margin-top:20px"><button type="button" class="btn btn--solid" data-go-save style="width:100%">Next: save &amp; share →</button></p>
+        <p class="panel-next"><button type="button" class="btn btn--solid" data-go-save>Export →</button></p>
       </div>
       <div id="save" role="tabpanel" aria-labelledby="tab-save" hidden></div>
     </section>
@@ -177,16 +216,91 @@ export async function mount(main, typeId, query) {
   const stage = $('.stage', main);
   const viewer = createViewer(stage, { reducedMotion: reducedMotion() });
   viewer.renderer.domElement.tabIndex = 0;
-  viewer.renderer.domElement.setAttribute('aria-label', `${T.label}, 3D preview. Arrow keys turn it, plus and minus zoom.`);
+  viewer.renderer.domElement.setAttribute('aria-label', `${T.label}, 3D viewport. Arrow keys turn it, plus and minus zoom, right-click for the menu.`);
+  const sig = { signal: viewer.signal };
   viewer.renderer.domElement.addEventListener('keydown', (e) => {
     const k = { ArrowLeft: [-0.2, 0], ArrowRight: [0.2, 0], ArrowUp: [0, -0.15], ArrowDown: [0, 0.15] }[e.key];
-    if (k) { e.preventDefault(); viewer.nudge(...k); }
-    if (e.key === '+' || e.key === '=') viewer.zoom(0.8);
-    if (e.key === '-') viewer.zoom(1.25);
-  });
-  $$('.stage-tools button', main).forEach((b) => b.addEventListener('click', () => {
-    ({ left: () => viewer.nudge(-0.4, 0), right: () => viewer.nudge(0.4, 0), in: () => viewer.zoom(0.75), out: () => viewer.zoom(1.33), fit: () => viewer.fit(T.view) })[b.dataset.v]();
-  }));
+    if (k) { e.preventDefault(); viewer.nudge(...k); markCam(''); }
+    if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); const r = viewer.renderer.domElement.getBoundingClientRect(); viewportMenu(r.left + 24, r.top + 24); }
+  }, sig);
+  viewer.renderer.domElement.addEventListener('contextmenu', (e) => { e.preventDefault(); viewportMenu(e.clientX, e.clientY); }, sig);
+  viewer.controls.addEventListener('start', () => markCam(''));
+
+  const markCam = (name) => $$('[data-cam]', main).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cam === name)));
+  const setCam = (name) => { if (st.view !== '3d') setDrawingView('3d'); viewer.setView(name); markCam(name); };
+  const press = (act, on) => $(`[data-act="${act}"]`, main)?.setAttribute('aria-pressed', String(on));
+  const actions = {
+    undo: () => undo(), redo: () => redo(),
+    wire: () => { press('wire', viewer.setWireframe(!viewer.wireframe)); },
+    grid: () => { press('grid', viewer.setGrid(!viewer.grid)); },
+    in: () => viewer.zoom(0.75), out: () => viewer.zoom(1.33),
+    fit: () => { viewer.fit(T.view); markCam(T.view === 'top' ? 'top' : 'persp'); },
+    shot: () => viewportShot(),
+    menu: () => { const r = $('[data-act="menu"]', main).getBoundingClientRect(); viewportMenu(r.right - 220, r.bottom + 6, $('[data-act="menu"]', main)); },
+    keys: () => showShortcuts(SHORTCUTS),
+    save: () => saveAsProject($('#design-name', main)?.value?.trim() || st.project?.name || st.result?.title || T.label),
+    export: () => showTab('save', true),
+  };
+  $$('[data-act]', main).forEach((b) => b.addEventListener('click', () => actions[b.dataset.act]?.()));
+  $$('[data-cam]', main).forEach((b) => b.addEventListener('click', () => setCam(b.dataset.cam)));
+
+  function viewportMenu(x, y, returnFocus = viewer.renderer.domElement) {
+    showMenu([
+      { label: 'Undo', hint: `${MOD} Z`, action: undo, disabled: !hist.canUndo },
+      { label: 'Redo', hint: `${MOD} ⇧ Z`, action: redo, disabled: !hist.canRedo },
+      '-',
+      { label: 'Frame object', hint: 'F', action: actions.fit },
+      { label: 'Perspective', hint: '0', action: () => setCam('persp') },
+      { label: 'Front', hint: '1', action: () => setCam('front') },
+      { label: 'Back', action: () => setCam('back') },
+      { label: 'Side', hint: '3', action: () => setCam('right') },
+      { label: 'Top', hint: '7', action: () => setCam('top') },
+      { label: 'Bottom', action: () => setCam('bottom') },
+      '-',
+      { label: 'Wireframe', hint: 'W', checked: viewer.wireframe, action: actions.wire },
+      { label: 'Ground grid', hint: 'G', checked: viewer.grid, action: actions.grid },
+      '-',
+      { label: 'Save viewport as PNG', action: actions.shot, disabled: !st.result || st.result.empty },
+      { label: 'Download STL', action: () => exportSTL(), disabled: !st.result || st.result.empty },
+      { label: 'Export panel…', hint: `${MOD} E`, action: actions.export },
+      { label: 'Keyboard shortcuts', hint: '?', action: actions.keys },
+    ], { x, y, label: 'Viewport', returnFocus });
+  }
+  function viewportShot() {
+    const r = stage.getBoundingClientRect();
+    const k = 2048 / Math.max(r.width, r.height);
+    const c = viewer.snapshot(Math.round(r.width * k), Math.round(r.height * k), { fill: 0.75 });
+    c.toBlob((b) => { if (b) { download(b, `${fileBase()}-viewport.png`); toast('Viewport saved as PNG (transparent background).'); } });
+  }
+  function exportSTL() {
+    const buf = partsToSTL(st.result.parts, viewer.exportMatrix());
+    download(new Blob([buf], { type: 'model/stl' }), `${fileBase()}.stl`);
+    toast('STL saved. Open it in your slicer or send it to your maker.');
+  }
+
+  // global shortcuts (not while typing, not under a dialog)
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t.closest?.('input, textarea, select, [contenteditable="true"]') && !(e.ctrlKey || e.metaKey) ) return;
+    if (t.closest?.('input[type=text], input[type=search], textarea, [contenteditable="true"]')) return;
+    if (document.querySelector('dialog[open]')) return;
+    const mod = e.ctrlKey || e.metaKey;
+    const k = e.key.toLowerCase();
+    if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if (mod && k === 'y') { e.preventDefault(); redo(); return; }
+    if (mod && k === 's') { e.preventDefault(); actions.save(); return; }
+    if (mod && k === 'e') { e.preventDefault(); actions.export(); return; }
+    if (mod || e.altKey) return;
+    const cam = { 1: 'front', 3: 'right', 7: 'top', 0: 'persp' }[e.key];
+    if (cam && (e.code?.startsWith('Numpad') || !t.closest?.('.panel'))) { e.preventDefault(); setCam(cam); return; }
+    if (t.closest?.('.panel') && !['?'].includes(e.key)) return; // letters in the panel stay with the controls
+    if (k === 'f') { e.preventDefault(); actions.fit(); }
+    else if (k === 'w') { e.preventDefault(); actions.wire(); }
+    else if (k === 'g') { e.preventDefault(); actions.grid(); }
+    else if (e.key === '+' || e.key === '=') { e.preventDefault(); viewer.zoom(0.8); }
+    else if (e.key === '-') { e.preventDefault(); viewer.zoom(1.25); }
+    else if (e.key === '?') { e.preventDefault(); actions.keys(); }
+  }, sig);
   const applyMaterial = () => viewer.setMaterial(st.metal, st.accent, { home: isHome(T) || !MATERIALS[st.metal], dirty: st.d.dirt > 0, color: st.col.color, accentColor: st.col.accent, fillColor: st.col.accent, partMaterial: T.partMaterialParam ? st.p[T.partMaterialParam] : '' });
   applyMaterial();
 
@@ -616,6 +730,51 @@ export async function mount(main, typeId, query) {
     $('[data-destroy]', main).open = st.d.dmg > 0 || st.d.dirt > 0;
   }
 
+  /* ── undo / redo ── */
+  const hist = createHistory();
+  const stateObj = () => ({ p: st.p, metal: st.metal, accent: st.accent, sys: st.sys, e: st.e, pr: st.pr, d: st.d, col: st.col });
+  let lastState = null;
+  function record() {
+    const obj = JSON.parse(JSON.stringify(stateObj()));
+    const snap = JSON.stringify(obj);
+    if (hist.push(snap, changedKeys(lastState, obj))) lastState = obj;
+    updateHistoryButtons();
+  }
+  function updateHistoryButtons() {
+    const u = $('[data-act="undo"]', main), r = $('[data-act="redo"]', main);
+    if (u) u.disabled = !hist.canUndo;
+    if (r) r.disabled = !hist.canRedo;
+  }
+  function restore(snap, verb) {
+    if (!snap) { toast(`Nothing to ${verb}.`, 1400); return; }
+    const o = JSON.parse(snap);
+    lastState = o;
+    Object.assign(st, { p: o.p, metal: o.metal, accent: o.accent, sys: o.sys, e: o.e, pr: o.pr, d: o.d, col: o.col });
+    applyMaterial();
+    renderControls(); renderMaterials(); renderEngrave(); renderPrint(); renderDestroy();
+    rebuild();
+    updateHistoryButtons();
+  }
+  const undo = () => restore(hist.undo(), 'undo');
+  const redo = () => restore(hist.redo(), 'redo');
+
+  /* ── status bar ── */
+  function setBusy(on) {
+    $('[data-busy]', main).hidden = !on;
+    const s = $('[data-sb-state]', main);
+    s.dataset.state = on ? 'busy' : st.result?.failed ? 'error' : st.result?.empty ? 'idle' : 'ready';
+    $('span', s).textContent = on ? 'Building…' : st.result?.failed ? 'Build failed — try other values' : st.result?.empty ? (T.emptyHint || 'Nothing to show yet') : 'Ready';
+  }
+  function updateStatus(ms) {
+    const r = st.result;
+    if (!r || r.empty) { ['size', 'tris', 'time'].forEach((k) => { $(`[data-sb-${k}]`, main).textContent = ''; }); return; }
+    const { tris, size } = viewer.stats();
+    const mm = (v) => (v >= 100 ? v.toFixed(0) : v.toFixed(1));
+    $('[data-sb-size]', main).textContent = `${mm(size[0])} × ${mm(size[1])} × ${mm(size[2])} mm`;
+    $('[data-sb-tris]', main).textContent = `${tris.toLocaleString('en')} tris`;
+    $('[data-sb-time]', main).textContent = `${Math.round(ms)} ms`;
+  }
+
   /* ── build ── */
   let timer = 0, fitNext = true, buildNo = 0;
   async function prepare() {
@@ -644,9 +803,11 @@ export async function mount(main, typeId, query) {
     fitNext = fitNext || fit;
     clearTimeout(timer);
     const heavy = st.d.dmg > 0 || st.d.dirt > 0 || T.slow || st.e.kind !== 'none' || st.pr.kind !== 'none';
-    if (heavy) $('[data-weight]', main).textContent = 'Building…';
+    if (heavy) setBusy(true);
     timer = setTimeout(async () => {
       const my = ++buildNo;
+      const t0 = performance.now();
+      setBusy(true);
       await prepare();
       if (my !== buildNo) return;
       let r;
@@ -695,7 +856,7 @@ export async function mount(main, typeId, query) {
         }
       } catch (e) {
         console.error(e);
-        r = { parts: [], volume: 0, minWall: 0, warnings: ['This combination could not be built. Try other values.'], dims: [], title: T.label, empty: true };
+        r = { parts: [], volume: 0, minWall: 0, warnings: ['This combination could not be built. Try other values.'], dims: [], title: T.label, empty: true, failed: true };
       }
       // print (after destroy mode, so the colours sit on the final surface)
       let printCanvas = null, printRepeat = false;
@@ -735,6 +896,9 @@ export async function mount(main, typeId, query) {
       drawPreview();
       renderFlat();
       syncHash();
+      setBusy(false);
+      updateStatus(performance.now() - t0);
+      record();
       $('[data-dmg-badge]', main).hidden = !st.d.dmg;
       $('[data-dmg-badge]', main).textContent = `${st.d.dmg} %`;
       if (st.tab === 'save') renderSave();
@@ -855,11 +1019,7 @@ export async function mount(main, typeId, query) {
       <p class="muted" style="font-size:13px;margin-top:14px">STL files are in millimetres. Weights are estimates for solid material.</p>`;
     const name = () => ($('#design-name', box).value.trim() || r.title);
     const act = {
-      stl: () => {
-        const buf = partsToSTL(st.result.parts, viewer.exportMatrix());
-        download(new Blob([buf], { type: 'model/stl' }), `${fileBase()}.stl`);
-        toast('STL saved. Open it in your slicer or send it to your maker.');
-      },
+      stl: () => exportSTL(),
       blender: async () => {
         toast('Preparing the model for Blender…');
         try {
@@ -925,13 +1085,15 @@ export async function mount(main, typeId, query) {
   /* ── flat view & point editing (clothing) ── */
   st.view = '3d';
   if (T.flatEditor) $('[data-viewsw]', main).hidden = false;
-  $$('[data-view]', main).forEach((b) => b.addEventListener('click', () => {
-    st.view = b.dataset.view;
-    $$('[data-view]', main).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    $('[data-flat]', main).hidden = st.view === '3d';
-    viewer.renderer.domElement.style.visibility = st.view === '3d' ? 'visible' : 'hidden';
+  function setDrawingView(v) {
+    st.view = v;
+    $$('[data-view]', main).forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.view === v)));
+    $('[data-flat]', main).hidden = v === '3d';
+    viewer.renderer.domElement.style.visibility = v === '3d' ? 'visible' : 'hidden';
+    if (v !== '3d') markCam('');
     renderFlat();
-  }));
+  }
+  $$('[data-view]', main).forEach((b) => b.addEventListener('click', () => setDrawingView(b.dataset.view)));
   function renderFlat() {
     const box = $('[data-flat]', main);
     if (!T.flatEditor || st.view === '3d' || !st.result?.flats) return;
@@ -1000,7 +1162,7 @@ export async function mount(main, typeId, query) {
       clearTimeout(t); t = setTimeout(async () => { st.project = await saveProject({ ...st.project, notes: e.target.value }); }, 500);
     });
     $('[data-pdlg]', body).addEventListener('click', () => saveAsProject($('#design-name', main)?.value?.trim() || st.project?.name || st.result?.title || T.label));
-    if (pr?.concepts?.length) import('../lib/designs.js').then(async ({ listDesigns }) => { const all = await listDesigns(); $('[data-cthumbs]', body).innerHTML = pr.concepts.map((id) => all.find((d) => d.id === id)).filter(Boolean).map((d) => `<img src="${d.thumb}" alt="Concept art: ${esc(d.name)}" title="${esc(d.name)}">`).join(''); });
+    if (pr?.concepts?.length) listDesigns().then((all) => { $('[data-cthumbs]', body).innerHTML = pr.concepts.map((id) => all.find((d) => d.id === id)).filter(Boolean).map((d) => `<img src="${d.thumb}" alt="Concept art: ${esc(d.name)}" title="${esc(d.name)}">`).join(''); });
   }
   if (st.prj) getProject(st.prj).then((pr) => { if (pr) { st.project = pr; renderNotes(); $('[data-notes]', main).open = true; } });
 
@@ -1018,7 +1180,7 @@ export async function mount(main, typeId, query) {
   renderDestroy();
   showTab('adjust', false, false);
   rebuild(true);
-  const onTheme = () => viewer.render();
+  const onTheme = () => { if (viewer.grid) viewer.setGrid(true); viewer.render(); };
   window.addEventListener('studio:theme', onTheme);
 
   return {
@@ -1029,6 +1191,7 @@ export async function mount(main, typeId, query) {
       renderControls(); renderMaterials(); renderEngrave(); renderPrint(); renderDestroy(); rebuild(true);
     },
     destroy() {
+      closeMenu();
       clearTimeout(timer); buildNo++;
       clearTimeout(hashTimer);
       window.removeEventListener('studio:theme', onTheme);

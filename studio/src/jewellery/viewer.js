@@ -48,19 +48,41 @@ function makeEnamel(vertexColors, color = '#9fd10f') {
   return new THREE.MeshPhysicalMaterial({ vertexColors, color, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
 }
 
-export function createViewer(container, { reducedMotion = false } = {}) {
+/* One renderer for the whole session: switching tools reuses the WebGL context, the studio
+   environment and every compiled shader (a new renderer per tool froze the page for 1–2 s). */
+let shared = null;
+function sharedRenderer() {
+  if (shared && !shared.lost) return shared;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.setClearColor(0x000000, 0);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmrem.dispose();
+  const s = { renderer, env, lost: false };
+  renderer.domElement.addEventListener('webglcontextlost', () => { s.lost = true; });
+  shared = s;
+  return s;
+}
+
+const VIEWS = {
+  persp: [0.42, 0.34, 1], front: [0, 0, 1], back: [0, 0, -1], right: [1, 0, 0], left: [-1, 0, 0], top: [0, 1, 0.0001], bottom: [0, -1, 0.0001],
+};
+export const VIEW_NAMES = Object.keys(VIEWS);
+
+export function createViewer(container, { reducedMotion = false } = {}) {
+  const { renderer, env } = sharedRenderer();
+  const ac = new AbortController();
+  const on = (el, type, fn, opts = {}) => el.addEventListener(type, fn, { ...opts, signal: ac.signal });
+  renderer.domElement.style.visibility = '';
   container.append(renderer.domElement);
   renderer.domElement.setAttribute('role', 'img');
 
   const scene = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environment = env;
   const key = new THREE.DirectionalLight(0xeef4ff, 1.4);
   key.position.set(-40, 80, 60);
   scene.add(key, new THREE.HemisphereLight(0xe8eef2, 0x30343a, 0.5));
@@ -75,6 +97,22 @@ export function createViewer(container, { reducedMotion = false } = {}) {
 
   const root = new THREE.Group();
   scene.add(root);
+  let grid = null, gridOn = false, wire = false;
+  let curView = 'persp';
+  function placeGrid() {
+    if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); grid = null; }
+    if (!gridOn) return;
+    const box = new THREE.Box3().setFromObject(root);
+    if (box.isEmpty()) return;
+    const size = Math.max(10, radius * 4);
+    const step = 10 ** Math.floor(Math.log10(size / 8)); // 1, 10 or 100 mm cells
+    const div = Math.max(2, Math.min(200, Math.round(size / step)));
+    const night = document.documentElement.classList.contains('night');
+    grid = new THREE.GridHelper(div * step, div, night ? 0x5a6066 : 0x8a9096, night ? 0x2c3034 : 0xc2c7cb);
+    grid.material.transparent = true; grid.material.opacity = 0.7; grid.material.depthWrite = false;
+    grid.position.y = box.min.y - 0.01;
+    scene.add(grid);
+  }
   let mats = [makeMaterial('silver'), makeEnamel(), makeEnamel(), makeEnamel()];
   let printCanvas = null, lastLook = null, printRepeat = false;
   let radius = 20;
@@ -124,12 +162,12 @@ export function createViewer(container, { reducedMotion = false } = {}) {
     if (!zoomed) { baseDist = d; animateTo(d * 0.45); } else animateTo(baseDist || d / 0.45);
     zoomed = !zoomed;
   }
-  renderer.domElement.addEventListener('pointerup', (e) => {
+  on(renderer.domElement, 'pointerup', (e) => {
     if (e.pointerType === 'mouse') return;
     const now = performance.now();
     if (now - lastTap < 300) { toggleZoom(); lastTap = 0; } else lastTap = now;
   });
-  renderer.domElement.addEventListener('dblclick', toggleZoom);
+  on(renderer.domElement, 'dblclick', toggleZoom);
 
   function makePrint() {
     const m = lastLook?.m || MATERIALS.silver;
@@ -156,6 +194,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       lastLook = { m: lookOf(metal, home), dirty, color };
       // a second real material for one part (e.g. the metal buckle of a leather belt); lime accent still wins
       mats = [main, accentOn ? enamel : partMaterial ? makeMaterial(partMaterial, false, dirty) : main, fill, makePrint()];
+      for (const m of mats) m.wireframe = wire;
       for (const m of root.children) m.material = mats;
       wake(2);
     },
@@ -165,6 +204,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       printRepeat = repeat;
       mats[3]?.map?.dispose(); mats[3]?.dispose();
       mats[3] = makePrint();
+      mats[3].wireframe = wire;
       for (const m of root.children) m.material = mats;
       wake(2);
     },
@@ -188,7 +228,47 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       root.position.sub(c);
       root.updateMatrixWorld(true);
       radius = box.getSize(new THREE.Vector3()).length() / 2;
+      placeGrid();
       wake(2);
+    },
+    /** Triangles and size (mm) of what is on screen. */
+    stats() {
+      let tris = 0;
+      for (const m of root.children) {
+        const g = m.geometry;
+        const n = g.index ? g.index.count / 3 : (g.attributes.position?.count || 0) / 3;
+        tris += n * (m.isInstancedMesh ? m.count : 1);
+      }
+      const box = new THREE.Box3().setFromObject(root);
+      const size = box.isEmpty() ? [0, 0, 0] : box.getSize(new THREE.Vector3()).toArray();
+      return { tris: Math.round(tris), size };
+    },
+    setWireframe(v) { wire = !!v; new Set(mats).forEach((m) => { m.wireframe = wire; }); wake(2); return wire; },
+    get wireframe() { return wire; },
+    setGrid(v) { gridOn = !!v; placeGrid(); wake(2); return gridOn; },
+    get grid() { return gridOn; },
+    get view() { return curView; },
+    /** Camera presets: persp, front, back, left, right, top, bottom. */
+    setView(name) {
+      if (!VIEWS[name]) return;
+      curView = name;
+      const fov = (camera.fov * Math.PI) / 180;
+      const dist = (radius / Math.sin(fov / 2)) * (camera.aspect < 1 ? 1.25 / Math.max(camera.aspect, 0.55) : 1.15);
+      controls.target.set(0, 0, 0);
+      const to = new THREE.Vector3(...VIEWS[name]).normalize().multiplyScalar(dist);
+      if (reducedMotion) { camera.position.copy(to); camera.lookAt(controls.target); wake(2); return; }
+      const from = camera.position.clone(), t0 = performance.now();
+      const turn = new THREE.Quaternion().setFromUnitVectors(from.clone().normalize(), to.clone().normalize());
+      const q = new THREE.Quaternion();
+      const step = (now) => {
+        const k = Math.min(1, (now - t0) / 320), e = 1 - (1 - k) ** 3;
+        q.identity().slerp(turn, e);
+        camera.position.copy(from).normalize().applyQuaternion(q).multiplyScalar(from.length() + (dist - from.length()) * e);
+        camera.lookAt(controls.target);
+        render();
+        if (k < 1) requestAnimationFrame(step); else wake(2);
+      };
+      requestAnimationFrame(step);
     },
     /** Matrix that maps part coordinates to centred world coordinates (for STL export). */
     exportMatrix: () => root.matrixWorld.clone(),
@@ -202,6 +282,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       camera.updateProjectionMatrix();
       controls.minDistance = radius * 0.6; controls.maxDistance = dist * 4;
       zoomed = false;
+      curView = view === 'top' ? 'top' : 'persp';
       wake(2);
     },
     nudge(dx, dy) {
@@ -248,17 +329,18 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       root2.scale.setScalar(0.001); // glTF is in metres
       return new GLTFExporter().parseAsync(root2, { binary: true });
     },
+    /** Listeners added with this signal are removed when the tool closes (the canvas is shared). */
+    signal: ac.signal,
     destroy() {
       cancelAnimationFrame(raf);
       ro.disconnect();
       controls.dispose();
+      ac.abort();
+      gridOn = false; placeGrid();
       clear();
-      new Set(mats).forEach((m) => m.dispose());
-      scene.environment?.dispose();
-      pmrem.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss?.();
+      new Set(mats).forEach((m) => { m.map?.dispose(); m.dispose(); });
       renderer.domElement.remove();
+      renderer.domElement.removeAttribute('aria-label');
     },
   };
 }

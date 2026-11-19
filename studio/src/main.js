@@ -92,20 +92,22 @@ function home(main) {
   const saved = listDesigns();
   main.innerHTML = `
   <section class="hero">
-    <p class="label muted">TRIAD Studio · free · no login</p>
-    <h1>Design your own objects<em>no 3D skills needed.</em></h1>
-    <p>Jewellery, crowns, masks, plates, cutlery, cabinets, sculptures — or your own symbol. Engrave snakes, dragons or your name on anything. Move a few sliders, wreck it in destroy mode if you like, take home a file your maker or 3D printer can use.</p>
+    <div class="hero-text">
+      <p class="label muted">TRIAD Studio · free · no login</p>
+      <h1>Design your own objects<em>no 3D skills needed.</em></h1>
+      <p>Jewellery, clothing, couture, homeware and sculpture — shaped live in 3D, engraved, printed or destroyed, exported for your maker or 3D printer.</p>
+    </div>
     <form class="hero-search" role="search" data-hero-search>
       <label for="hs" class="visually-hidden">Find a culture, style or shape</label>
       <input id="hs" type="search" placeholder="Find: japanese, gothic, celtic, crystal mask, dragon …" enterkeyhint="search" autocomplete="off">
       <button class="btn btn--lime" type="submit">Find</button>
     </form>
-    <ol class="steps-intro label" aria-label="How it works">
-      <li><span class="num num--on">1</span>What?</li><li><span class="num">2</span>Adjust</li><li><span class="num">3</span>Save &amp; share</li>
-    </ol>
   </section>
-  <h2 class="tiles-head wrap label">1 · What do you want to make?</h2>
-  ${GROUPS.map(([g, tiles]) => `<h3 class="wrap label muted" style="margin:22px auto 8px">${g}</h3>
+  <section class="recent wrap" aria-labelledby="recent-h" data-recent hidden>
+    <div class="recent-head"><h2 id="recent-h" class="label">Recent projects</h2><a class="label muted" href="#/collections">All collections →</a></div>
+    <ul class="recent-list" data-recent-list></ul>
+  </section>
+  ${GROUPS.map(([g, tiles]) => `<h2 class="wrap label muted tiles-head">${g}</h2>
   <nav class="tiles" aria-label="${g}">
     ${tiles.map(([k, n, d]) => `<a class="tile${k === 'draw' ? ' tile--draw' : ''}" href="#/${k}">
       <svg viewBox="0 0 64 64" aria-hidden="true">${ICONS[k]}</svg>
@@ -116,6 +118,14 @@ function home(main) {
     <ul class="saved-list">${saved.map((d) => `<li><a href="${esc(d.hash)}"><span class="label muted">${esc(NAMES[d.type] || d.type)}</span> ${esc(d.name)}</a>
       <button class="icon-btn" type="button" data-del="${esc(d.id)}" aria-label="Delete ${esc(d.name)}">×</button></li>`).join('')}</ul>
   </section>` : ''}`;
+  import('./lib/projects.js').then(async ({ listProjects }) => {
+    const list = (await listProjects()).slice(0, 6);
+    if (!list.length || !main.querySelector('[data-recent]')) return;
+    main.querySelector('[data-recent-list]').innerHTML = list.map((pr) => `<li><a href="${esc(pr.hash || `#/${pr.type}`)}${String(pr.hash || '').includes('?') ? '&' : '?'}prj=${esc(pr.id)}">
+      <span class="recent-thumb">${pr.thumb ? `<img src="${esc(pr.thumb)}" alt="">` : ''}</span>
+      <span class="recent-name">${esc(pr.name)}</span><span class="label muted">${esc(NAMES[pr.type] || pr.type)} · ${esc((pr.date || '').slice(0, 10))}</span></a></li>`).join('');
+    main.querySelector('[data-recent]').hidden = false;
+  }).catch(() => {});
   main.querySelector('[data-hero-search]').addEventListener('submit', (e) => { e.preventDefault(); location.hash = `#/find?q=${encodeURIComponent(main.querySelector('#hs').value)}`; });
   main.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
     deleteDesign(b.dataset.del);
@@ -124,7 +134,31 @@ function home(main) {
   }));
 }
 
+/* ── tooltips: one floating label for every [data-tip] (mouse hover and keyboard focus) ── */
+let tipEl = null, tipFor = null, tipTimer = 0;
+function hideTip() { clearTimeout(tipTimer); tipEl?.remove(); tipEl = null; tipFor = null; }
+function showTip(el, delay) {
+  if (tipFor === el) return;
+  hideTip();
+  tipFor = el;
+  tipTimer = setTimeout(() => {
+    if (!el.isConnected) return;
+    tipEl = document.createElement('div');
+    tipEl.className = 'tip'; tipEl.setAttribute('role', 'tooltip');
+    tipEl.textContent = el.dataset.tip;
+    document.body.append(tipEl);
+    const r = el.getBoundingClientRect(), t = tipEl.getBoundingClientRect();
+    const below = r.top < 60;
+    tipEl.style.left = `${Math.max(6, Math.min(innerWidth - t.width - 6, r.left + r.width / 2 - t.width / 2))}px`;
+    tipEl.style.top = `${below ? r.bottom + 6 : r.top - t.height - 6}px`;
+  }, delay);
+}
+document.addEventListener('pointerover', (e) => { if (e.pointerType !== 'mouse') return; const el = e.target.closest?.('[data-tip]'); if (el) showTip(el, 380); else if (tipFor) hideTip(); });
+document.addEventListener('focusin', (e) => { const el = e.target.closest?.('[data-tip]'); if (el && e.target.matches(':focus-visible')) showTip(el, 150); else hideTip(); });
+for (const ev of ['pointerdown', 'scroll', 'keydown', 'hashchange']) window.addEventListener(ev, hideTip, true);
+
 /* ── router: #/ · #/ring?… · #/draw ── */
+const PAGES = ['draw', 'symbol', 'find', 'designs', 'collections'];
 let current = null;
 let currentKey = '';
 async function route() {
@@ -136,6 +170,7 @@ async function route() {
   current?.destroy?.();
   current = null;
   currentKey = key;
+  document.body.classList.toggle('in-tool', !!NAMES[key] && !PAGES.includes(key));
   document.title = key && NAMES[key] ? `${NAMES[key]} · TRIAD Studio` : 'TRIAD Studio';
   if (!key || !NAMES[key]) { home(main); window.scrollTo(0, 0); return; }
   main.innerHTML = '<div class="stage-loading" style="min-height:50vh"><div class="spinner" role="img" aria-label="Loading"></div></div>';

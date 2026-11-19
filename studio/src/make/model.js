@@ -55,6 +55,7 @@ function collect(root) {
 export const model = {
   id: 'model',
   label: 'Upload a 3D model',
+  emptyHint: 'Open a 3D file in the panel to start',
   category: 'make',
   materials: ['silver', 'gold', 'chrome', 'black', 'ceramic', 'stoneware', 'oak', 'walnut', 'steel', 'brass', 'concrete'],
   defaultMaterial: 'silver',

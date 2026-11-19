@@ -11,8 +11,9 @@ export function saveDesign({ name, type, hash }) {
 }
 export function deleteDesign(id) { return write(KEY, listDesigns().filter((d) => d.id !== id)); }
 
-export function getMode() { try { return localStorage.getItem('triad-theme') || 'auto'; } catch { return 'auto'; } }
-export function setMode(m) { try { if (m === 'auto') localStorage.removeItem('triad-theme'); else localStorage.setItem('triad-theme', m); } catch { /* not saved */ } }
+// The Studio is a dark workspace by default; 'auto' (follow the system) and 'light' can be chosen and are remembered.
+export function getMode() { try { const m = localStorage.getItem('triad-theme'); return ['auto', 'light', 'dark'].includes(m) ? m : 'dark'; } catch { return 'dark'; } }
+export function setMode(m) { try { localStorage.setItem('triad-theme', m); } catch { /* not saved */ } }
 
 // Draw → Pendant hand-over (same page, kept in memory)
 let handoff = null;

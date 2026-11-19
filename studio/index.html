@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TRIAD Studio</title>
 <meta name="description" content="Design jewellery in 3D and sketch with live AI renders. Rings, pendants, earrings, cuffs and chains. Free, no login, STL export for 3D printing and casting.">
-<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0d0e0f">
 <meta name="color-scheme" content="light dark">
 <meta name="robots" content="index, follow, noai, noimageai">
 <meta name="tdm-reservation" content="1">
@@ -19,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-<script>/* colour mode before first paint: saved choice (shared with the TRIAD site) → system setting */(function(){var h=document.documentElement,p=null;try{p=localStorage.getItem('triad-theme')}catch(e){}h.dataset.mode=p==='dark'||p==='light'?p:'auto';h.classList.toggle('night',p==='dark'||(p!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches))})();</script>
+<script>/* colour mode before first paint: saved choice (shared with the TRIAD site), otherwise the dark workspace */(function(){var h=document.documentElement,p=null;try{p=localStorage.getItem('triad-theme')}catch(e){}h.dataset.mode=p==='auto'||p==='light'?p:'dark';h.classList.toggle('night',h.dataset.mode==='dark'||(h.dataset.mode==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))})();</script>
 <script type="module" src="/src/main.js"></script>
 </head>
 <body>
