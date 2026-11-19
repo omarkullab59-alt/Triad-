@@ -40,6 +40,10 @@ const ICONS = {
   symbol: '<g fill="none" stroke="currentColor" stroke-width="4"><circle cx="32" cy="32" r="22"/><path d="M32 12l17 30H15z"/></g><circle cx="32" cy="32" r="4" fill="currentColor"/>',
   sketch3d: '<path d="M10 50l16-30 10 16 6-8 12 22z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M10 50l8 6h44l-8-6" fill="none" stroke="currentColor" stroke-width="3"/>',
   couture: '<path d="M14 18c4-10 32-10 36 0 4 14 0 30-18 40C14 48 10 32 14 18z" fill="none" stroke="currentColor" stroke-width="4"/><g fill="currentColor"><circle cx="24" cy="26" r="3"/><circle cx="40" cy="26" r="3"/><circle cx="32" cy="36" r="2.5"/><circle cx="26" cy="44" r="2.5"/><circle cx="38" cy="44" r="2.5"/></g>',
+  hat: '<path d="M10 44c0-20 10-34 22-34s22 14 22 34z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M6 44h52v8H6z" fill="currentColor"/><path d="M22 14v30M32 10v34M42 14v30" stroke="currentColor" stroke-width="2"/>',
+  belt: '<rect x="4" y="26" width="56" height="12" fill="none" stroke="currentColor" stroke-width="4"/><rect x="10" y="20" width="16" height="24" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="40" cy="32" r="2" fill="currentColor"/><circle cx="48" cy="32" r="2" fill="currentColor"/>',
+  tape: '<path d="M4 22h56v20H4z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M12 22l-8 10M24 22L10 42M36 22L22 42M48 22L34 42M60 22L46 42M60 34l-6 8" stroke="currentColor" stroke-width="3"/>',
+  designs: '<rect x="8" y="10" width="48" height="40" rx="3" fill="none" stroke="currentColor" stroke-width="4"/><path d="M12 44l14-16 10 10 6-6 10 12" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="44" cy="20" r="4" fill="currentColor"/>',
   find: '<circle cx="27" cy="27" r="16" fill="none" stroke="currentColor" stroke-width="5"/><path d="M39 39l15 15" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>',
   wearable: '<path d="M8 50V20l12 14 12-22 12 22 12-14v30z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M8 50h48" stroke="currentColor" stroke-width="6"/>',
   sculpture: '<circle cx="32" cy="12" r="6" fill="currentColor"/><path d="M32 18v20M32 24l-12 8M32 24l12-10M32 38l-8 14M32 38l8 14" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 56h36" stroke="currentColor" stroke-width="5"/>',
@@ -56,6 +60,11 @@ const GROUPS = [
     ['wearable', 'Crown · Tiara · Mask', 'Templates or your own drawing'],
     ['couture', 'Couture mask', 'Veils, crystals, horns, cages'],
   ]],
+  ['Wear', [
+    ['hat', 'Hats', 'Beanie, cap, bucket hat, balaclava'],
+    ['belt', 'Belt', 'Strap, buckle, cutting template'],
+    ['tape', 'Tape', 'Your text or design, endless'],
+  ]],
   ['Home', [
     ['plate', 'Plate', 'Dinner, coupe, deep, wavy'],
     ['vessel', 'Bowl · Cup · Vase', 'Bowls, cups, mugs, vases'],
@@ -64,6 +73,7 @@ const GROUPS = [
     ['sculpture', 'Sculpture', 'Figures, snakes, dragons, busts'],
   ]],
   ['Create', [
+    ['designs', 'My designs', 'Upload your artwork, use it anywhere'],
     ['find', 'Finder', 'Search cultures, styles, shapes'],
     ['draw', 'Draw', 'Sketch it, see it rendered live'],
     ['symbol', 'Symbol', 'Design your own signs & logos'],
@@ -126,7 +136,7 @@ async function route() {
   if (!key || !NAMES[key]) { home(main); window.scrollTo(0, 0); return; }
   main.innerHTML = '<div class="stage-loading" style="min-height:50vh"><div class="spinner" role="img" aria-label="Loading"></div></div>';
   try {
-    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : key === 'find' ? await import('./find/app.js') : await import('./jewellery/app.js');
+    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : key === 'find' ? await import('./find/app.js') : key === 'designs' ? await import('./designs/app.js') : await import('./jewellery/app.js');
     if (currentKey !== key) return;
     current = await mod.mount(main, key, new URLSearchParams(query));
   } catch (e) {

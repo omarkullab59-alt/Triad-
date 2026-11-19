@@ -15,7 +15,11 @@ const TOOL_TAGS = {
   cutlery: 'cutlery besteck fork gabel knife messer spoon löffel', cabinet: 'cabinet schrank furniture möbel sideboard wardrobe kleiderschrank shelf regal dresser kommode',
   sculpture: 'sculpture skulptur statue figure figur art kunst bronze marble marmor pose', sketch3d: 'sketch skizze 3d relief vase turned drawing zeichnung',
   model: 'upload hochladen stl obj glb model modell 3d file datei', couture: 'couture mask maske avant-garde avantgarde headpiece kopfschmuck runway laufsteg fashion mode high fashion editorial face gesicht veil schleier',
-  draw: 'draw zeichnen sketch skizze ai ki render', symbol: 'symbol logo sign zeichen design emblem own eigen',
+  draw: 'draw zeichnen sketch skizze ai ki render',
+  belt: 'belt gürtel buckle schnalle leather leder accessory accessoire',
+  hat: 'hat hut mütze beanie cap kappe bucket hat fischerhut balaclava sturmhaube knit strick headwear',
+  tape: 'tape band absperrband barrier caution warning trim borte ribbon wristband armband merch',
+  designs: 'my designs upload hochladen logo artwork eigene designs grafik svg png', symbol: 'symbol logo sign zeichen design emblem own eigen',
 };
 const SCRIPT_SAMPLES = { 'Noto Sans JP': '東京', 'Noto Naskh Arabic': 'حب', 'Reem Kufi': 'نور', 'Noto Sans': 'Москва', 'Ruslan Display': 'Сила', 'Noto Sans SC': '龍', 'Noto Sans KR': '서울', 'Noto Sans Hebrew': 'אור', 'Noto Sans Devanagari': 'शक्ति', 'Noto Sans Thai': 'ไทย', 'Noto Sans Armenian': 'Հայ', 'Noto Sans Georgian': 'ქართ' };
 const FONT_TAGS = {

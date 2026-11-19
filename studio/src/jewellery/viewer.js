@@ -26,6 +26,15 @@ export const HOME_LOOKS = {
   terracotta: { label: 'Terracotta', swatch: '#b5603a', color: '#b45f3b', roughness: 0.85, metalness: 0 },
   resin: { label: 'Black resin', swatch: '#1c1c1c', color: '#202020', roughness: 0.3, metalness: 0, clearcoat: 1 },
   gold: MATERIALS.gold,
+  knit_grey: { label: 'Grey knit', swatch: '#8a8d90', color: '#8c8f92', roughness: 0.97, metalness: 0, sheen: 1 },
+  knit_black: { label: 'Black knit', swatch: '#1c1c1c', color: '#222222', roughness: 0.97, metalness: 0, sheen: 1 },
+  knit_cream: { label: 'Cream knit', swatch: '#e9e3d6', color: '#e6e0d2', roughness: 0.97, metalness: 0, sheen: 1 },
+  cotton: { label: 'Cotton twill', swatch: '#efeee9', color: '#ecebe5', roughness: 0.92, metalness: 0, sheen: 0.6 },
+  denim: { label: 'Denim', swatch: '#3b4a63', color: '#3e4d66', roughness: 0.93, metalness: 0, sheen: 0.5 },
+  nylon: { label: 'Black nylon', swatch: '#202020', color: '#242424', roughness: 0.55, metalness: 0, clearcoat: 0.2 },
+  leather_black: { label: 'Black leather', swatch: '#151515', color: '#181818', roughness: 0.48, metalness: 0, clearcoat: 0.35 },
+  leather_brown: { label: 'Brown leather', swatch: '#5a3a24', color: '#5e3c26', roughness: 0.5, metalness: 0, clearcoat: 0.3 },
+  film: { label: 'Tape film (PE)', swatch: '#ffffff', color: '#ffffff', roughness: 0.32, metalness: 0, clearcoat: 0.6 },
 };
 export const ACCENT = { label: 'Lime enamel', swatch: '#c4ef2f' };
 
@@ -33,7 +42,7 @@ export const lookOf = (key, home) => (home ? HOME_LOOKS[key] : MATERIALS[key]) |
 function makeMaterial(key, home, vertexColors, color) {
   const m = lookOf(key, home);
   // a custom colour on metal = coloured plating / anodising look; on other materials = paint, glaze or dye
-  return new THREE.MeshPhysicalMaterial({ color: color || m.color, roughness: m.roughness, metalness: color && m.metalness ? 0.85 : m.metalness, clearcoat: m.clearcoat || 0, envMapIntensity: 1.15, vertexColors });
+  return new THREE.MeshPhysicalMaterial({ color: color || m.color, roughness: m.roughness, metalness: color && m.metalness ? 0.85 : m.metalness, clearcoat: m.clearcoat || 0, sheen: m.sheen || 0, sheenRoughness: 0.8, envMapIntensity: 1.15, vertexColors });
 }
 function makeEnamel(vertexColors, color = '#9fd10f') {
   return new THREE.MeshPhysicalMaterial({ vertexColors, color, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
@@ -67,7 +76,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
   const root = new THREE.Group();
   scene.add(root);
   let mats = [makeMaterial('silver'), makeEnamel(), makeEnamel(), makeEnamel()];
-  let printCanvas = null, lastLook = null;
+  let printCanvas = null, lastLook = null, printRepeat = false;
   let radius = 20;
   let frames = 2;
   let raf = 0;
@@ -128,6 +137,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
     const tex = new THREE.CanvasTexture(printCanvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 8;
+    if (printRepeat) tex.wrapS = THREE.RepeatWrapping;
     return new THREE.MeshPhysicalMaterial({ map: tex, roughness: Math.max(0.25, m.roughness), metalness: m.metalness * 0.6, clearcoat: 0.3, vertexColors: lastLook?.dirty || false });
   }
   function clear() {
@@ -136,7 +146,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
 
   return {
     renderer, scene, camera, controls,
-    setMaterial(metal, accentOn, { home = false, dirty = false, color = '', accentColor = '', fillColor = '' } = {}) {
+    setMaterial(metal, accentOn, { home = false, dirty = false, color = '', accentColor = '', fillColor = '', partMaterial = '' } = {}) {
       new Set(mats).forEach((m) => { m.map?.dispose(); m.dispose(); });
       const main = makeMaterial(metal, home, dirty, color);
       // lime is shown a touch darker so it reads like lime under studio light
@@ -144,13 +154,15 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       const enamel = makeEnamel(dirty, tone(accentColor));
       const fill = makeEnamel(dirty, tone(fillColor || accentColor));
       lastLook = { m: lookOf(metal, home), dirty, color };
-      mats = [main, accentOn ? enamel : main, fill, makePrint()];
+      // a second real material for one part (e.g. the metal buckle of a leather belt); lime accent still wins
+      mats = [main, accentOn ? enamel : partMaterial ? makeMaterial(partMaterial, false, dirty) : main, fill, makePrint()];
       for (const m of root.children) m.material = mats;
       wake(2);
     },
     /** Texture for printed areas (group 3); null removes it. */
-    setPrint(canvas) {
+    setPrint(canvas, { repeat = false } = {}) {
       printCanvas = canvas;
+      printRepeat = repeat;
       mats[3]?.map?.dispose(); mats[3]?.dispose();
       mats[3] = makePrint();
       for (const m of root.children) m.material = mats;

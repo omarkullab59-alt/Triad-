@@ -32,6 +32,10 @@ Anton · Instrument Serif · Inter Tight · JetBrains Mono, kühle, neblige Stim
 | **Sculpture** | Figur in 10 Posen (Stehen, Kontrapost, Arme hoch, Denker, Knien, Tanzen, Gehen, Kämpfer, Schneidersitz, Greifen), Schlange (zusammengerollt, aufgerichtete Kobra, kriechend, Ouroboros), Drache (zusammengerollt, aufbäumend, fliegend, schlafend), Büste, Hand (6 Gesten), abstrakt (Ring, drei Ringe, Spirale, Steine, Gitterkugel, Bogen). Körperbau, Drehung, Neigung, Detail/facettiert, Sockel rund/eckig/Fels. Bronze, Marmor, Gips, Terrakotta … |
 | **Couture mask** | Masken & Kopfschmuck auf einer echten Kopfform (Stirn, Nase, Wangen, Kinn): ganzes Gesicht, Schleier über den ganzen Kopf, Augenmaske, Mundstück/Kiefer, Kopfband. Oberfläche glatt, Kristalle, Perlen, Nieten, Stacheln, Schuppen, Rippen, offener Käfig, durchbrochenes Gitter. Augen offen/Schlitze/geschlossen, Widderhörner, spitze Hörner, Strahlenkrone. Inspiriert von der Avantgarde- und Couture-Ästhetik, ohne Kopien bestimmter Designer-Stücke |
 | **Finder** | Suche nach Kultur, Epoche, Stil, Stimmung oder Form (Englisch & Deutsch): z. B. „japanisch“, „keltisch“, „gothic“, „art deco“, „moorish“, „aztec“, „crystal mask“. Findet Motive, Muster, Vorlagen, Posen, Masken, Schriften und öffnet sie direkt (gravieren, drucken, Anhänger, Krone). Dazu Links zu Museumsarchiven (Met, V&A, Cooper Hewitt, Rijksmuseum, Google Arts & Culture) und Pinterest zur Inspiration |
+| **Hats** | Beanie (Rippstrick, Umschlag, Bommel, Slouch), Cap/Snapback (6 Bahnen, gebogener Schirm), Bucket Hat, Balaclava (Augenschlitz, Augen + Mund, ganzes Gesicht). Nach Kopfumfang (S–XXL), Strick, Baumwolle, Denim, Nylon, Leder; Print, Patch (Prägung) und Gravur |
+| **Belt** | Riemen nach Taillenweite (mittleres Loch), Breite, Löcher, Abstand, Spitze; Schnalle als eigenes 3D-Teil (Rahmen, Platte, rund, TRIAD-Dreieck) in Metall. **Zuschnitt-Schablone als SVG 1:1** |
+| **Tape** | Absperrband-Stil mit eigenem Text (jede Sprache/Schrift) oder eigenem Design, Lime/Schwarz/Warnstreifen/Weiß, als Streifen, Rolle oder Schlaufe. **Druckdatei (PNG, 300 dpi, ein Rapport)** |
+| **My designs** | Eigene Designs hochladen (PNG, JPG, WebP, SVG), auf dem Gerät gespeichert. Mit einem Tipp auf Cap, Beanie, Tape, Ring, Teller, Vase, Sockel, als Anhänger oder 3D-Objekt; überall als Druck, Gravur oder Form wählbar |
 | **Draw** | Zeichenfläche (Finger/Stift mit Druck/Maus), Pinsel, Radierer, 3 Stärken, Undo/Redo, Leeren, Foto als Hintergrund. 0,8 s nach dem letzten Strich: KI-Render daneben (Handy: darunter). Stile Silver/Chrome/Gold/Lime enamel/Frost/On skin + eigenes Textfeld, Regler „How close to my sketch“, „Build as 3D pendant“ |
 
 **Gravieren & Prägen (für alles, wie ein Stempel/Displace in Blender):** Text (alle Schriften/Sprachen), Motiv (Schlange, zusammengerollte Schlange,
@@ -63,7 +67,7 @@ lokal speichern (localStorage), **Send to TRIAD** → Einreichung im Darkroom de
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 26 Tests inkl. Zufalls-Tests aller Werkzeuge, Masken, Finder, Druck, Dichtheit, Worker (KI gemockt)
+npm test           # 28 Tests inkl. Zufalls-Tests aller Werkzeuge, Masken, Finder, Druck, Dichtheit, Worker (KI gemockt)
 ```
 
 Mit KI lokal: `cd worker && npx wrangler dev` und `VITE_AI_URL=http://localhost:8787 npm run dev`.

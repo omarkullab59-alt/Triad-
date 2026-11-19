@@ -59,6 +59,11 @@ export const HOME = {
   terracotta: { label: 'Terracotta', density: 1.9 },
   resin: { label: 'Black resin', density: 1.15 },
   gold: METALS.gold,
+  // textiles & leather (effective densities incl. air in knits)
+  knit_grey: { label: 'Grey knit', density: 0.35 }, knit_black: { label: 'Black knit', density: 0.35 }, knit_cream: { label: 'Cream knit', density: 0.35 },
+  cotton: { label: 'Cotton twill', density: 0.6 }, denim: { label: 'Denim', density: 0.7 }, nylon: { label: 'Black nylon', density: 1.1 },
+  leather_black: { label: 'Black leather', density: 0.9 }, leather_brown: { label: 'Brown leather', density: 0.9 },
+  film: { label: 'Tape film (PE)', density: 0.92 },
 };
 export const ALL_MATERIALS = { ...HOME, ...METALS };
 /** "4.4 g" / "1.25 kg" */
