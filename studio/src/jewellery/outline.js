@@ -227,7 +227,8 @@ export function thinParts({ mask, width: w, height: h }, r) {
 /** Full pipeline: pixels → shapes (y-down pixel units) + bounding box + mask. */
 export function outlineFromPixels(pixels, opts = {}) {
   const m = toMask(pixels, opts);
-  const loops = traceMask(m).map((l) => simplify(smooth(l, 2), 0.7));
+  const eps = Math.max(0.7, Math.max(m.width, m.height) / 650); // scale smoothing with resolution
+  const loops = traceMask(m).map((l) => simplify(smooth(simplify(l, eps * 0.6), 3), eps));
   const shapes = groupShapes(loops, opts);
   return { shapes, box: boxOf(shapes), mask: m };
 }

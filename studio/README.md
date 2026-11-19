@@ -35,7 +35,7 @@ Anton · Instrument Serif · Inter Tight · JetBrains Mono, kühle, neblige Stim
 | **Hats** | Beanie (Rippstrick, Umschlag, Bommel, Slouch), Cap/Snapback (6 Bahnen, gebogener Schirm), Bucket Hat, Balaclava (Augenschlitz, Augen + Mund, ganzes Gesicht). Nach Kopfumfang (S–XXL), Strick, Baumwolle, Denim, Nylon, Leder; Print, Patch (Prägung) und Gravur |
 | **Belt** | Riemen nach Taillenweite (mittleres Loch), Breite, Löcher, Abstand, Spitze; Schnalle als eigenes 3D-Teil (Rahmen, Platte, rund, TRIAD-Dreieck) in Metall. **Zuschnitt-Schablone als SVG 1:1** |
 | **Tape** | Absperrband-Stil mit eigenem Text (jede Sprache/Schrift) oder eigenem Design, Lime/Schwarz/Warnstreifen/Weiß, als Streifen, Rolle oder Schlaufe. **Druckdatei (PNG, 300 dpi, ein Rapport)** |
-| **My designs** | Eigene Designs hochladen (PNG, JPG, WebP, SVG), auf dem Gerät gespeichert. Mit einem Tipp auf Cap, Beanie, Tape, Ring, Teller, Vase, Sockel, als Anhänger oder 3D-Objekt; überall als Druck, Gravur oder Form wählbar |
+| **My designs** | Eigene Designs hochladen (PNG, JPG, WebP, SVG), auf dem Gerät gespeichert. SVG bleibt Vektor (bei jeder Größe scharf), Pixelbilder behalten ihre Originalauflösung (bis 4096 px). **Make sharp** wandelt Pixelbilder in Vektoren um (ImageTracer), **AI upscale ×2/×4** vergrößert kleine Bilder mit KI (UpscalerJS + ESRGAN), beides kostenlos direkt im Browser. Mit einem Tipp auf Cap, Beanie, Tape, Ring, Teller, Vase, Sockel, als Anhänger oder 3D-Objekt; überall als Druck, Gravur oder Form wählbar |
 | **Draw** | Zeichenfläche (Finger/Stift mit Druck/Maus), Pinsel, Radierer, 3 Stärken, Undo/Redo, Leeren, Foto als Hintergrund. 0,8 s nach dem letzten Strich: KI-Render daneben (Handy: darunter). Stile Silver/Chrome/Gold/Lime enamel/Frost/On skin + eigenes Textfeld, Regler „How close to my sketch“, „Build as 3D pendant“ |
 
 **Gravieren & Prägen (für alles, wie ein Stempel/Displace in Blender):** Text (alle Schriften/Sprachen), Motiv (Schlange, zusammengerollte Schlange,
@@ -61,6 +61,27 @@ Doppeltipp = Zoom, Tasten (Pfeile, +/−) und Knöpfe für Tastatur-Bedienung.
 **Ausgabe:** STL (mm, für 3D-Druck/Wachsguss), Instagram-PNG 1080×1350 (optional mit TRIAD-Schriftzug), Info-Karte (PNG) mit Maßen,
 Gewicht je Material und Warnung bei Wandstärke unter 0,8 mm. Teilen per Link (alle Parameter in der URL, auch hochgeladene Umrisse),
 lokal speichern (localStorage), **Send to TRIAD** → Einreichung im Darkroom der Hauptseite (bestehende Upload-API `POST /darkroom/submit`, Freigabe durch euch).
+
+## Blender
+
+Blender selbst läuft nicht im Browser. Die Brücke: **Save & share → Open in Blender** speichert eine maßstabsgetreue `.glb`
+(mit Materialien, Farben, Druck, Emaille) und zeigt die Schritte (Import, Einheiten auf Millimeter). Nach dem Bearbeiten
+als glTF/STL/OBJ/FBX exportieren und unter **Upload 3D** wieder öffnen (GLB, GLTF, STL, OBJ, FBX, 3MF, DAE, PLY):
+dort gehen Gravur, Druck, Destroy-Modus, Materialien und Send to TRIAD weiter.
+
+## Schärfe & Auflösung
+
+Umrisse aus Bildern, Motiven und Designs werden mit 1000 px erkannt und geglättet; Druck-Texturen bis 4096 px;
+Gravur mit „Extra fine detail“; Instagram-Bild optional in 2160 × 2700.
+
+## Fremde Bausteine (alle kostenlos, im Browser)
+
+| Baustein | Zweck | Lizenz |
+|---|---|---|
+| three.js | 3D | MIT |
+| ImageTracer (imagetracerjs) | Pixelbild → Vektor | Public Domain (Unlicense) |
+| UpscalerJS + ESRGAN slim (Modelle in `public/models/esrgan-slim`) | KI-Vergrößerung | MIT |
+| TensorFlow.js | läuft das KI-Modell (nur bei Bedarf geladen) | Apache-2.0 |
 
 ## Lokal starten
 

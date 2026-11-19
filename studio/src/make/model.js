@@ -20,7 +20,16 @@ export async function loadModelFile(file) {
     const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
     const gltf = await new Promise((res, rej) => new GLTFLoader().parse(buf, '', res, rej));
     geometries = collect(gltf.scene);
-  } else throw new Error('Please choose an STL, OBJ, GLB/GLTF or PLY file.');
+  } else if (ext === 'fbx') {
+    const { FBXLoader } = await import('three/examples/jsm/loaders/FBXLoader.js');
+    geometries = collect(new FBXLoader().parse(buf, ''));
+  } else if (ext === '3mf') {
+    const { ThreeMFLoader } = await import('three/examples/jsm/loaders/3MFLoader.js');
+    geometries = collect(new ThreeMFLoader().parse(buf));
+  } else if (ext === 'dae') {
+    const { ColladaLoader } = await import('three/examples/jsm/loaders/ColladaLoader.js');
+    geometries = collect(new ColladaLoader().parse(new TextDecoder().decode(buf), '').scene);
+  } else throw new Error('Please choose an STL, OBJ, GLB/GLTF, FBX, 3MF, DAE or PLY file.');
   if (!geometries.length) throw new Error('No 3D shape found in this file.');
   // merge into one position-only geometry
   const arrays = geometries.map((g) => (g.index ? g.toNonIndexed() : g).attributes.position.array);
@@ -51,7 +60,7 @@ export const model = {
   defaultMaterial: 'silver',
   minWall: 0.8,
   params: [
-    { key: 'file', type: 'model', label: 'Your model', help: 'STL, OBJ, GLB/GLTF or PLY. It stays on your device.', default: '' },
+    { key: 'file', type: 'model', label: 'Your model', help: 'From Blender or any 3D app: GLB/GLTF, STL, OBJ, FBX, 3MF, DAE or PLY. It stays on your device.', default: '' },
     { key: 'size', type: 'range', label: 'Size', help: 'Longest side of the model.', min: 2, max: 2000, step: 0.5, unit: 'mm', default: 30 },
     { key: 'rx', type: 'select', label: 'Turn forward', help: 'Tip the model over if it lies the wrong way.', default: '0', options: [['0', '0°'], ['90', '90°'], ['180', '180°'], ['270', '270°']] },
     { key: 'ry', type: 'select', label: 'Turn around', help: 'Spin the model around its upright axis.', default: '0', options: [['0', '0°'], ['90', '90°'], ['180', '180°'], ['270', '270°']] },

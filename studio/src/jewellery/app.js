@@ -81,7 +81,7 @@ function parseQuery(T, q) {
       y: q.has('ey') ? Math.max(-100, Math.min(100, Number(q.get('ey')) || 0)) : T.engraveDefault?.y ?? 0,
       rot: q.has('er') ? Math.max(-180, Math.min(180, Number(q.get('er')) || 0)) : 0,
       depth: q.has('ed') ? Math.max(0.05, Math.min(8, Number(q.get('ed')) || 0.3)) : T.engraveDefault?.depth ?? (T.category === 'home' ? 1 : 0.3),
-      mode: q.get('emode') === 'emboss' ? 'emboss' : 'engrave', fill: q.get('efill') === '1', design: q.get('edz') || '',
+      mode: q.get('emode') === 'emboss' ? 'emboss' : 'engrave', fill: q.get('efill') === '1', design: q.get('edz') || '', hq: q.get('ehq') === '1',
     },
     pr: {
       kind: ['image', 'motif', 'text'].includes(q.get('pk')) ? q.get('pk') : 'none',
@@ -224,7 +224,7 @@ export async function mount(main, typeId, query) {
       b.type = 'button'; b.title = label; b.setAttribute('aria-label', `Motif: ${label}`);
       renderMotif(k, 96).then((c) => { b.innerHTML = `<img src="${c.toDataURL()}" alt="">`; });
       b.addEventListener('click', async () => {
-        st.pixels = await motifPixels(k, typeId === 'wearable' ? 500 : 420);
+        st.pixels = await motifPixels(k, 1000);
         Object.assign(st.p, { shape: `m:${k}`, fill: false, bold: 1, threshold: 128, invert: false });
         st.pixelsFrom = `m:${k}`;
         renderControls(); rebuild(true);
@@ -237,7 +237,7 @@ export async function mount(main, typeId, query) {
     const holder = document.createElement('div');
     holder.className = 'group';
     holder.append(designPicker({ label: 'My designs', help: 'Use one of your uploaded designs as the shape (dark = solid).', onPick: async (id) => {
-      st.pixels = await designPixels(id, typeId === 'wearable' ? 500 : 420);
+      st.pixels = await designPixels(id, 1000);
       Object.assign(st.p, { shape: 'custom', fill: false, bold: 1, threshold: 150, invert: false });
       st.pixelsFrom = null;
       renderControls(); rebuild(true);
@@ -352,7 +352,7 @@ export async function mount(main, typeId, query) {
     el.className = 'ctl'; el.dataset.key = d.key;
     el.innerHTML = `<div class="ctl-head"><span class="ctl-name">${esc(d.label)}</span></div><p class="ctl-help">${esc(d.help)}</p>
       <div class="drop"><p class="label" style="margin-bottom:8px">${st.model ? esc(st.model.name) : 'No file yet'}</p>
-      <button type="button" class="btn btn--lime">Open STL / OBJ / GLB / PLY</button><input type="file" accept=".stl,.obj,.glb,.gltf,.ply" hidden></div>`;
+      <button type="button" class="btn btn--lime">Open GLB / STL / OBJ / FBX / 3MF / DAE / PLY</button><input type="file" accept=".stl,.obj,.glb,.gltf,.ply,.fbx,.3mf,.dae" hidden></div>`;
     const input = $('input', el);
     $('button', el).addEventListener('click', () => input.click());
     const take = async (file) => {
@@ -389,7 +389,7 @@ export async function mount(main, typeId, query) {
     const take = async (file) => {
       if (!file || !/^image\//.test(file.type)) { toast('Please choose a picture (JPG, PNG, WebP).'); return; }
       try {
-        st.pixels = await fileToPixels(file, typeId === 'sketch3d' ? 480 : 360);
+        st.pixels = await fileToPixels(file, 1000);
         st.p.shape = 'custom'; st.p.fill = false; st.p.bold = typeId === 'sketch3d' ? 2 : 0;
         renderControls(); rebuild(true);
         toast('Picture loaded. Move “Outline detection” until the shape looks right.');
@@ -515,8 +515,8 @@ export async function mount(main, typeId, query) {
     const pr = st.pr;
     const tint = (src, color) => { const c = makeCanvas(src.width, src.height); const x = c.getContext('2d'); x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height); return c; };
     let art = null;
-    if (pr.kind === 'image' && pr.design) art = await designCanvas(pr.design);
-    if (pr.kind === 'motif') { const m = await renderMotif(pr.motif, 512); art = tint(MOTIFS[pr.motif].pattern ? m : trimCanvas(m, 6), pr.color); }
+    if (pr.kind === 'image' && pr.design) art = await designCanvas(pr.design, 4096);
+    if (pr.kind === 'motif') { const m = await renderMotif(pr.motif, pr.tile ? 512 : 2048); art = tint(MOTIFS[pr.motif].pattern ? m : trimCanvas(m, 6), pr.color); }
     if (pr.kind === 'text' && pr.text.trim()) {
       await ensureFont(pr.font, pr.text);
       const c = makeCanvas(8, 8); let x = c.getContext('2d'); const font = fontStack(pr.font, 200, pr.text); x.font = font;
@@ -567,6 +567,7 @@ export async function mount(main, typeId, query) {
       slider({ name: 'ex', label: 'Move left / right', help: 'Position across that side.', min: -100, max: 100, step: 1, unit: '%', value: e.x, onInput: set('x') }),
       slider({ name: 'ey', label: 'Move down / up', help: 'Position up and down on that side.', min: -100, max: 100, step: 1, unit: '%', value: e.y, onInput: set('y') }),
       slider({ name: 'er', label: 'Rotate', help: 'Turn the engraving.', min: -180, max: 180, step: 1, unit: '°', value: e.rot, onInput: set('rot') }),
+      toggle({ name: 'ehq', label: 'Extra fine detail', help: 'Finer mesh for small text and detailed designs (slower, bigger file).', value: e.hq, onInput: set('hq') }),
       toggle({ name: 'efill', label: 'Fill with enamel', help: 'Colours the engraving (TRIAD lime or any colour under Material).', value: e.fill, onInput: (v) => { e.fill = v; renderColour(); rebuild(); } }),
     );
     $('[data-engrave]', main).open = true;
@@ -609,7 +610,7 @@ export async function mount(main, typeId, query) {
   async function prepare() {
     const src = T.params.find((d) => d.type === 'source');
     if (src && String(st.p[src.key]).startsWith('m:') && st.pixelsFrom !== st.p[src.key] && MOTIFS[st.p[src.key].slice(2)]) {
-      st.pixels = await motifPixels(st.p[src.key].slice(2), typeId === 'wearable' ? 500 : 420);
+      st.pixels = await motifPixels(st.p[src.key].slice(2), 1000);
       st.pixelsFrom = st.p[src.key];
       if (!st.renderedFrom) { st.renderedFrom = true; renderControls(); }
     }
@@ -656,7 +657,7 @@ export async function mount(main, typeId, query) {
             const mask = await engraveMask(sizeMm);
             if (my !== buildNo) return;
             if (mask) {
-              const opts = { mask, box, side: st.e.side, offset: [(st.e.x / 100) * (fw / 2), (st.e.y / 100) * (fh / 2)], rot: st.e.rot, depth: st.e.depth, mode: st.e.mode, fill: st.e.fill, height: sizeMm };
+              const opts = { mask, box, side: st.e.side, offset: [(st.e.x / 100) * (fw / 2), (st.e.y / 100) * (fh / 2)], rot: st.e.rot, depth: st.e.depth, mode: st.e.mode, fill: st.e.fill, height: sizeMm, fine: st.e.hq };
               r.parts = r.parts.map((part) => (part.instances ? part : { ...part, geometry: engrave(part.geometry, opts) }));
               r.volume = r.parts.reduce((sum, part) => sum + geometryVolume(part.geometry) * (part.instances?.length || 1), 0);
               if (st.e.mode === 'engrave') r.minWall = Math.max(0, (r.minWall || 0) - st.e.depth);
@@ -702,7 +703,8 @@ export async function mount(main, typeId, query) {
             r.parts = r.parts.map((part) => (part.instances ? part : { ...part, geometry: printOnto(part.geometry, opts) }));
             // texture: the material colour behind, the print on top
             const look = lookOf(st.metal, isHome(T) || !MATERIALS[st.metal]);
-            const W = Math.min(2048, Math.max(256, Math.round(1024 * Math.min(4, w / h)))), Hh = Math.min(2048, Math.round(W / (w / h)));
+            const maxTex = Math.min(4096, viewer.renderer.capabilities.maxTextureSize || 4096);
+            const W = Math.min(maxTex, Math.max(512, Math.round(2048 * Math.min(4, w / h)))), Hh = Math.min(maxTex, Math.round(W / (w / h)));
             printCanvas = makeCanvas(W, Hh);
             const x = printCanvas.getContext('2d');
             x.fillStyle = st.col.color || look.color; x.fillRect(0, 0, W, Hh);
@@ -750,7 +752,7 @@ export async function mount(main, typeId, query) {
     if (e.kind === 'image' && e.design) q.set('edz', e.design);
     q.set('eside', e.side); q.set('esz', e.size); q.set('ed', e.depth);
     if (e.x) q.set('ex', e.x); if (e.y) q.set('ey', e.y); if (e.rot) q.set('er', e.rot);
-    if (e.mode !== 'engrave') q.set('emode', e.mode); if (e.fill) q.set('efill', '1');
+    if (e.mode !== 'engrave') q.set('emode', e.mode); if (e.fill) q.set('efill', '1'); if (e.hq) q.set('ehq', '1');
   }
   function hashFor() {
     const q = new URLSearchParams();
@@ -801,7 +803,7 @@ export async function mount(main, typeId, query) {
 
   /* ── step 3 ── */
   const fileBase = () => `triad-${typeId}-${new Date().toISOString().slice(0, 10)}`;
-  const poster = (mark) => renderPoster(viewer, { mark, title: st.result.title, material: materialLabel() });
+  const poster = (mark, scale = 1) => renderPoster(viewer, { mark, scale, title: st.result.title, material: materialLabel() });
   function renderSave() {
     const r = st.result;
     const box = $('#save', main);
@@ -826,9 +828,11 @@ export async function mount(main, typeId, query) {
       <div class="save-actions">
         <button type="button" class="btn btn--lime" data-a="stl" ${r.empty ? 'disabled' : ''}>Download STL <small>3D print · casting · CNC</small></button>
         ${(r.downloads || []).map((dl, i) => `<button type="button" class="btn" data-dl="${i}">${esc(dl.label)} <small>${esc(dl.small || '')}</small></button>`).join('')}
+        <button type="button" class="btn btn--solid" data-a="blender" ${r.empty ? 'disabled' : ''}>Open in Blender <small>edit further, then upload back</small></button>
         <button type="button" class="btn" data-a="glb" ${r.empty ? 'disabled' : ''}>Colour model (GLB) <small>colours, print, enamel</small></button>
         <button type="button" class="btn" data-a="poster" ${r.empty ? 'disabled' : ''}>Image for Instagram <small>1080 × 1350 PNG</small></button>
         <label class="check"><input type="checkbox" data-mark checked> <span>Add TRIAD lettering to the image</span></label>
+        <label class="check"><input type="checkbox" data-hi> <span>Extra high resolution (2160 × 2700, for print and zoom)</span></label>
         <button type="button" class="btn" data-a="card" ${r.empty ? 'disabled' : ''}>Info card image <small>sizes &amp; weight for your maker</small></button>
         <button type="button" class="btn" data-a="link">Share link <small>everything is in the link</small></button>
         <button type="button" class="btn" data-a="save">Save on this device <small>no account</small></button>
@@ -843,12 +847,20 @@ export async function mount(main, typeId, query) {
         download(new Blob([buf], { type: 'model/stl' }), `${fileBase()}.stl`);
         toast('STL saved. Open it in your slicer or send it to your maker.');
       },
+      blender: async () => {
+        toast('Preparing the model for Blender…');
+        try {
+          const buf = await viewer.exportGLB();
+          download(new Blob([buf], { type: 'model/gltf-binary' }), `${fileBase()}-blender.glb`);
+          openBlenderGuide();
+        } catch (e) { console.error(e); toast('The model could not be exported.'); }
+      },
       glb: async () => {
         toast('Preparing the colour model…');
         try { const buf = await viewer.exportGLB(); download(new Blob([buf], { type: 'model/gltf-binary' }), `${fileBase()}.glb`); toast('GLB saved: open it in any 3D app, colour 3D print services, or AR.'); }
         catch (e) { console.error(e); toast('The colour model could not be made.'); }
       },
-      poster: async () => { const c = await poster($('[data-mark]', box).checked); c.toBlob((b) => download(b, `${fileBase()}-instagram.png`)); toast('Image saved.'); },
+      poster: async () => { const c = await poster($('[data-mark]', box).checked, $('[data-hi]', box).checked ? 2 : 1); c.toBlob((b) => download(b, `${fileBase()}-instagram.png`)); toast('Image saved.'); },
       card: async () => {
         const c = await renderInfoCard(viewer, { name: name(), result: st.result, materialLabel: materialLabel(), weights: materialsOf(T).slice(0, 4).map((k) => [matInfo(T, k).label, weightLabel(gramsFor(k))]), url: shareUrl() });
         c.toBlob((b) => download(b, `${fileBase()}-info.png`));
@@ -868,6 +880,26 @@ export async function mount(main, typeId, query) {
     };
     $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => act[b.dataset.a]()));
     $$('[data-dl]', box).forEach((b) => b.addEventListener('click', async () => { const dl = r.downloads[Number(b.dataset.dl)]; download(await dl.make(), dl.filename); toast(`${dl.label} saved.`); }));
+  }
+
+  function openBlenderGuide() {
+    const dlg = document.createElement('dialog');
+    dlg.setAttribute('aria-labelledby', 'bl-h');
+    dlg.innerHTML = `<form class="dlg" method="dialog">
+      <div class="dlg-head"><h2 id="bl-h" class="section-title">Continue in Blender</h2><button class="icon-btn" value="x" aria-label="Close">×</button></div>
+      <p>Your model was saved as a <b>.glb</b> file (with materials, colours, print and enamel).</p>
+      <ol style="padding-left:20px;display:grid;gap:6px">
+        <li>Open <b>Blender</b> (free from blender.org).</li>
+        <li><b>File → Import → glTF 2.0 (.glb)</b> and choose the file.</li>
+        <li>To work in millimetres: <b>Scene → Units → Unit Scale 0.001, Length: Millimeters</b>. The model is true to size.</li>
+        <li>Sculpt, model, render — anything Blender can do.</li>
+        <li>Back to the Studio: <b>File → Export → glTF 2.0</b> (or STL / OBJ / FBX), then open <a href="#/model">Upload 3D</a> to add engravings, print, destroy mode, materials or to send it to TRIAD.</li>
+      </ol>
+      <div class="btn-row"><a class="btn btn--lime" href="https://www.blender.org/download/" target="_blank" rel="noopener">Get Blender ↗</a><button class="btn" value="x">Done</button></div>
+    </form>`;
+    document.body.append(dlg);
+    dlg.addEventListener('close', () => dlg.remove());
+    dlg.showModal();
   }
 
   /* ── go ── */

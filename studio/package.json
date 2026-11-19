@@ -15,7 +15,11 @@
   },
   "license": "UNLICENSED",
   "dependencies": {
-    "three": "0.180.0"
+    "@tensorflow/tfjs": "4.11.0",
+    "@upscalerjs/esrgan-slim": "1.0.0",
+    "imagetracerjs": "1.2.6",
+    "three": "0.180.0",
+    "upscaler": "1.0.0"
   },
   "devDependencies": {
     "vite": "7.3.8"

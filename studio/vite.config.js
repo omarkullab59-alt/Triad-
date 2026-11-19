@@ -14,9 +14,9 @@ export default defineConfig({
   define: { 'import.meta.env.VITE_DARKROOM_URL': JSON.stringify(darkroom) },
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 900,
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
-      output: { manualChunks: (id) => (id.includes('node_modules/three') ? 'three' : undefined) },
+      output: { manualChunks: (id) => (id.includes('node_modules/three/build') ? 'three' : undefined) },
     },
   },
 });

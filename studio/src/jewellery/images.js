@@ -39,14 +39,16 @@ function tape(c, text, x, y) {
   c.restore();
 }
 
-export async function renderPoster(viewer, { mark = true, title = '', material = '' } = {}) {
+export async function renderPoster(viewer, { mark = true, title = '', material = '', scale = 1 } = {}) {
   await fontsReady();
   const night = document.documentElement.classList.contains('night');
-  const out = makeCanvas(W, H);
+  const out = makeCanvas(W * scale, H * scale);
   const c = out.getContext('2d');
+  c.scale(scale, scale); // same layout, more pixels
   fog(c, night);
-  const shot = viewer.snapshot(W, mark ? 1100 : H, { fill: 0.6 });
-  c.drawImage(shot, 0, mark ? 20 : 0);
+  const sh = mark ? 1100 : H;
+  const shot = viewer.snapshot(W * scale, sh * scale, { fill: 0.6 });
+  c.drawImage(shot, 0, mark ? 20 : 0, W, sh);
   if (mark) {
     const ink = night ? '#ece9e2' : '#0a0a0a';
     glyph(c, 56, 56, 92, ink);

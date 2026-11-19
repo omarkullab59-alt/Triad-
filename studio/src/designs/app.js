@@ -1,5 +1,5 @@
 // MY DESIGNS: upload your own artwork once, then put it on anything with one tap.
-import { listDesigns, addDesignFile, deleteDesign, designPixels } from '../lib/designs.js';
+import { listDesigns, addDesignFile, deleteDesign, designPixels, vectorize, upscale, VECTOR_PRESETS } from '../lib/designs.js';
 import { setHandoff } from '../lib/store.js';
 import { $, $$, esc, toast } from '../lib/dom.js';
 
@@ -23,7 +23,8 @@ export async function mount(main) {
     <div class="drop" data-drop style="padding:18px">
       <p style="margin-bottom:10px">PNG, JPG, WebP or SVG — logos, drawings, photos, patterns. Drop files here or:</p>
       <button type="button" class="btn btn--lime" data-up>Upload designs</button><input type="file" accept="image/*,.svg" multiple hidden>
-      <p class="muted" style="font-size:13px;margin-top:10px">Stored only on this device. Nothing is uploaded to a server.</p>
+      <p class="muted" style="font-size:13px;margin-top:10px">Stored only on this device. Nothing is uploaded to a server. SVG files stay vectors: sharp at any size.</p>
+      <p class="muted" style="font-size:13px;margin-top:4px"><b>Make sharp</b> turns a pixel image into a vector (best for logos, drawings, type). <b>AI upscale</b> enlarges small photos and artwork 2× or 4×. Both run on your device, free.</p>
     </div>
     <ul class="find-grid" data-list style="margin-top:14px"></ul>
   </section>`;
@@ -32,15 +33,28 @@ export async function mount(main) {
     const items = await listDesigns();
     list.innerHTML = items.length ? items.map((d) => `<li class="find-card">
       <div class="find-thumb"><img src="${d.thumb}" alt=""></div>
-      <div class="find-body"><span class="label muted">${d.w} × ${d.h} px</span><strong>${esc(d.name)}</strong>
+      <div class="find-body"><span class="label muted">${d.vector ? '<span class="tape" style="font-size:10px">Vector · sharp at any size</span>' : `${d.w} × ${d.h} px${Math.max(d.w, d.h) < 900 ? ' · small' : ''}`}</span><strong>${esc(d.name)}</strong>
+        ${d.vector ? '' : `<div class="btn-row" style="margin-bottom:6px"><select class="input" data-vp="${esc(d.id)}" aria-label="Vector style" style="min-height:36px;width:auto">${Object.entries(VECTOR_PRESETS).map(([k, v]) => `<option value="${k}">${esc(v.label)}</option>`).join('')}</select><button type="button" class="btn btn--lime" data-vec="${esc(d.id)}">Make sharp</button><button type="button" class="btn" data-up2="${esc(d.id)}">AI upscale ×2</button><button type="button" class="btn" data-up4="${esc(d.id)}">AI upscale ×4</button></div>`}
         <div class="btn-row">${USES(d.id).map(([l, h]) => `<a class="btn" href="${esc(h)}">${esc(l)}</a>`).join('')}
           <button type="button" class="btn" data-pend="${esc(d.id)}">Pendant</button>
           <button type="button" class="btn" data-sk="${esc(d.id)}">3D object</button>
           <button type="button" class="btn" data-del="${esc(d.id)}" aria-label="Delete ${esc(d.name)}">Delete</button></div></div></li>`).join('')
       : '<li class="muted">No designs yet. Upload your first one above.</li>';
+    const busy = (b, text) => { b.disabled = true; b.textContent = text; };
+    $$('[data-vec]', list).forEach((b) => b.addEventListener('click', async () => {
+      busy(b, 'Working…');
+      try { const v = await vectorize(b.dataset.vec, $(`[data-vp="${b.dataset.vec}"]`, list).value); toast(`“${v.name}” added — sharp at any size.`); } catch (e) { console.error(e); toast('This image could not be vectorised.'); }
+      draw();
+    }));
+    for (const f of [2, 4]) $$(`[data-up${f}]`, list).forEach((b) => b.addEventListener('click', async () => {
+      busy(b, 'Loading AI…');
+      try { const v = await upscale(b.dataset[`up${f}`], f, (pr) => { b.textContent = `Upscaling ${Math.round(pr * 100)} %`; }); toast(`“${v.name}” added (${v.w} × ${v.h} px).`); }
+      catch (e) { console.error(e); toast('Upscaling did not work on this device. Try “Make sharp” instead.'); }
+      draw();
+    }));
     $$('[data-del]', list).forEach((b) => b.addEventListener('click', async () => { await deleteDesign(b.dataset.del); toast('Deleted.'); draw(); }));
-    $$('[data-pend]', list).forEach((b) => b.addEventListener('click', async () => { setHandoff({ pixels: await designPixels(b.dataset.pend), fill: false, bold: 1, params: { threshold: 150 } }); location.hash = '#/pendant'; }));
-    $$('[data-sk]', list).forEach((b) => b.addEventListener('click', async () => { setHandoff({ pixels: await designPixels(b.dataset.sk, 480), fill: false, bold: 1, params: { threshold: 150, mode: 'flat', size: 80, depth: 5 } }); location.hash = '#/sketch3d'; }));
+    $$('[data-pend]', list).forEach((b) => b.addEventListener('click', async () => { setHandoff({ pixels: await designPixels(b.dataset.pend, 1000), fill: false, bold: 1, params: { threshold: 150 } }); location.hash = '#/pendant'; }));
+    $$('[data-sk]', list).forEach((b) => b.addEventListener('click', async () => { setHandoff({ pixels: await designPixels(b.dataset.sk, 1000), fill: false, bold: 1, params: { threshold: 150, mode: 'flat', size: 80, depth: 5 } }); location.hash = '#/sketch3d'; }));
   }
   const input = $('input', main);
   const take = async (files) => {

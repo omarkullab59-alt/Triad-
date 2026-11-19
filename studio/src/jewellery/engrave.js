@@ -54,7 +54,7 @@ export function faceSize(box, side) {
  * @param o.rot     degrees
  * @param o.depth   mm; o.mode 'engrave' | 'emboss'; o.fill → accent material in the engraving
  */
-export function engrave(geometry, { mask, box, side = 'front', offset = [0, 0], rot = 0, depth = 0.3, mode = 'engrave', fill = false, height = 10 }) {
+export function engrave(geometry, { mask, box, side = 'front', offset = [0, 0], rot = 0, depth = 0.3, mode = 'engrave', fill = false, height = 10, fine = false }) {
   const c = box.getCenter(new THREE.Vector3());
   const around = side === 'around';
   const [fwd, up] = VIEW[side] || VIEW.front;
@@ -62,7 +62,7 @@ export function engrave(geometry, { mask, box, side = 'front', offset = [0, 0], 
   const cr = Math.cos((-rot * Math.PI) / 180), sr = Math.sin((-rot * Math.PI) / 180);
   const halfW = (mask.lengthMm || height) / 2 + 1, halfH = height / 2 + 1;
   const radius = Math.max(halfW, halfH) * 1.15;
-  const maxEdge = Math.max(0.05, height / 85);
+  const maxEdge = Math.max(fine ? 0.03 : 0.05, height / (fine ? 170 : 85));
 
   // project a point to engraving coordinates (u right, v up, h = how far "in front")
   const proj = (x, y, z) => {
@@ -82,7 +82,7 @@ export function engrave(geometry, { mask, box, side = 'front', offset = [0, 0], 
   }
   const margin = depth * 3 + radius * 0.3;
   const near = (x, y, z, len) => { const [u, v, h] = proj(x, y, z); return Math.abs(u) < radius + len && Math.abs(v) < radius + len && (!Number.isFinite(hFront) || h > hFront - margin - len); };
-  const { verts, tris } = refine(welded, maxEdge, 400000, near);
+  const { verts, tris } = refine(welded, maxEdge, fine ? 900000 : 400000, near);
   const nV = verts.length / 3;
 
   // normals (outward)
