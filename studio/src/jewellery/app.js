@@ -22,6 +22,7 @@ import { couture } from '../sculpt/couture.js';
 import { belt } from '../wear/belt.js';
 import { hat } from '../wear/hat.js';
 import { tape } from '../wear/tape.js';
+import { garment, flatSVG, parseEdits, stringifyEdits } from '../wear/garment.js';
 import { printOnto } from './print.js';
 import { lookOf } from './viewer.js';
 import { engrave, SIDES, faceSize } from './engrave.js';
@@ -39,7 +40,7 @@ import { openSendDialog } from '../lib/send.js';
 import { designPicker, designCanvas, designPixels, designShape } from '../lib/designs.js';
 import { getProject, saveProject, openProjectDialog } from '../lib/projects.js';
 
-export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, couture, belt, hat, tape, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
+export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, couture, garment, belt, hat, tape, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
 const MAX_VISIBLE = 5;
 const JEWEL_MATS = ['silver', 'chrome', 'gold', 'black'];
 
@@ -128,6 +129,10 @@ export async function mount(main, typeId, query) {
         <button type="button" data-v="fit" aria-label="Reset view">⌂</button>
       </div>
       <p class="stage-weight label" aria-live="polite" data-weight></p>
+      <div class="view-switch" role="group" aria-label="View" data-viewsw hidden>
+        <button type="button" data-view="3d" aria-pressed="true">3D</button><button type="button" data-view="flat" aria-pressed="false">Flat</button><button type="button" data-view="edit" aria-pressed="false">Edit points</button>
+      </div>
+      <div class="flat-view" data-flat hidden></div>
     </section>
     <section class="panel">
       <div class="stepbar" role="tablist" aria-label="Steps">
@@ -276,7 +281,7 @@ export async function mount(main, typeId, query) {
     const focusedKey = document.activeElement?.closest?.('[data-key]')?.dataset.key;
     ctlBox.innerHTML = '';
     const ctx = { hasPixels: !!st.pixels };
-    const visible = T.params.filter((d) => !d.show || d.show(st.p, ctx));
+    const visible = T.params.filter((d) => d.type !== 'hidden' && (!d.show || d.show(st.p, ctx)));
     const first = visible.filter((d) => !d.more).slice(0, MAX_VISIBLE);
     const more = visible.filter((d) => !first.includes(d));
     const make = (d) => {
@@ -647,7 +652,7 @@ export async function mount(main, typeId, query) {
       let r;
       try {
         r = T.build(st.p, {
-          makeCanvas, pixels: st.pixels, model: st.model,
+          makeCanvas, pixels: st.pixels, model: st.model, material: st.metal,
           symbolCanvas: (id) => st.symCanvas.get(id) || null, symbolPixels: (id) => st.symPixels.get(id) || null,
           motifCanvas: (id) => st.motifCanvas?.get(id) || null,
           designCanvas: (id) => (id && st.designC?.get(id)) || null,
@@ -728,6 +733,7 @@ export async function mount(main, typeId, query) {
       if (fitNext) { viewer.fit(T.view); fitNext = false; }
       updateChecks();
       drawPreview();
+      renderFlat();
       syncHash();
       $('[data-dmg-badge]', main).hidden = !st.d.dmg;
       $('[data-dmg-badge]', main).textContent = `${st.d.dmg} %`;
@@ -883,7 +889,17 @@ export async function mount(main, typeId, query) {
       send: () => openSendDialog({ makeImage: () => poster(true), title: name(), caption: `${st.result.title} · ${materialLabel()}. Designed in TRIAD Studio.` }),
     };
     $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => act[b.dataset.a]()));
-    $$('[data-dl]', box).forEach((b) => b.addEventListener('click', async () => { const dl = r.downloads[Number(b.dataset.dl)]; download(await dl.make(), dl.filename); toast(`${dl.label} saved.`); }));
+    $$('[data-dl]', box).forEach((b) => b.addEventListener('click', async () => {
+      const dl = r.downloads[Number(b.dataset.dl)];
+      const pr = st.project;
+      const concepts = [];
+      for (const id of pr?.concepts || []) { const c = await designCanvas(id, 512); if (c) { const k = 260 / Math.max(c.width, c.height); const t = makeCanvas(Math.round(c.width * k), Math.round(c.height * k)); t.getContext('2d').drawImage(c, 0, 0, t.width, t.height); concepts.push(t.toDataURL('image/png')); } }
+      const prints = [];
+      if (st.pr.kind !== 'none') prints.push(`Print: ${st.pr.kind === 'motif' ? MOTIFS[st.pr.motif].label : st.pr.kind === 'text' ? `“${st.pr.text}”` : 'own design'} · ${st.pr.side} · ${st.pr.size}%`);
+      if (st.e.kind !== 'none') prints.push(`${st.e.mode === 'emboss' ? 'Embossed' : 'Engraved'} ${st.e.kind} · ${st.e.side}`);
+      const ctx = { name: name(), notes: pr ? pr.notes || '' : st.draftNotes || '', concepts, material: materialLabel(), prints, fill: matLook(T, st.metal)?.swatch };
+      download(await dl.make(ctx), dl.filename); toast(`${dl.label} saved.`);
+    }));
   }
 
   function openBlenderGuide() {
@@ -905,6 +921,56 @@ export async function mount(main, typeId, query) {
     dlg.addEventListener('close', () => dlg.remove());
     dlg.showModal();
   }
+
+  /* ── flat view & point editing (clothing) ── */
+  st.view = '3d';
+  if (T.flatEditor) $('[data-viewsw]', main).hidden = false;
+  $$('[data-view]', main).forEach((b) => b.addEventListener('click', () => {
+    st.view = b.dataset.view;
+    $$('[data-view]', main).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    $('[data-flat]', main).hidden = st.view === '3d';
+    viewer.renderer.domElement.style.visibility = st.view === '3d' ? 'visible' : 'hidden';
+    renderFlat();
+  }));
+  function renderFlat() {
+    const box = $('[data-flat]', main);
+    if (!T.flatEditor || st.view === '3d' || !st.result?.flats) return;
+    const fill = matLook(T, st.metal)?.swatch || '#ecebe5';
+    const handles = st.view === 'edit';
+    box.innerHTML = ['front', 'back'].map((v) => { const f = flatSVG(st.result.flats[v], { fill: st.col.color || fill, handles, w: Math.max(f0(st.result.flats[v]), 1) }); return `<figure><figcaption class="label">${v}</figcaption><svg viewBox="${f.box.join(' ')}" data-side="${v}" role="img" aria-label="${v} flat drawing">${f.svg}</svg></figure>`; }).join('')
+      + (handles ? `<p class="flat-help">Drag a point to reshape. ${st.p.asym ? 'Left and right are edited separately.' : 'Both sides move together (turn on “Asymmetric editing” under More).'} <button type="button" class="btn" data-reset>Reset points</button></p>` : '');
+    if (!handles) return;
+    $('[data-reset]', box)?.addEventListener('click', () => { st.p.edits = ''; rebuild(); });
+    for (const svg of $$('svg', box)) {
+      svg.addEventListener('pointerdown', (e) => {
+        const h = e.target.closest('.flat-handle');
+        if (!h) return;
+        e.preventDefault();
+        svg.setPointerCapture(e.pointerId);
+        const name = h.dataset.pt;
+        const start = toSvg(svg, e);
+        const edits = parseEdits(st.p.edits);
+        const side = name.endsWith('_L') ? 'L' : name.endsWith('_R') ? 'R' : '';
+        const base = name.replace(/_[LR]$/, '');
+        const key = st.p.asym || !side ? name : base;
+        const sign = !st.p.asym && side === 'L' ? -1 : 1;
+        const orig = edits[key] ? [...edits[key]] : [0, 0];
+        const move = (ev) => {
+          const pnt = toSvg(svg, ev);
+          edits[key] = [orig[0] + sign * (pnt.x - start.x), orig[1] - (pnt.y - start.y)];
+          st.p.edits = stringifyEdits(edits);
+          st.result.flats = garment.flats(st.p);
+          for (const s2 of $$('svg[data-side]', box)) { const v = s2.dataset.side; const f = flatSVG(st.result.flats[v], { fill: st.col.color || matLook(T, st.metal)?.swatch || '#ecebe5', handles: true, w: Math.max(f0(st.result.flats[v]), 1) }); s2.innerHTML = f.svg; }
+        };
+        const up = () => { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerup', up); svg.removeEventListener('pointercancel', up); syncHash(); rebuild(); };
+        svg.addEventListener('pointercancel', up);
+        svg.addEventListener('pointermove', move);
+        svg.addEventListener('pointerup', up);
+      });
+    }
+  }
+  const f0 = (view) => { const xs = view.outline.map((q) => q.x); return (Math.max(...xs) - Math.min(...xs)) / 500; };
+  const toSvg = (svg, e) => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const m = svg.getScreenCTM(); return m ? pt.matrixTransform(m.inverse()) : { x: 0, y: 0 }; };
 
   /* ── projects: notes & concept art ── */
   const thumbnail = () => {

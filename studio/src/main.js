@@ -40,6 +40,7 @@ const ICONS = {
   symbol: '<g fill="none" stroke="currentColor" stroke-width="4"><circle cx="32" cy="32" r="22"/><path d="M32 12l17 30H15z"/></g><circle cx="32" cy="32" r="4" fill="currentColor"/>',
   sketch3d: '<path d="M10 50l16-30 10 16 6-8 12 22z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M10 50l8 6h44l-8-6" fill="none" stroke="currentColor" stroke-width="3"/>',
   couture: '<path d="M14 18c4-10 32-10 36 0 4 14 0 30-18 40C14 48 10 32 14 18z" fill="none" stroke="currentColor" stroke-width="4"/><g fill="currentColor"><circle cx="24" cy="26" r="3"/><circle cx="40" cy="26" r="3"/><circle cx="32" cy="36" r="2.5"/><circle cx="26" cy="44" r="2.5"/><circle cx="38" cy="44" r="2.5"/></g>',
+  garment: '<path d="M22 8l-14 8 6 12 6-3v31h24V25l6 3 6-12-14-8c-2 5-6 7-10 7s-8-2-10-7z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>',
   hat: '<path d="M10 44c0-20 10-34 22-34s22 14 22 34z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M6 44h52v8H6z" fill="currentColor"/><path d="M22 14v30M32 10v34M42 14v30" stroke="currentColor" stroke-width="2"/>',
   belt: '<rect x="4" y="26" width="56" height="12" fill="none" stroke="currentColor" stroke-width="4"/><rect x="10" y="20" width="16" height="24" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="40" cy="32" r="2" fill="currentColor"/><circle cx="48" cy="32" r="2" fill="currentColor"/>',
   tape: '<path d="M4 22h56v20H4z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M12 22l-8 10M24 22L10 42M36 22L22 42M48 22L34 42M60 22L46 42M60 34l-6 8" stroke="currentColor" stroke-width="3"/>',
@@ -62,6 +63,7 @@ const GROUPS = [
     ['couture', 'Couture mask', 'Veils, crystals, horns, cages'],
   ]],
   ['Wear', [
+    ['garment', 'Clothing', 'Tops, trousers, skirts — every measurement'],
     ['hat', 'Hats', 'Beanie, cap, bucket hat, balaclava'],
     ['belt', 'Belt', 'Strap, buckle, cutting template'],
     ['tape', 'Tape', 'Your text or design, endless'],
