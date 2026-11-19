@@ -37,6 +37,7 @@ import { listSymbols, getSymbol, renderSymbol, symbolPixels } from '../lib/symbo
 import { renderPoster, renderInfoCard } from './images.js';
 import { openSendDialog } from '../lib/send.js';
 import { designPicker, designCanvas, designPixels, designShape } from '../lib/designs.js';
+import { getProject, saveProject, openProjectDialog } from '../lib/projects.js';
 
 export const TYPES = { ring, pendant, lettering, earrings, bangle, chain, wearable, couture, belt, hat, tape, plate, vessel, cutlery, cabinet, sculpture, sketch3d, model };
 const MAX_VISIBLE = 5;
@@ -91,6 +92,7 @@ function parseQuery(T, q) {
       size: n('psz', 70, 100), x: q.has('px') ? Number(q.get('px')) || 0 : 0, y: q.has('py') ? Number(q.get('py')) || 0 : 0, rot: q.has('pr') ? Number(q.get('pr')) || 0 : 0,
       tile: q.get('ptile') === '1', tiles: Math.round(n('ptn', 4, 16)) || 4, design: q.get('pd') || '',
     },
+    prj: q.get('prj') || '',
     col: { color: /^#[0-9a-f]{6}$/i.test(q.get('col') || '') ? q.get('col') : '', accent: /^#[0-9a-f]{6}$/i.test(q.get('acol') || '') ? q.get('acol') : '#c4ef2f' },
     d: {
       dmg: n('dmg', 0, 100), dirt: n('dirt', 0, 100), seed: Math.round(n('dseed', 7, 99999)),
@@ -147,6 +149,10 @@ export async function mount(main, typeId, query) {
         <details class="more" data-print>
           <summary>Print &amp; colour pattern <span class="tape" style="margin-left:6px;font-size:10px" data-print-badge hidden>on</span></summary>
           <div data-print-body></div>
+        </details>
+        <details class="more" data-notes>
+          <summary>Notes &amp; concept art <span class="tape" style="margin-left:6px;font-size:10px" data-notes-badge hidden>saved</span></summary>
+          <div data-notes-body></div>
         </details>
         <details class="more" data-engrave>
           <summary>Engrave &amp; emboss <span class="tape" style="margin-left:6px;font-size:10px" data-eng-badge hidden>on</span></summary>
@@ -782,6 +788,7 @@ export async function mount(main, typeId, query) {
       if (pr.tile) { q.set('ptile', '1'); q.set('ptn', pr.tiles); }
     }
     if (st.col.color) q.set('col', st.col.color);
+    if (st.project) q.set('prj', st.project.id);
     if (st.col.accent !== '#c4ef2f') q.set('acol', st.col.accent);
     const s = q.toString();
     return `#/${typeId}${s ? `?${s}` : ''}`;
@@ -835,7 +842,7 @@ export async function mount(main, typeId, query) {
         <label class="check"><input type="checkbox" data-hi> <span>Extra high resolution (2160 × 2700, for print and zoom)</span></label>
         <button type="button" class="btn" data-a="card" ${r.empty ? 'disabled' : ''}>Info card image <small>sizes &amp; weight for your maker</small></button>
         <button type="button" class="btn" data-a="link">Share link <small>everything is in the link</small></button>
-        <button type="button" class="btn" data-a="save">Save on this device <small>no account</small></button>
+        <button type="button" class="btn btn--lime" data-a="save">${st.project ? 'Update project' : 'Save project'} <small>with notes &amp; concept art, in a collection</small></button>
         <button type="button" class="btn btn--solid" data-a="send" ${r.empty ? 'disabled' : ''}>Send to TRIAD <small>submit to the Darkroom</small></button>
       </div>
       ${localOnly().map((w) => `<p class="muted" style="font-size:13px;margin-top:10px">${esc(w)}</p>`).join('')}
@@ -872,10 +879,7 @@ export async function mount(main, typeId, query) {
         try { await navigator.clipboard.writeText(url); toast('Link copied. Anyone with it sees this design.'); }
         catch { prompt('Copy this link:', url); }
       },
-      save: () => {
-        const ok = saveDesign({ name: name(), type: typeId, hash: hashFor() });
-        toast(ok ? 'Saved on this device. Find it on the start page.' : 'Your browser blocks saving here. Use “Share link” and keep the link instead.');
-      },
+      save: () => saveAsProject(name()),
       send: () => openSendDialog({ makeImage: () => poster(true), title: name(), caption: `${st.result.title} · ${materialLabel()}. Designed in TRIAD Studio.` }),
     };
     $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => act[b.dataset.a]()));
@@ -902,9 +906,42 @@ export async function mount(main, typeId, query) {
     dlg.showModal();
   }
 
+  /* ── projects: notes & concept art ── */
+  const thumbnail = () => {
+    try {
+      const shot = viewer.snapshot(360, 450, { fill: 0.7 });
+      const c = makeCanvas(360, 450); const x = c.getContext('2d');
+      const g = x.createLinearGradient(0, 0, 0, 450); g.addColorStop(0, '#f2f4f3'); g.addColorStop(1, '#d6dcde');
+      x.fillStyle = g; x.fillRect(0, 0, 360, 450); x.drawImage(shot, 0, 0); // misty background instead of black
+      return c.toDataURL('image/jpeg', 0.85);
+    } catch { return ''; }
+  };
+  async function saveAsProject(nm) {
+    const saved = await openProjectDialog({ project: st.project, defaults: { name: nm, type: typeId, hash: hashFor().replace(/[?&]prj=[^&]*/, '').replace(/^(#\/\w+)&/, '$1?'), thumb: thumbnail(), notes: st.project?.notes ?? st.draftNotes ?? '' } });
+    if (saved) { st.project = saved; syncHash(); renderNotes(); if (st.tab === 'save') renderSave(); }
+  }
+  function renderNotes() {
+    const body = $('[data-notes-body]', main);
+    const pr = st.project;
+    body.innerHTML = `<p class="ctl-help" style="margin-top:4px">${pr ? `Project “${esc(pr.name)}”${pr.collection ? ' · in a collection' : ''}. Notes save automatically.` : 'Write down ideas while you design. They are kept when you “Save project”.'}</p>
+      <textarea class="input" rows="5" maxlength="8000" placeholder="Fabric, fit, details, references, who it is for …" data-note>${esc(pr ? pr.notes || '' : st.draftNotes || '')}</textarea>
+      <div class="concept-row" data-cthumbs style="margin-top:8px"></div>
+      <p class="btn-row" style="margin-top:8px"><button type="button" class="btn" data-pdlg>${pr ? 'Concept art & collection…' : 'Save project…'}</button><a class="btn" href="#/collections">Collections</a></p>`;
+    $('[data-notes-badge]', main).hidden = !pr;
+    let t;
+    $('[data-note]', body).addEventListener('input', (e) => {
+      if (!st.project) { st.draftNotes = e.target.value; return; }
+      clearTimeout(t); t = setTimeout(async () => { st.project = await saveProject({ ...st.project, notes: e.target.value }); }, 500);
+    });
+    $('[data-pdlg]', body).addEventListener('click', () => saveAsProject($('#design-name', main)?.value?.trim() || st.project?.name || st.result?.title || T.label));
+    if (pr?.concepts?.length) import('../lib/designs.js').then(async ({ listDesigns }) => { const all = await listDesigns(); $('[data-cthumbs]', body).innerHTML = pr.concepts.map((id) => all.find((d) => d.id === id)).filter(Boolean).map((d) => `<img src="${d.thumb}" alt="Concept art: ${esc(d.name)}" title="${esc(d.name)}">`).join(''); });
+  }
+  if (st.prj) getProject(st.prj).then((pr) => { if (pr) { st.project = pr; renderNotes(); $('[data-notes]', main).open = true; } });
+
   /* ── go ── */
   renderControls();
   renderMaterials();
+  renderNotes();
   renderEngrave();
   if (st.e.kind === 'none') $('[data-engrave]', main).open = false;
   if (T.noEngrave) $('[data-engrave]', main).hidden = true;

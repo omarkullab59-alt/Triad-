@@ -265,3 +265,18 @@ textarea.input { min-height: 80px; resize: vertical; }
 .find-font { font-size: 26px; font-weight: 700; }
 .hero-search { display: grid; grid-template-columns: 1fr auto; gap: 8px; max-width: 620px; margin-top: 18px; }
 .hero-search input { min-height: 50px; font-size: 17px; padding: 8px 14px; border: 1.5px solid var(--fg); border-radius: var(--radius); background: var(--field); }
+
+/* collections & projects */
+.collection { margin-top: 26px; border-top: 1.5px solid var(--fg); padding-top: 12px; display: grid; gap: 10px; }
+.collection-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.collection-name { font: 400 clamp(26px, 4vw, 40px)/1 var(--f-display); text-transform: uppercase; border: 0; background: none; color: inherit; padding: 4px 0; min-width: 0; flex: 1 1 260px; }
+.collection-name:focus-visible { outline-offset: 4px; }
+.project-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.project-card { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 12px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--card); }
+.project-thumb { display: block; aspect-ratio: 4 / 5; background: var(--wash); border-radius: 4px; overflow: hidden; }
+.project-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.project-body { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.project-body .btn { min-height: 36px; padding: 6px 10px; font-size: 10px; }
+.concept-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.concept-row img { width: 44px; height: 44px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 4px; }
+.motif-grid button[aria-pressed='true'] { border-color: var(--fg); box-shadow: 0 0 0 3px var(--lime) inset; }
