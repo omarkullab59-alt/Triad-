@@ -6,8 +6,8 @@ function open() {
   if (dbp) return dbp;
   dbp = new Promise((resolve) => {
     try {
-      const req = indexedDB.open('triad-studio', 3);
-      req.onupgradeneeded = () => { for (const s of ['fonts', 'symbols', 'designs', 'projects', 'collections']) if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s); };
+      const req = indexedDB.open('triad-studio', 4);
+      req.onupgradeneeded = () => { for (const s of ['fonts', 'symbols', 'designs', 'projects', 'collections', 'scenes']) if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s); };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => resolve(null);
     } catch { resolve(null); }

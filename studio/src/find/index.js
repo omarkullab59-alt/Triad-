@@ -16,6 +16,7 @@ const TOOL_TAGS = {
   sculpture: 'sculpture skulptur statue figure figur art kunst bronze marble marmor pose', sketch3d: 'sketch skizze 3d relief vase turned drawing zeichnung',
   model: 'upload hochladen stl obj glb fbx 3mf blender model modell 3d file datei', couture: 'couture mask maske avant-garde avantgarde headpiece kopfschmuck runway laufsteg fashion mode high fashion editorial face gesicht veil schleier',
   draw: 'draw zeichnen sketch skizze ai ki render',
+  ether: 'ether world fashion universe character avatar figur outfit wardrobe showroom y2k cyber angel chrome silver ice futuristic underground runway lookbook 3d mode scene szene',
   garment: 'clothing kleidung garment hoodie t-shirt tee shirt jacket jacke coat mantel trousers hose pants shorts skirt rock tech pack schnitt flats fashion mode avantgarde drop crotch',
   belt: 'belt gürtel buckle schnalle leather leder accessory accessoire',
   hat: 'hat hut mütze beanie cap kappe bucket hat fischerhut balaclava sturmhaube knit strick headwear',

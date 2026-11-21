@@ -460,3 +460,44 @@ body.in-tool .toast { bottom: max(40px, env(safe-area-inset-bottom)); }
 .recent-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .recent-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (pointer: fine) { .tool-btn { min-height: var(--ctl-h); min-width: var(--ctl-h); border-width: 1px; font-size: 11px; } }
+
+/* ══ ETHER world ═══════════════════════════════════════════════════════ */
+.tile--wide { grid-column: 1 / -1; min-height: 150px; background: radial-gradient(120% 140% at 80% 0%, #ffffff 0%, #e3e8ec 45%, #c7ced4 100%); color: #0b0b0c; border-color: transparent; }
+.tile--wide .tile-desc { color: #3a3f44; }
+.tile--wide svg, .tile--wide:hover svg { color: #0b0b0c; }
+.tile--wide:hover { background: radial-gradient(120% 140% at 80% 0%, #ffffff 0%, #eaeef1 45%, #cfd6dc 100%); }
+.ether-rail { display: flex; gap: 2px; padding: 6px; overflow-x: auto; scrollbar-width: none; background: var(--surface-1); border-bottom: 1px solid var(--line); }
+.ether-rail button { display: grid; justify-items: center; gap: 3px; min-width: 72px; min-height: var(--tap); padding: 6px 4px; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); font: 500 9.5px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; transition: background var(--dur), color var(--dur); }
+.ether-rail button:hover { color: var(--fg); background: var(--wash); }
+.ether-rail button[aria-selected='true'] { color: var(--fg); background: var(--wash); box-shadow: inset 0 -2px 0 var(--lime); }
+.tool.ether { grid-template-columns: 1fr; }
+.tool.ether .stage { background: #e9ecee; }
+.tool.ether .stage::after { display: none; }
+@media (min-width: 960px) {
+  body.in-tool .tool.ether { grid-template-columns: 76px minmax(0, 1fr) var(--panel-w); }
+  .ether-rail { flex-direction: column; border-bottom: 0; border-right: 1px solid var(--line); padding: 8px 4px; overflow-y: auto; }
+  .ether-rail button { min-width: 0; padding: 10px 2px; }
+  .ether-rail button[aria-selected='true'] { box-shadow: inset 2px 0 0 var(--lime); }
+}
+@media (max-width: 959px) { .tool.ether .ether-rail { order: 2; position: sticky; top: var(--bar-h); z-index: 7; } .tool.ether .stage { order: 1; } .tool.ether .panel { order: 3; } }
+.walkpad { position: absolute; right: 12px; bottom: 40px; z-index: 4; display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(2, 44px); gap: 4px; }
+.walkpad button { border: 1px solid var(--line); border-radius: var(--r-sm); background: color-mix(in srgb, var(--surface-1) 85%, transparent); color: var(--fg); font-size: 14px; touch-action: none; }
+.walkpad [data-walk='f'] { grid-column: 2; }
+.walkpad [data-walk='l'] { grid-column: 1; grid-row: 2; }
+.walkpad [data-walk='b'] { grid-column: 2; grid-row: 2; }
+.walkpad [data-walk='r'] { grid-column: 3; grid-row: 2; }
+.obj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.obj-grid .chip { justify-content: center; }
+.outliner { list-style: none; padding: 0; margin: 6px 0 0; border: 1px solid var(--line); border-radius: var(--r-md); max-height: 240px; overflow: auto; }
+.outliner li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; min-height: 32px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--line); }
+.outliner li:last-child { border-bottom: 0; }
+.outliner li:hover { background: var(--wash); }
+.outliner li[aria-selected='true'] { background: var(--fg); color: var(--bg); }
+.outliner small { margin-left: auto; color: inherit; opacity: 0.6; }
+.sel-box { border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; }
+.chip--color { position: relative; cursor: pointer; }
+.chip--color input { width: 18px; height: 18px; padding: 0; border: 0; background: none; cursor: pointer; }
+.scene-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.scene-list li { display: flex; align-items: center; gap: 10px; padding: 6px; border: 1px solid var(--line); border-radius: var(--r-md); }
+.scene-list img { width: 44px; height: 55px; object-fit: cover; border-radius: var(--r-sm); background: var(--wash); }
+.scene-list span { flex: 1; min-width: 0; font-size: 13px; }

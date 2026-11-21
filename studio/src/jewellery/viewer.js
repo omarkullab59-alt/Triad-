@@ -51,7 +51,7 @@ function makeEnamel(vertexColors = false, color = '#9fd10f') {
 /* One renderer for the whole session: switching tools reuses the WebGL context, the studio
    environment and every compiled shader (a new renderer per tool froze the page for 1–2 s). */
 let shared = null;
-function sharedRenderer() {
+export function sharedRenderer() {
   if (shared && !shared.lost) return shared;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));

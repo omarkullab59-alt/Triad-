@@ -49,9 +49,13 @@ const ICONS = {
   find: '<circle cx="27" cy="27" r="16" fill="none" stroke="currentColor" stroke-width="5"/><path d="M39 39l15 15" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>',
   wearable: '<path d="M8 50V20l12 14 12-22 12 22 12-14v30z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M8 50h48" stroke="currentColor" stroke-width="6"/>',
   sculpture: '<circle cx="32" cy="12" r="6" fill="currentColor"/><path d="M32 18v20M32 24l-12 8M32 24l12-10M32 38l-8 14M32 38l8 14" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 56h36" stroke="currentColor" stroke-width="5"/>',
+  ether: '<circle cx="32" cy="14" r="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M22 58l4-22-8-6 14-6 14 6-8 6 4 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><ellipse cx="32" cy="58" rx="24" ry="4" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M6 30c6-10 12-14 20-14M58 30c-6-10-12-14-20-14" fill="none" stroke="currentColor" stroke-width="2"/>',
   model: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><path d="M32 6l22 12v26L32 58 10 44V18z"/><path d="M10 18l22 12 22-12M32 30v28"/></g>',
 };
 const GROUPS = [
+  ['Worlds', [
+    ['ether', 'Ether World', '3D fashion universe: character, wardrobe, showroom'],
+  ]],
   ['Jewellery', [
     ['ring', 'Ring', 'Size, band, signet, engraving'],
     ['pendant', 'Pendant', 'From your sketch or photo'],
@@ -109,7 +113,7 @@ function home(main) {
   </section>
   ${GROUPS.map(([g, tiles]) => `<h2 class="wrap label muted tiles-head">${g}</h2>
   <nav class="tiles" aria-label="${g}">
-    ${tiles.map(([k, n, d]) => `<a class="tile${k === 'draw' ? ' tile--draw' : ''}" href="#/${k}">
+    ${tiles.map(([k, n, d]) => `<a class="tile${k === 'draw' ? ' tile--draw' : ''}${k === 'ether' ? ' tile--wide' : ''}" href="#/${k}">
       <svg viewBox="0 0 64 64" aria-hidden="true">${ICONS[k]}</svg>
       <span><span class="tile-name">${n}</span><br><span class="tile-desc">${d}</span></span></a>`).join('')}
   </nav>`).join('')}
@@ -175,7 +179,7 @@ async function route() {
   if (!key || !NAMES[key]) { home(main); window.scrollTo(0, 0); return; }
   main.innerHTML = '<div class="stage-loading" style="min-height:50vh"><div class="spinner" role="img" aria-label="Loading"></div></div>';
   try {
-    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : key === 'find' ? await import('./find/app.js') : key === 'designs' ? await import('./designs/app.js') : key === 'collections' ? await import('./collections/app.js') : await import('./jewellery/app.js');
+    const mod = key === 'draw' ? await import('./draw/app.js') : key === 'symbol' ? await import('./symbol/app.js') : key === 'find' ? await import('./find/app.js') : key === 'designs' ? await import('./designs/app.js') : key === 'collections' ? await import('./collections/app.js') : key === 'ether' ? await import('./ether/app.js') : await import('./jewellery/app.js');
     if (currentKey !== key) return;
     current = await mod.mount(main, key, new URLSearchParams(query));
   } catch (e) {
