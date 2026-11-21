@@ -6,8 +6,8 @@ function open() {
   if (dbp) return dbp;
   dbp = new Promise((resolve) => {
     try {
-      const req = indexedDB.open('triad-studio', 4);
-      req.onupgradeneeded = () => { for (const s of ['fonts', 'symbols', 'designs', 'projects', 'collections', 'scenes']) if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s); };
+      const req = indexedDB.open('triad-studio', 5);
+      req.onupgradeneeded = () => { for (const s of ['fonts', 'symbols', 'designs', 'projects', 'collections', 'scenes', 'worlds']) if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s); };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => resolve(null);
     } catch { resolve(null); }
@@ -44,5 +44,12 @@ export async function all(store) {
       req.onsuccess = () => { const c = req.result; if (c) { out.push({ key: c.key, value: c.value }); c.continue(); } else resolve(out); };
       req.onerror = () => resolve(out);
     } catch { resolve([]); }
+  });
+}
+export async function get(store, key) {
+  const db = await open();
+  if (!db) return memory.get(`${store}/${key}`) ?? null;
+  return new Promise((resolve) => {
+    try { const req = db.transaction(store).objectStore(store).get(key); req.onsuccess = () => resolve(req.result ?? null); req.onerror = () => resolve(null); } catch { resolve(null); }
   });
 }
