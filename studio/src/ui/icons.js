@@ -13,6 +13,7 @@ export const ICON = {
   more: s('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'),
   save: s('<path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>'),
   export: s('<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/>'),
+  land: s('<path d="m3 19 6-9 4 5 3-4 5 8z"/><circle cx="17" cy="6" r="2"/>'),
   back: s('<path d="m15 18-6-6 6-6"/>'),
   turnL: s('<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>'),
   turnR: s('<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>'),

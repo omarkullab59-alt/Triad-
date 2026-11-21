@@ -34,6 +34,7 @@
 | F | Frame the object |
 | W | Wireframe on / off |
 | G | Ground grid on / off |
+| L | Landscape scene (Bryce-style: terrain, water, misty sky) on / off |
 | + / − | Zoom |
 | Arrows (viewport focused) | Turn |
 | ? | Shortcut list |
@@ -46,3 +47,11 @@
 * Undo / redo (toolbar and Ctrl Z / Ctrl Shift Z), camera keys 0 1 3 7, W, G, F, ?, Ctrl S, Ctrl E, right-click menu (15 items, Esc closes), tooltips and viewport PNG export checked.
 * Desktop window: the page itself never scrolls (panel scrolls on its own). Phone (iPhone 13 emulation): no horizontal overflow; viewport toolbar scrolls sideways.
 * Light mode, project save via Ctrl S → shows up under “Recent projects” on the start screen → reopens with its notes.
+
+## 5. Bryce
+
+Bryce (Daz 3D) is a desktop program with no web version and no interface for other software, so it cannot be embedded. The Studio works with it through files instead:
+
+* **Export → Open in Bryce** saves a zip with `OBJ + MTL` (millimetres, one material per metal / accent / fill / print group) and shows the import steps (`File → Import Object…`). The same file opens in Blender, Cinema 4D, Maya, Daz Studio and ZBrush.
+* Back from Bryce: export an OBJ there and open it in **Upload 3D**.
+* **Landscape scene** (L, or the mountain button / viewport menu): a Bryce-style procedural terrain with water, misty sky and fog around the piece, with “New random landscape”. It is only for viewing and images (PNG, Instagram), never part of STL / OBJ / GLB.

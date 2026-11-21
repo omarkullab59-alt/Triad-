@@ -39,12 +39,12 @@ export const HOME_LOOKS = {
 export const ACCENT = { label: 'Lime enamel', swatch: '#c4ef2f' };
 
 export const lookOf = (key, home) => (home ? HOME_LOOKS[key] : MATERIALS[key]) || MATERIALS[key] || HOME_LOOKS[key] || MATERIALS.silver;
-function makeMaterial(key, home, vertexColors, color) {
+function makeMaterial(key, home, vertexColors = false, color) {
   const m = lookOf(key, home);
   // a custom colour on metal = coloured plating / anodising look; on other materials = paint, glaze or dye
   return new THREE.MeshPhysicalMaterial({ color: color || m.color, roughness: m.roughness, metalness: color && m.metalness ? 0.85 : m.metalness, clearcoat: m.clearcoat || 0, sheen: m.sheen || 0, sheenRoughness: 0.8, envMapIntensity: 1.15, vertexColors });
 }
-function makeEnamel(vertexColors, color = '#9fd10f') {
+function makeEnamel(vertexColors = false, color = '#9fd10f') {
   return new THREE.MeshPhysicalMaterial({ vertexColors, color, roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.2 });
 }
 
@@ -69,9 +69,9 @@ function sharedRenderer() {
 }
 
 const VIEWS = {
-  persp: [0.42, 0.34, 1], front: [0, 0, 1], back: [0, 0, -1], right: [1, 0, 0], left: [-1, 0, 0], top: [0, 1, 0.0001], bottom: [0, -1, 0.0001],
+  persp: [0.42, 0.34, 1], front: [0, 0, 1], back: [0, 0, -1], right: [1, 0, 0], left: [-1, 0, 0], top: [0, 1, 0.0001], bottom: [0, -1, 0.0001], land: [0.62, 0.13, 1],
 };
-export const VIEW_NAMES = Object.keys(VIEWS);
+export const VIEW_NAMES = Object.keys(VIEWS).filter((k) => k !== 'land');
 
 export function createViewer(container, { reducedMotion = false } = {}) {
   const { renderer, env } = sharedRenderer();
@@ -99,6 +99,59 @@ export function createViewer(container, { reducedMotion = false } = {}) {
   scene.add(root);
   let grid = null, gridOn = false, wire = false;
   let curView = 'persp';
+  /* Landscape scene (Bryce-style): procedural terrain, water, misty sky and fog around the piece.
+     Only for looking at and for images; never part of STL / OBJ / GLB exports. */
+  let land = null, landOn = false, landSeed = 7;
+  function hash2(x, y) { const h = Math.sin(x * 127.1 + y * 311.7 + landSeed * 74.7) * 43758.5453; return h - Math.floor(h); }
+  function vnoise(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
+    return (a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v) * 2 - 1;
+  }
+  const fbm = (x, y) => { let t = 0, amp = 0.55, fr = 1; for (let o = 0; o < 6; o++) { t += amp * vnoise(x * fr, y * fr); fr *= 2.03; amp *= 0.5; } return t; };
+  function placeLand() {
+    if (land) { scene.remove(land); land.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); }); land = null; scene.fog = null; }
+    if (!landOn) return;
+    const box = new THREE.Box3().setFromObject(root);
+    if (box.isEmpty()) return;
+    const r = Math.max(radius, 1), y0 = box.min.y - r * 0.02;
+    land = new THREE.Group();
+    // terrain: a flat plateau under the piece, mountains rising further out, valleys below the water line
+    const S = r * 130, N = 220;
+    const geo = new THREE.PlaneGeometry(S, S, N, N); geo.rotateX(-Math.PI / 2);
+    const pos = geo.attributes.position, col = new Float32Array(pos.count * 3);
+    const cLow = new THREE.Color('#2e3532'), cMid = new THREE.Color('#6d675d'), cHigh = new THREE.Color('#f2f3f4'), c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), z = pos.getZ(i), d = Math.hypot(x, z) / r;
+      const mask = THREE.MathUtils.smoothstep(d, 2.2, 10);
+      const ridge = 1 - Math.abs(fbm(x / (r * 9) + 3.1, z / (r * 9) - 1.7));
+      const h = mask * (fbm(x / (r * 7), z / (r * 7)) * r * 2.6 + ridge * ridge * r * 7 * THREE.MathUtils.smoothstep(d, 12, 34)) - (1 - mask) * 0;
+      pos.setY(i, y0 + h);
+      const k = THREE.MathUtils.clamp((h + r) / (r * 8.5), 0, 1);
+      c.copy(cLow).lerp(cMid, Math.min(1, k * 1.8)); if (k > 0.62) c.lerp(cHigh, (k - 0.62) / 0.38);
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    land.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, envMapIntensity: 0.5 })));
+    // water in the valleys
+    const water = new THREE.Mesh(new THREE.CircleGeometry(S * 0.5, 64), new THREE.MeshPhysicalMaterial({ color: '#34434d', roughness: 0.08, metalness: 0.1, clearcoat: 1, transparent: true, opacity: 0.88 }));
+    water.rotation.x = -Math.PI / 2; water.position.y = y0 - r * 0.45;
+    land.add(water);
+    // misty sky dome
+    const skyGeo = new THREE.SphereGeometry(r * 80, 32, 16);
+    const sky = new THREE.Mesh(skyGeo, new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, fog: false,
+      uniforms: { top: { value: new THREE.Color('#4d6478') }, hor: { value: new THREE.Color('#cfd7dc') }, base: { value: y0 } },
+      vertexShader: 'varying vec3 vP; void main(){ vP = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vP,1.0); }',
+      fragmentShader: 'uniform vec3 top; uniform vec3 hor; uniform float base; varying vec3 vP; void main(){ float h = clamp((normalize(vP - vec3(0.0, base, 0.0)).y) * 1.6, 0.0, 1.0); gl_FragColor = vec4(mix(hor, top, pow(h, 0.7)), 1.0); }',
+    }));
+    sky.renderOrder = -1;
+    land.add(sky);
+    scene.fog = new THREE.Fog('#cfd7dc', r * 16, r * 75);
+    scene.add(land);
+  }
   function placeGrid() {
     if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); grid = null; }
     if (!gridOn) return;
@@ -229,8 +282,18 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       root.updateMatrixWorld(true);
       radius = box.getSize(new THREE.Vector3()).length() / 2;
       placeGrid();
+      placeLand();
       wake(2);
     },
+    /** Bryce-style landscape around the piece (terrain, water, sky, fog); `seed` makes a new landscape. */
+    setLandscape(v, seed) {
+      landOn = !!v; if (seed !== undefined) landSeed = seed;
+      if (landOn && gridOn) { gridOn = false; placeGrid(); }
+      placeLand();
+      if (landOn) this.setView('land', 1.8); // low camera, wider: shows horizon and mountains
+      wake(2); return landOn;
+    },
+    get landscape() { return landOn; },
     /** Triangles and size (mm) of what is on screen. */
     stats() {
       let tris = 0;
@@ -245,15 +308,15 @@ export function createViewer(container, { reducedMotion = false } = {}) {
     },
     setWireframe(v) { wire = !!v; new Set(mats).forEach((m) => { m.wireframe = wire; }); wake(2); return wire; },
     get wireframe() { return wire; },
-    setGrid(v) { gridOn = !!v; placeGrid(); wake(2); return gridOn; },
+    setGrid(v) { gridOn = !!v; if (gridOn && landOn) { landOn = false; placeLand(); } placeGrid(); wake(2); return gridOn; },
     get grid() { return gridOn; },
     get view() { return curView; },
     /** Camera presets: persp, front, back, left, right, top, bottom. */
-    setView(name) {
+    setView(name, zoomOut = 1) {
       if (!VIEWS[name]) return;
       curView = name;
       const fov = (camera.fov * Math.PI) / 180;
-      const dist = (radius / Math.sin(fov / 2)) * (camera.aspect < 1 ? 1.25 / Math.max(camera.aspect, 0.55) : 1.15);
+      const dist = zoomOut * (radius / Math.sin(fov / 2)) * (camera.aspect < 1 ? 1.25 / Math.max(camera.aspect, 0.55) : 1.15);
       controls.target.set(0, 0, 0);
       const to = new THREE.Vector3(...VIEWS[name]).normalize().multiplyScalar(dist);
       if (reducedMotion) { camera.position.copy(to); camera.lookAt(controls.target); wake(2); return; }
@@ -270,6 +333,8 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       };
       requestAnimationFrame(step);
     },
+    /** Colours / finish per material group, for OBJ / MTL export. */
+    looks: () => mats.map((m) => ({ color: `#${m.color.getHexString()}`, metalness: m.metalness, roughness: m.roughness })),
     /** Matrix that maps part coordinates to centred world coordinates (for STL export). */
     exportMatrix: () => root.matrixWorld.clone(),
     fit(view) {
@@ -278,7 +343,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       controls.target.set(0, 0, 0);
       const dir = (view === 'top' ? new THREE.Vector3(0.2, 1.3, 0.75) : new THREE.Vector3(0.42, 0.34, 1)).normalize();
       camera.position.copy(dir.multiplyScalar(dist));
-      camera.near = Math.max(0.1, dist / 100); camera.far = dist * 20;
+      camera.near = Math.max(0.1, dist / 100); camera.far = Math.max(dist * 20, radius * 100);
       camera.updateProjectionMatrix();
       controls.minDistance = radius * 0.6; controls.maxDistance = dist * 4;
       zoomed = false;
@@ -337,6 +402,7 @@ export function createViewer(container, { reducedMotion = false } = {}) {
       controls.dispose();
       ac.abort();
       gridOn = false; placeGrid();
+      landOn = false; placeLand();
       clear();
       new Set(mats).forEach((m) => { m.map?.dispose(); m.dispose(); });
       renderer.domElement.remove();

@@ -4,6 +4,7 @@ import { createHistory, changedKeys } from '../lib/history.js';
 import { showMenu, closeMenu, showShortcuts } from '../ui/menu.js';
 import { ICON } from '../ui/icons.js';
 import { partsToSTL } from './stl.js';
+import { partsToOBJ } from '../lib/obj.js';
 import { encodeShapes } from './outline.js';
 import { geometryVolume } from './revolve.js';
 import { destroy, DESTROY_STYLES } from './destroy.js';
@@ -50,7 +51,7 @@ const MOD = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? 
 export const SHORTCUTS = [
   [`${MOD} · Z`, 'Undo'], [`${MOD} · Shift · Z`, 'Redo (also Ctrl Y)'], [`${MOD} · S`, 'Save project'], [`${MOD} · E`, 'Export panel'],
   ['1', 'Front view'], ['3', 'Side view'], ['7', 'Top view'], ['0', 'Perspective view'], ['F', 'Frame the object'],
-  ['W', 'Wireframe on / off'], ['G', 'Ground grid on / off'], ['+ · −', 'Zoom in / out'], ['← · → · ↑ · ↓', 'Turn (viewport focused)'],
+  ['W', 'Wireframe on / off'], ['G', 'Ground grid on / off'], ['L', 'Landscape scene (Bryce-style) on / off'], ['+ · −', 'Zoom in / out'], ['← · → · ↑ · ↓', 'Turn (viewport focused)'],
   ['Right-click', 'Viewport menu'], ['?', 'This list'],
 ];
 const JEWEL_MATS = ['silver', 'chrome', 'gold', 'black'];
@@ -149,6 +150,7 @@ export async function mount(main, typeId, query) {
         <div class="tb-group" role="group" aria-label="Display">
           <button type="button" class="tb" data-act="wire" data-tip="Wireframe (W)" aria-label="Wireframe" aria-pressed="false">${ICON.wire}</button>
           <button type="button" class="tb" data-act="grid" data-tip="Ground grid (G)" aria-label="Ground grid" aria-pressed="false">${ICON.grid}</button>
+          <button type="button" class="tb" data-act="land" data-tip="Landscape scene, Bryce-style (L)" aria-label="Landscape scene" aria-pressed="false">${ICON.land}</button>
         </div>
         <div class="tb-group" role="group" aria-label="Zoom">
           <button type="button" class="tb" data-act="out" data-tip="Zoom out (−)" aria-label="Zoom out">${ICON.zoomOut}</button>
@@ -232,7 +234,9 @@ export async function mount(main, typeId, query) {
   const actions = {
     undo: () => undo(), redo: () => redo(),
     wire: () => { press('wire', viewer.setWireframe(!viewer.wireframe)); },
-    grid: () => { press('grid', viewer.setGrid(!viewer.grid)); },
+    grid: () => { press('grid', viewer.setGrid(!viewer.grid)); press('land', viewer.landscape); },
+    land: () => { press('land', viewer.setLandscape(!viewer.landscape)); press('grid', viewer.grid); },
+    newLand: () => { press('land', viewer.setLandscape(true, Math.floor(Math.random() * 9999))); press('grid', false); },
     in: () => viewer.zoom(0.75), out: () => viewer.zoom(1.33),
     fit: () => { viewer.fit(T.view); markCam(T.view === 'top' ? 'top' : 'persp'); },
     shot: () => viewportShot(),
@@ -259,9 +263,12 @@ export async function mount(main, typeId, query) {
       '-',
       { label: 'Wireframe', hint: 'W', checked: viewer.wireframe, action: actions.wire },
       { label: 'Ground grid', hint: 'G', checked: viewer.grid, action: actions.grid },
+      { label: 'Landscape scene (Bryce-style)', hint: 'L', checked: viewer.landscape, action: actions.land },
+      ...(viewer.landscape ? [{ label: 'New random landscape', action: actions.newLand }] : []),
       '-',
       { label: 'Save viewport as PNG', action: actions.shot, disabled: !st.result || st.result.empty },
       { label: 'Download STL', action: () => exportSTL(), disabled: !st.result || st.result.empty },
+      { label: 'Open in Bryce (OBJ + MTL)', action: () => exportOBJ(true), disabled: !st.result || st.result.empty },
       { label: 'Export panel…', hint: `${MOD} E`, action: actions.export },
       { label: 'Keyboard shortcuts', hint: '?', action: actions.keys },
     ], { x, y, label: 'Viewport', returnFocus });
@@ -271,6 +278,15 @@ export async function mount(main, typeId, query) {
     const k = 2048 / Math.max(r.width, r.height);
     const c = viewer.snapshot(Math.round(r.width * k), Math.round(r.height * k), { fill: 0.75 });
     c.toBlob((b) => { if (b) { download(b, `${fileBase()}-viewport.png`); toast('Viewport saved as PNG (transparent background).'); } });
+  }
+  async function exportOBJ(guide) {
+    const nm = ($('#design-name', main)?.value.trim() || st.result.title || typeId);
+    const { obj, mtl, base } = partsToOBJ(st.result.parts, { matrix: viewer.exportMatrix(), looks: viewer.looks(), name: `${fileBase()}` });
+    const { zipSync, strToU8 } = await import('three/examples/jsm/libs/fflate.module.js');
+    const readme = `${nm}\nTRIAD Studio · OBJ + MTL · units: millimetres\n\nBryce: File > Import Object… > ${base}.obj (keep the .mtl next to it for the colours).\nBlender / Cinema 4D / Maya / Daz Studio / ZBrush: import ${base}.obj.\n`;
+    const zip = zipSync({ [`${base}.obj`]: strToU8(obj), [`${base}.mtl`]: strToU8(mtl), 'README.txt': strToU8(readme) });
+    download(new Blob([zip], { type: 'application/zip' }), `${base}-obj.zip`);
+    if (guide) openBryceGuide(); else toast('OBJ + MTL saved (zip).');
   }
   function exportSTL() {
     const buf = partsToSTL(st.result.parts, viewer.exportMatrix());
@@ -297,6 +313,7 @@ export async function mount(main, typeId, query) {
     if (k === 'f') { e.preventDefault(); actions.fit(); }
     else if (k === 'w') { e.preventDefault(); actions.wire(); }
     else if (k === 'g') { e.preventDefault(); actions.grid(); }
+    else if (k === 'l') { e.preventDefault(); actions.land(); }
     else if (e.key === '+' || e.key === '=') { e.preventDefault(); viewer.zoom(0.8); }
     else if (e.key === '-') { e.preventDefault(); viewer.zoom(1.25); }
     else if (e.key === '?') { e.preventDefault(); actions.keys(); }
@@ -1006,6 +1023,7 @@ export async function mount(main, typeId, query) {
         <button type="button" class="btn btn--lime" data-a="stl" ${r.empty ? 'disabled' : ''}>Download STL <small>3D print · casting · CNC</small></button>
         ${(r.downloads || []).map((dl, i) => `<button type="button" class="btn" data-dl="${i}">${esc(dl.label)} <small>${esc(dl.small || '')}</small></button>`).join('')}
         <button type="button" class="btn btn--solid" data-a="blender" ${r.empty ? 'disabled' : ''}>Open in Blender <small>edit further, then upload back</small></button>
+        <button type="button" class="btn" data-a="bryce" ${r.empty ? 'disabled' : ''}>Open in Bryce <small>OBJ + MTL · also Daz, C4D, Maya</small></button>
         <button type="button" class="btn" data-a="glb" ${r.empty ? 'disabled' : ''}>Colour model (GLB) <small>colours, print, enamel</small></button>
         <button type="button" class="btn" data-a="poster" ${r.empty ? 'disabled' : ''}>Image for Instagram <small>1080 × 1350 PNG</small></button>
         <label class="check"><input type="checkbox" data-mark checked> <span>Add TRIAD lettering to the image</span></label>
@@ -1046,6 +1064,7 @@ export async function mount(main, typeId, query) {
         catch { prompt('Copy this link:', url); }
       },
       save: () => saveAsProject(name()),
+      bryce: () => exportOBJ(true).catch((e) => { console.error(e); toast('The OBJ file could not be made.'); }),
       send: () => openSendDialog({ makeImage: () => poster(true), title: name(), caption: `${st.result.title} · ${materialLabel()}. Designed in TRIAD Studio.` }),
     };
     $$('[data-a]', box).forEach((b) => b.addEventListener('click', () => act[b.dataset.a]()));
@@ -1076,6 +1095,26 @@ export async function mount(main, typeId, query) {
         <li>Back to the Studio: <b>File → Export → glTF 2.0</b> (or STL / OBJ / FBX), then open <a href="#/model">Upload 3D</a> to add engravings, print, destroy mode, materials or to send it to TRIAD.</li>
       </ol>
       <div class="btn-row"><a class="btn btn--lime" href="https://www.blender.org/download/" target="_blank" rel="noopener">Get Blender ↗</a><button class="btn" value="x">Done</button></div>
+    </form>`;
+    document.body.append(dlg);
+    dlg.addEventListener('close', () => dlg.remove());
+    dlg.showModal();
+  }
+
+  function openBryceGuide() {
+    const dlg = document.createElement('dialog');
+    dlg.setAttribute('aria-labelledby', 'br-h');
+    dlg.innerHTML = `<form class="dlg" method="dialog">
+      <div class="dlg-head"><h2 id="br-h" class="section-title">Continue in Bryce</h2><button class="icon-btn" value="x" aria-label="Close">×</button></div>
+      <p>Saved a <b>.zip</b> with your model as <b>OBJ</b> plus its colours (<b>MTL</b>). Unzip it into one folder.</p>
+      <ol style="padding-left:20px;display:grid;gap:6px">
+        <li>Open <b>Bryce</b> (Daz 3D) on your computer.</li>
+        <li><b>File → Import Object…</b> and choose the <b>.obj</b> file. Keep the .mtl next to it, then the colours come along.</li>
+        <li>Bryce sizes imports to its own units: scale it in the object's attributes if needed, then drop it into your terrain, sky and water.</li>
+        <li>Back to the Studio: export from Bryce (e.g. as OBJ) and open it in <a href="#/model">Upload 3D</a> for engravings, print, destroy mode or to send it to TRIAD.</li>
+      </ol>
+      <p class="muted" style="font-size:13px">Bryce is a desktop program without a web version or interface for other apps, so it cannot run inside the Studio. For a quick Bryce-style look right here, switch on the <b>landscape scene</b> in the viewport (L). The same file also opens in Blender, Cinema 4D, Maya, Daz Studio and ZBrush.</p>
+      <div class="btn-row"><button class="btn" value="x">Done</button></div>
     </form>`;
     document.body.append(dlg);
     dlg.addEventListener('close', () => dlg.remove());

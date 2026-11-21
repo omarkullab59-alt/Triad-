@@ -322,7 +322,8 @@ body.in-tool .glyph { width: 24px; height: 24px; }
   background: none; color: var(--fg); text-decoration: none; transition: background var(--dur), border-color var(--dur), color var(--dur); flex: none; }
 .tb:hover:not(:disabled) { background: var(--wash); }
 .tb:active:not(:disabled) { transform: translateY(0.5px); }
-.tb[aria-pressed='true'] { background: var(--lime); color: var(--black); }
+.tb[aria-pressed='true'], .tb[aria-pressed='true']:hover:not(:disabled) { background: var(--lime); color: var(--black); }
+.tb[aria-pressed='true']:hover:not(:disabled) { background: #b3dc1f; }
 .tb:disabled { opacity: 0.35; cursor: default; }
 .tb--sm { --tb-h: 24px; }
 .tb-group { display: flex; gap: 2px; padding-left: 6px; margin-left: 2px; border-left: 1px solid var(--line); }
