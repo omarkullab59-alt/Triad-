@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" style="color:#c9c9c9;--red:#c4ef2f">
+<rect width="100%" height="100%" fill="#0a0a0a"/>
+<svg x="200" y="200" width="800" height="800" class="stamp " viewBox="0 0 200 200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="st6r"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.6"/><feComposite in="SourceGraphic" operator="in"/></filter>
+    <path id="st6a" d="M30 100 a70 70 0 0 1 140 0"/>
+    <path id="st6b" d="M24 100 a76 76 0 0 0 152 0"/>
+  </defs>
+  <g filter="url(#st6r)" fill="none" stroke="currentColor">
+    <circle cx="100" cy="100" r="92" stroke-width="4"/>
+    <circle cx="100" cy="100" r="58" stroke-width="2"/>
+    <text fill="currentColor" stroke="none" font-family="'Anton', Impact, sans-serif" font-size="17" letter-spacing="4" text-anchor="middle"><textPath href="#st6a" startOffset="50%">OUTSIDE THE SYSTEM</textPath></text>
+    <text fill="currentColor" stroke="none" font-family="'JetBrains Mono', monospace" font-size="10" letter-spacing="3" text-anchor="middle"><textPath href="#st6b" startOffset="50%">APPROVED · NOT FOR SALE</textPath></text>
+    <text x="100" y="114" fill="currentColor" stroke="none" font-family="'Anton', Impact, sans-serif" font-size="42" text-anchor="middle">III</text>
+    <path d="M70 128 H130" stroke-width="2"/>
+  </g>
+</svg>
+</svg>
