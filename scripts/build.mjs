@@ -210,7 +210,7 @@ export function build() {
   write('api/site.json', JSON.stringify({ ...site, issues: ctx.issues, creatives: ctx.creatives }));
 
   // ── SEO: sitemap, robots, RSS ──────────────────────────────
-  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/darkroom/', '/finder/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.issues.map((i) => `/magazine/issue-${i.number}/`), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
+  const urls = ['/', '/magazine/', '/news/', '/people/', '/archive/', '/darkroom/', '/finder/', '/studio/', '/about/', ...ctx.people.filter((p) => !p.sample).map((p) => p.url), ...ctx.articles.map((a) => a.url), ...ctx.issues.map((i) => `/magazine/issue-${i.number}/`), ...ctx.news.filter((n) => !n.sample).map((n) => n.url)];
   write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${site.url}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
   // No AI training: block AI crawlers (search engines stay allowed) + machine-readable TDM reservation (§ 44b UrhG)
   write('robots.txt', `# TRIAD — no AI training on our work or our photographers' work.\n${AI_BOTS.map((b) => `User-agent: ${b}`).join('\n')}\nDisallow: /\n\nUser-agent: *\nAllow: /\nDisallow: ${base}admin/\nDisallow: ${base}darkroom/admin/\nSitemap: ${site.url}/sitemap.xml\n`);

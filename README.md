@@ -4,7 +4,7 @@ Independent magazine, fashion news desk and visual archive.
 **Live:** https://omarkullab59-alt.github.io/Triad-/
 
 ```
-HOME · MAGAZINE · NEWS · ARCHIVE · ABOUT
+HOME · MAGAZINE · NEWS · ARCHIVE · STUDIO · ABOUT
 ```
 
 ## Auf dem PC ansehen / lokal starten
@@ -75,6 +75,11 @@ Schritt-für-Schritt-Anleitung: [`docs/REDAKTION.md`](docs/REDAKTION.md)
 ### News von anderen Magazinen („Elsewhere“)
 
 `scripts/fetch-wire.mjs` liest alle 3 Stunden die RSS-Feeds aus `content/sources.json` (kein API-Key) und zeigt Schlagzeile + Quelle + Link. Läuft automatisch in GitHub Actions; lokal: `node scripts/fetch-wire.mjs`.
+
+### TRIAD Studio (`/studio/`)
+
+Eigene App im Ordner [`studio/`](studio/README.md): Schmuck, Teller, Besteck, Schränke, eigene Symbole und Schriften, Skizze → 3D,
+3D-Upload, Destroy-Modus, Zeichnen mit KI-Live-Bild. Wird beim Deploy automatisch mitgebaut. Einrichtung der KI: [`studio/docs/SETUP.md`](studio/docs/SETUP.md).
 
 ### Finder mit KI- & Foto-Suche
 

@@ -17,6 +17,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.pathname.startsWith(`${BASE}admin`)) return;
+  if (url.pathname.startsWith(`${BASE}studio/`)) return; // TRIAD Studio has its own service worker
 
   if (req.mode === 'navigate') {
     e.respondWith(

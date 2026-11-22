@@ -1,0 +1,6 @@
+{
+  "name": "triad-studio-ai",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker for TRIAD Studio's live sketch render (Workers AI, free plan)."
+}

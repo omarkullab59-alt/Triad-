@@ -1,0 +1,51 @@
+name: Deploy Studio AI (Cloudflare Worker)
+
+# TRIAD Studio's live sketch render (studio/worker). Free Workers AI allocation, no credit card.
+# Uses the same secrets as the Finder worker: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+# After the first run: copy the Worker URL into the repository VARIABLE STUDIO_AI_URL
+# (Settings → Secrets and variables → Actions → Variables) and re-run "Build & deploy TRIAD". See studio/docs/SETUP.md.
+
+on:
+  push:
+    branches: [main]
+    paths: ["studio/worker/**", ".github/workflows/deploy-studio-ai.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Worker tests (mocked AI)
+        working-directory: studio
+        run: node --test tests/worker.test.mjs
+      - name: Check secrets
+        id: check
+        env:
+          CF: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF" ] || [ -z "$ID" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "### Studio AI not deployed: Cloudflare secrets missing (see studio/docs/SETUP.md)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy worker
+        id: deploy
+        if: steps.check.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: studio/worker
+          wranglerVersion: "4"
+      - name: Show URL
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          echo "### Studio AI is live" >> "$GITHUB_STEP_SUMMARY"
+          echo "Worker URL: ${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Save it as repository variable STUDIO_AI_URL, then run 'Build & deploy TRIAD'." >> "$GITHUB_STEP_SUMMARY"

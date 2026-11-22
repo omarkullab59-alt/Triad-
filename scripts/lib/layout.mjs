@@ -11,6 +11,9 @@ export const PILLARS = [
     { href: '/darkroom/', text: 'Darkroom', sym: 'pyramid' }, { href: '/archive/', text: 'Archive', sym: 'sierpinski' }] },
   { key: 'find', text: 'Find', n: 'III', sym: 'delta', items: [
     { href: '/finder/', text: 'Finder', sym: 'delta' }] },
+  // TRIAD Studio is its own app (studio/ folder, built by Vite and copied to /studio/ on deploy)
+  { key: 'make', text: 'Make', n: 'IV', sym: 'earth', items: [
+    { href: '/studio/', text: 'Studio', sym: 'earth' }] },
 ];
 export const pillarOf = (path) => PILLARS.find((p) => p.items.some((i) => path.startsWith(i.href))) || null;
 
