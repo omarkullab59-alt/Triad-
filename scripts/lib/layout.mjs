@@ -156,7 +156,7 @@ ${body}
   <div class="footer-base">
     <span class="label">&copy; ${new Date().getFullYear()} TRIAD Collective</span>
     <span class="label label--dim">${site.location} &middot; <span class="clock" data-clock>BER --:--</span></span>
-    <span class="label footer-legal"><a href="${ctx.url('/legal/impressum/')}">Impressum</a> &middot; <a href="${ctx.url('/legal/datenschutz/')}">Datenschutz</a> &middot; <a href="${ctx.url('/legal/darkroom-rules/')}">Darkroom rules</a></span>
+    <span class="label footer-legal"><a href="${ctx.url('/legal/impressum/')}">Impressum</a> &middot; <a href="${ctx.url('/legal/datenschutz/')}">Datenschutz</a> &middot; <a href="${ctx.url('/legal/darkroom-rules/')}">Darkroom rules</a> &middot; <a href="${ctx.url('/admin/')}" rel="nofollow">Admin</a></span>
     <span class="label">${glyph({ cls: 'footer-glyph' })}</span>
   </div>
 </footer>
