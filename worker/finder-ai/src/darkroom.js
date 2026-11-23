@@ -1,5 +1,5 @@
 // TRIAD Darkroom — photographers upload, the crew approves, everyone reacts.
-// Storage: Cloudflare D1 (free: 5 GB, 5M reads/day, 100k writes/day). Images live in D1 as BLOBs
+// Storage: Cloudflare D1 (free: 500 MB per database, 5 GB per account, 5M reads/day, 100k writes/day). Images live in D1 as BLOBs
 // (client sends a ~1600px JPEG + a ~600px thumb; canvas re-encoding strips EXIF/GPS).
 //
 // Public
@@ -17,7 +17,7 @@
 // Ready for login later: photos.account_id stays NULL until accounts exist.
 
 export const KINDS = ['fire', 'chord', 'delta'];
-const MAX_FULL_B64 = 3_200_000; // ≈2.4 MB
+const MAX_FULL_B64 = 2_600_000; // ≈1.9 MB — D1 rows are capped at 2 MB
 const MAX_THUMB_B64 = 600_000;
 const UPLOADS_PER_DAY = 6; // per visitor
 const REPORTS_TO_HIDE = 3;

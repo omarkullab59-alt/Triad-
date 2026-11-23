@@ -27,12 +27,11 @@ PLACEHOLDER = (HERE / "placeholder.jpg").read_bytes()
 PAGES = [
     ("Home", "/"),
     ("Magazine", "/magazine/"),
-    ("Article", "/magazine/basement-runways/"),
+    ("Issue", "/magazine/issue-012/"),
+    ("Article", "/magazine/three-forces-the-first-shoot/"),
     ("News", "/news/"),
-    ("News article", "/news/vanta-works-drops-unbranded-outerwear/"),
     ("Archive", "/archive/"),
     ("Voices", "/people/"),
-    ("Person", "/people/hanne-wolter/"),
     ("Finder", "/finder/"),
     ("Darkroom", "/darkroom/"),
     ("Datenschutz", "/legal/datenschutz/"),
@@ -180,21 +179,39 @@ async def task(name, fn, page):
         steps, ok = str(e)[:120], False
     return {"task": name, "ok": ok, "seconds": round(time.perf_counter() - t0, 2), "actions": steps}
 
-async def t_find_article(page):
+async def t_latest_issue(page):
+    # first-time visitor: open the newest issue from the home page and flip to page 3
     await page.goto(BASE + "/", wait_until="domcontentloaded")
-    await page.get_by_role("link", name="Basement Runways").first.scroll_into_view_if_needed()
-    await page.get_by_role("link", name="Basement Runways").first.click()
-    await page.wait_for_url("**/basement-runways/**")
-    return 2
+    n = 0
+    link = page.locator("a[href*='/magazine/issue-']").first
+    await link.scroll_into_view_if_needed(); await link.click(); n += 1
+    await page.wait_for_url("**/issue-*/")
+    nxt = page.locator(".reader-next, [data-reader-next]").first
+    for _ in range(2):
+        await nxt.click(); n += 1
+    return n
 
-async def t_filter_news(page):
-    await page.goto(BASE + "/news/", wait_until="domcontentloaded")
-    await page.get_by_role("button", name="Streetwear Releases").click()
-    vis = await page.locator(".news-row:not(.is-filtered-out)").count()
-    assert vis >= 1
-    await page.locator(".news-row:not(.is-filtered-out) a").first.click()
-    await page.wait_for_url("**/news/**/")
-    return 2
+async def t_zoom(page):
+    await page.goto(BASE + "/magazine/issue-012/", wait_until="domcontentloaded")
+    await page.locator(".reader-open").first.click(); await page.wait_for_selector(".lightbox.is-open")
+    await page.click(".lb-zin"); await page.click(".lb-zin")
+    assert (await page.locator(".lb-zval").inner_text()) != "100%"
+    await page.keyboard.press("Escape")
+    return 4
+
+async def t_instagram(page):
+    await page.goto(BASE + "/", wait_until="domcontentloaded")
+    link = page.locator("a[href*='instagram.com/triad.closet']").first
+    await link.scroll_into_view_if_needed()
+    assert await link.is_visible()
+    return 1
+
+async def t_find_article(page):
+    await page.goto(BASE + "/magazine/", wait_until="domcontentloaded")
+    a = page.locator("a[href*='three-forces']").first
+    await a.scroll_into_view_if_needed(); await a.click()
+    await page.wait_for_url("**/three-forces-the-first-shoot/**")
+    return 1
 
 async def t_archive_keyboard(page):
     await page.goto(BASE + "/archive/", wait_until="domcontentloaded")
@@ -251,10 +268,10 @@ async def t_darkroom_react(page):
     return 1
 
 TASKS = {
-    "desktop": [("Artikel von Startseite öffnen", t_find_article), ("News nach Thema filtern + öffnen", t_filter_news),
+    "desktop": [("Neueste Ausgabe öffnen + 2x blättern", t_latest_issue), ("Bild öffnen und zoomen", t_zoom), ("Artikel aus Magazin öffnen", t_find_article),
                 ("Archiv-Bild per Tastatur öffnen/blättern/schließen", t_archive_keyboard), ("About nur per Tastatur erreichen", t_about_keyboard),
                 ("Finder: Text-Suche → Plattform-Links", t_finder), ("Darkroom: auf ein Foto reagieren", t_darkroom_react)],
-    "mobile": [("Artikel von Startseite öffnen", t_find_article), ("News nach Thema filtern + öffnen", t_filter_news),
+    "mobile": [("Neueste Ausgabe öffnen + 2x blättern", t_latest_issue), ("Bild öffnen und zoomen", t_zoom), ("Instagram-Link auf Startseite finden", t_instagram),
                ("Über das Menü zum Archiv", t_menu_nav), ("Finder: Text-Suche → Plattform-Links", t_finder),
                ("Darkroom: 2 Fotos einreichen", t_darkroom_submit), ("Darkroom: auf ein Foto reagieren", t_darkroom_react)],
 }

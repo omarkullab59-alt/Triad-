@@ -134,7 +134,7 @@ ${showCampaign ? `<section class="campaign" data-parallax-wrap>
       <strong class="way-title">N&deg;${e(String(current.number))} &mdash; ${e(current.title)}</strong>
       <span class="serif way-note">${current.pages?.length ? `Flip through all ${current.pages.length} pages.` : 'The current issue. Slow pages for fast times.'}</span>
     </a>
-    <a class="way" href="${ctx.url('/archive/')}" data-archive-today data-items='${e(JSON.stringify(archive.map((a) => ({ code: a.code, title: a.title, type: a.type, image: resolveImage(a.image, ctx) }))))}'>
+    <a class="way" href="${ctx.url('/archive/')}" data-archive-today data-items='${e(JSON.stringify(archive.slice(0, 60).map((a) => ({ code: a.code, title: a.title, type: a.type, image: resolveImage(a.image, ctx) }))))}'>
       <span class="way-img"><img alt="" width="900" height="1200" loading="lazy" decoding="async"><span class="frame-code" data-today-code></span></span>
       <span class="label">III / Today from the archive</span>
       <strong class="way-title" data-today-title>An archive of what&rsquo;s next.</strong>
