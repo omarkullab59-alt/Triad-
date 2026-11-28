@@ -1,0 +1,33 @@
+{
+  "name": "TRIAD — Fashion & Culture Collective",
+  "short_name": "TRIAD",
+  "description": "TRIAD is an independent fashion and culture collective — a magazine, a news desk and a visual archive for fashion, art, music and underground culture.",
+  "start_url": "/Triad-/",
+  "scope": "/Triad-/",
+  "display": "standalone",
+  "background_color": "#fbfaf8",
+  "theme_color": "#c4ef2f",
+  "icons": [
+    {
+      "src": "/Triad-/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/Triad-/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/Triad-/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/Triad-/assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

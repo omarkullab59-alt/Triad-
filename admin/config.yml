@@ -1,0 +1,215 @@
+# TRIAD editor — Sveltia CMS (Decap-compatible config)
+# Docs: https://github.com/sveltia/sveltia-cms
+backend:
+  name: github
+  repo: omarkullab59-alt/Triad-
+  branch: main
+  commit_messages:
+    create: "Neu: {{collection}} „{{slug}}“"
+    update: "Update: {{collection}} „{{slug}}“"
+    delete: "Gelöscht: {{collection}} „{{slug}}“"
+    uploadMedia: "Upload: {{path}}"
+
+site_url: https://omarkullab59-alt.github.io/Triad-/
+display_url: https://omarkullab59-alt.github.io/Triad-/
+locale: de
+
+media_folder: static/uploads
+public_folder: /uploads
+
+collections:
+  - name: magazine
+    label: Magazin
+    label_singular: Artikel
+    folder: content/magazine
+    create: true
+    slug: "{{slug}}"
+    sortable_fields: [date, title, category]
+    summary: "{{title}} — {{category}} ({{date}})"
+    fields:
+      - { label: Titel, name: title, widget: string }
+      - { label: Untertitel (Deck), name: deck, widget: text }
+      - label: Kategorie
+        name: category
+        widget: select
+        options: [Fashion Editorials, Photography, Designers, Fashion Trends, Underground Fashion, Streetwear, Creative Projects, Interviews, Art & Culture]
+      - { label: Datum, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: Autor / Credits, name: author, widget: string, hint: "z. B. Words by … / Photography by …" }
+      - { label: Ausgabe (Issue), name: issue, widget: string, required: false, hint: "Nummer der Ausgabe, z. B. 012" }
+      - { label: Titelbild, name: cover, widget: image }
+      - { label: Auf Startseite hervorheben, name: featured, widget: boolean, default: false, required: false }
+      - { label: Bildergalerie, name: gallery, widget: list, field: { label: Bild, name: image, widget: image }, required: false }
+      - { label: Personen in diesem Artikel, name: people, widget: relation, collection: people, value_field: "{{slug}}", search_fields: [name], display_fields: [name], multiple: true, required: false }
+      - { label: "Find it secondhand (Suchbegriffe)", name: find, widget: list, required: false, hint: "z. B. military field jacket 70s — erscheint als Links zum Finder." }
+      - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
+      - { label: Text, name: body, widget: markdown }
+
+  - name: news
+    label: News (eigene)
+    label_singular: Meldung
+    folder: content/news
+    create: true
+    slug: "{{slug}}"
+    sortable_fields: [date, title, topic]
+    summary: "{{title}} — {{topic}} ({{date}})"
+    fields:
+      - { label: Titel, name: title, widget: string }
+      - label: Thema
+        name: topic
+        widget: select
+        options: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture]
+      - { label: Datum, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: Kurztext, name: excerpt, widget: text }
+      - { label: Bild, name: image, widget: image, required: false, hint: "Nur eigene Bilder oder freigegebenes Pressematerial." }
+      - { label: Autor, name: author, widget: string, default: TRIAD News Desk }
+      - { label: Quelle (Name), name: source, widget: string, required: false, hint: "Wenn die Meldung auf einem anderen Bericht basiert, z. B. „Dazed“." }
+      - { label: Quelle (Link), name: sourceUrl, widget: string, required: false }
+      - { label: "Beispiel/fiktiv (zeigt Warnhinweis)", name: sample, widget: boolean, default: false, required: false }
+      - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
+      - { label: Text, name: body, widget: markdown }
+
+  - name: legal
+    label: Rechtliches (Impressum, Datenschutz, Darkroom-Regeln)
+    label_singular: Seite
+    folder: content/legal
+    create: false
+    slug: "{{slug}}"
+    fields:
+      - { label: Titel, name: title, widget: string }
+      - { label: Reihenfolge, name: order, widget: number, required: false }
+      - { label: Stand, name: updated, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { label: Text, name: body, widget: markdown }
+
+  - name: people
+    label: Voices (Künstler & Local Legends)
+    label_singular: Person
+    folder: content/people
+    create: true
+    slug: "{{slug}}"
+    identifier_field: name
+    summary: "{{name}} — {{role}}, {{city}}"
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Rolle, name: role, widget: string, hint: "z. B. Designer, Fotografin, DJ, Vintage-Händlerin" }
+      - { label: Art, name: kind, widget: select, options: [{ label: Künstler/in, value: artist }, { label: Local Legend, value: legend }], default: artist }
+      - { label: Stadt / Viertel, name: city, widget: string }
+      - { label: Aktiv seit, name: since, widget: string, hint: "z. B. since 1989" }
+      - { label: Porträt, name: portrait, widget: image }
+      - { label: Zitat, name: quote, widget: string, required: false }
+      - { label: "Beispiel/fiktiv (zeigt Warnhinweis)", name: sample, widget: boolean, default: false, required: false }
+      - { label: Entwurf (nicht veröffentlichen), name: draft, widget: boolean, default: false, required: false }
+      - { label: Biografie / Geschichte, name: body, widget: markdown }
+
+  - name: data
+    label: Archiv & Einstellungen
+    files:
+      - name: archive
+        label: Archiv (Moodboard)
+        file: content/archive.json
+        fields:
+          - name: items
+            label: Objekte
+            widget: list
+            summary: "{{fields.code}} — {{fields.title}}"
+            fields:
+              - { label: Code, name: code, widget: string, hint: "z. B. TRD-ARC-036" }
+              - { label: Typ, name: type, widget: select, options: [editorial, campaign, reference, graphic, symbol, historical, inspiration] }
+              - { label: Titel, name: title, widget: string }
+              - { label: Jahr, name: year, widget: string }
+              - { label: Bild, name: image, widget: image }
+              - { label: Notiz, name: note, widget: text, required: false }
+      - name: sources
+        label: News-Quellen (RSS)
+        file: content/sources.json
+        fields:
+          - name: items
+            label: Quellen
+            widget: list
+            summary: "{{fields.name}} — {{fields.url}}"
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: RSS-Feed-Adresse, name: url, widget: string }
+              - { label: Thema, name: topic, widget: select, options: [Fashion Week, Collections, Collaborations, Campaigns, Emerging Designers, Streetwear Releases, Industry, Culture] }
+              - { label: Aktiv, name: active, widget: boolean, default: true }
+      - name: marketplaces
+        label: Finder — Marktplätze
+        file: content/marketplaces.json
+        fields:
+          - name: items
+            label: Marktplätze
+            widget: list
+            summary: "{{fields.name}}"
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: Such-Adresse, name: url, widget: string, hint: "{q} = Suchbegriff, {q-} = Suchbegriff mit Bindestrichen" }
+              - { label: Kurzbeschreibung, name: note, widget: string }
+              - { label: Englische Suchbegriffe verwenden, name: english, widget: boolean, default: false, required: false }
+              - { label: Aktiv, name: active, widget: boolean, default: true }
+      - name: calls
+        label: Darkroom Open Calls (Monatsthemen)
+        file: content/calls.json
+        fields:
+          - name: items
+            label: Open Calls
+            widget: list
+            summary: "{{fields.number}} {{fields.title}} ({{fields.start}} – {{fields.end}})"
+            fields:
+              - { label: "Kurzname für Links (klein, ohne Leerzeichen, z. B. night)", name: slug, widget: string }
+              - { label: Titel, name: title, widget: string }
+              - { label: "Nummer (01, 02 …)", name: number, widget: string, required: false }
+              - { label: Aufgabe / Beschreibung, name: brief, widget: text }
+              - { label: Start, name: start, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+              - { label: Einsendeschluss, name: end, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+              - { label: "Was passiert mit den besten Bildern?", name: outcome, widget: string, required: false }
+      - name: creatives
+        label: Featured Creatives
+        file: content/creatives.json
+        fields:
+          - name: items
+            label: Personen
+            widget: list
+            summary: "{{fields.name}} — {{fields.role}}"
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: Rolle, name: role, widget: string }
+              - { label: Stadt, name: city, widget: string }
+              - { label: Porträt, name: image, widget: image }
+              - { label: Ein Satz, name: note, widget: string }
+      - name: issues
+        label: Ausgaben (Covers)
+        file: content/issues.json
+        fields:
+          - name: items
+            label: Ausgaben
+            widget: list
+            summary: "N°{{fields.number}} — {{fields.title}}"
+            fields:
+              - { label: Nummer, name: number, widget: string }
+              - { label: Titel, name: title, widget: string, required: false }
+              - { label: Saison, name: season, widget: string }
+              - { label: "Datum (Instagram-Post)", name: date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, required: false }
+              - { label: "Instagram-Post (Link)", name: instagram, widget: string, required: false }
+              - { label: Cover, name: cover, widget: image }
+              - { label: Coverzeilen, name: lines, widget: list, required: false, field: { label: Zeile, name: line, widget: string } }
+              - { label: Aktuelle Ausgabe, name: current, widget: boolean, default: false, required: false }
+              - { label: "Cover ist fertig gestaltet (keine Schrift drüberlegen)", name: designed, widget: boolean, default: false, required: false }
+              - { label: "Seiten zum Durchblättern (in Reihenfolge)", name: pages, widget: list, required: false, field: { label: Seite, name: page, widget: image } }
+      - name: site
+        label: Startseite & Allgemein
+        file: content/site.json
+        fields:
+          - { label: Titel, name: title, widget: string }
+          - { label: Claim, name: tagline, widget: string }
+          - { label: Beschreibung (SEO), name: description, widget: text }
+          - { label: Website-Adresse, name: url, widget: string }
+          - { label: Sprache, name: lang, widget: string }
+          - { label: Aktuelle Ausgabe, name: currentIssue, widget: string }
+          - { label: Saison, name: season, widget: string }
+          - { label: Orte, name: location, widget: string }
+          - { label: E-Mail, name: email, widget: string }
+          - { label: KI-Finder Adresse (Worker-URL), name: aiEndpoint, widget: string, required: false, hint: "z. B. https://triad-finder-ai.<name>.workers.dev — leer = KI aus" }
+          - { label: Hero-Bilder (Startseite), name: heroImages, widget: list, field: { label: Bild, name: image, widget: image } }
+          - { label: "Kampagnenbild (großes Bild auf der Startseite — erscheint erst, wenn hier ein echtes Foto eingetragen ist)", name: campaignImage, widget: image }
+          - { label: Social Links, name: social, widget: list, fields: [{ label: Name, name: label, widget: string }, { label: Link, name: url, widget: string }] }
+          - { label: Magazin-Kategorien, name: magazineCategories, widget: list }
+          - { label: News-Themen, name: newsTopics, widget: list }
